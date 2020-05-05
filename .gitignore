@@ -7,3 +7,4 @@ __pycache__/
 *.tar
 *.bz2
 *.pyc
+run.py
