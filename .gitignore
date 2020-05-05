@@ -1,0 +1,9 @@
+.flake8
+env_tatoebatools/
+__pycache__/
+*.tsv
+*.json
+*.csv
+*.tar
+*.bz2
+*.pyc
