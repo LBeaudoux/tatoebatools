@@ -105,5 +105,5 @@ class lazy_property(object):
             return self
         val = self.f(instance)
         setattr(instance, self.name, val)
-        
-        return val        
+
+        return val

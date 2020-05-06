@@ -2,8 +2,8 @@ import csv
 import logging
 
 from .config import LINKS_DIR
-from .version import Versions
 from .utils import lazy_property
+from .version import Versions
 
 
 class Links:
