@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from pathlib import Path
 
 from pkg_resources import resource_filename
@@ -19,7 +20,9 @@ class Versions:
     def get(self, filename):
         """Get the local or online version for this file.
         """
-        return self._dict.get(filename)
+        vs = self._dict.get(filename)
+
+        return datetime.strptime(vs, "%Y-%m-%d %H:%M:%S") if vs else None
 
     def update(self, filename, new_version):
         """Update the version value for this file.

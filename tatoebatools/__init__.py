@@ -1,29 +1,32 @@
+import logging
+
 from .config import LINKS_DIR, SENTENCES_DIR
 from .corpus import Corpus
-from .datafile import DataFile, LinksFile
-from .version import Versions
+from .datafile import DataFile
 
-versions = Versions()
+DOWNLOAD_URL = "https://downloads.tatoeba.org/exports"
 
 
 def update(*language_codes):
     """Update all data files required for these languages.
     """
-    dl_url = "https://downloads.tatoeba.org/exports"
+    lang_datafiles = [
+        DataFile(
+            f"{lg}_sentences_detailed.tsv",
+            f"{DOWNLOAD_URL}/per_language/{lg}",
+            SENTENCES_DIR,
+        )
+        for lg in language_codes
+    ]
 
-    # update sentences' datafiles
-    for lg in language_codes:
-        filename = f"{lg}_sentences_detailed.tsv"
-        endpoint = f"{dl_url}/per_language/{lg}"
+    if all(df.fetch() for df in lang_datafiles):
+        links_datafile = DataFile(
+            "links.csv", DOWNLOAD_URL, LINKS_DIR, is_archived=True
+        )
+        if links_datafile.fetch():
+            lg_index = {
+                str(s.id): s.lang for lg in language_codes for s in Corpus(lg)
+            }
+            links_datafile.split(lg_index, 0, 1)
 
-        sentences_file = DataFile(filename, endpoint, SENTENCES_DIR)
-        sentences_file.fetch()
-        versions.update(sentences_file.name, sentences_file.online_version)
-
-    # update links' datafiles
-    links_file = LinksFile("links.csv", dl_url, LINKS_DIR, is_archived=True)
-    links_file.fetch()
-    versions.update(links_file.name, links_file.online_version)
-
-    lang_mapping = {s.id: s.lang for lg in language_codes for s in Corpus(lg)}
-    links_file.classify(lang_mapping)
+    logging.info("data updated for {}".format(", ".join(language_codes)))

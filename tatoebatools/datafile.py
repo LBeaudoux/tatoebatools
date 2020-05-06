@@ -1,17 +1,20 @@
 import csv
 import logging
 from pathlib import Path
+from sys import getsizeof
 
 from tqdm import tqdm
 
 from .utils import (
-    Buffer,
     decompress,
     download,
     extract,
     get_path_last_modified_datetime,
     get_url_last_modified_datetime,
 )
+from .version import Versions
+
+versions = Versions()
 
 
 class DataFile:
@@ -28,20 +31,62 @@ class DataFile:
         # if the datafile is archived
         self._ax = is_archived
 
+    def __iter__(self):
+
+        try:
+            with open(self.path) as f:
+                rows = csv.reader(f, delimiter="\t")
+                for row in rows:
+                    yield row
+        except OSError:
+            logging.exception(f"an error occurred while reading {self.path}")
+
     def fetch(self):
         """Download, decompress extract a datafile.
         """
-        if not self.version or self.version < self.online_version:
-            logging.info(f"downloading {self.bz2_name}")
-            download(self.url, self.bz2_path)
+        new_version = self.online_version
 
-        if not self.version or self.version < self.bz2_version:
-            logging.info(f"decompressing {self.bz2_name}")
-            decompress(self.bz2_path)
+        if self.version == new_version:
+            pass
+        elif not self.version or self.version < self.online_version:
+            if download(self.url, self.bz2_path) and decompress(self.bz2_path):
+                self.bz2_path.unlink()
+                if self.is_archived:
+                    extract(self.tar_path)
+                    self.tar_path.unlink()
 
-        if self.is_archived:
-            logging.info(f"extracting {self.name}")
-            extract(self.tar_path)
+                self.version = new_version
+
+        return self.version == new_version
+
+    def split(self, index, *columns):
+        """Split the file according to the values mapped by the index
+        in a chosen set of columns.
+        """
+        logging.info(f"splitting {self.name}")
+
+        # init the progress bar
+        pbar = tqdm(total=self.size, unit="iB", unit_scale=True)
+        # init buffer
+        buffer = Buffer(self.path.parent)
+        # classify the rows
+        for row in self:
+            mapped_vals = [index.get(row[col]) for col in columns]
+
+            if all(mapped_vals):
+                mapped_vals_string = "-".join(mapped_vals)
+                fname = f"{mapped_vals_string}_{self.name}"
+                buffer.add(row, fname)
+
+            # imcrement progress bar by the byte size of the row
+            line = "\t".join(row) + "\n"
+            pbar.update(len(line.encode("utf-8")))
+
+        # update versions
+        for fn in buffer.out_filenames:
+            versions.update(fn, self.version)
+
+        buffer.clear()
 
     @property
     def name(self):
@@ -103,7 +148,13 @@ class DataFile:
     def version(self):
         """Get the local version of the datafile.
         """
-        return get_path_last_modified_datetime(self.path)
+        return versions.get(self.name)
+
+    @version.setter
+    def version(self, new_version):
+        """Set the local version of the datafile
+        """
+        versions.update(self.name, new_version)
 
     @property
     def online_version(self):
@@ -127,40 +178,69 @@ class DataFile:
             return 0
 
 
-class LinksFile(DataFile):
-    """The Tatoeba unique 'links.csv' data file.    
+class Buffer:
+    """A buffer temporarily stores data and then appends it into out files 
+    when full. It is useful to avoid memory overflow when handling very large 
+    data files.
     """
 
-    def __iter__(self):
+    def __init__(self, out_dir, max_size=1000):
+        # directory path where out files are saved.
+        self._dir = Path(out_dir)
+        # maximum number elements in a buffer
+        self._max = max_size
+        # the buffer data is classified in a dict. The dict keys are named
+        # after the out filenames the data is directed to.
+        self._data = {}
 
-        try:
-            with open(self.path) as f:
-                rows = csv.reader(f, delimiter="\t")
-                for row in rows:
-                    yield row
-        except OSError:
-            logging.exception(f"an error occurred while reading {self.path}")
-
-    def classify(self, language_mapping):
-        """Split the links.csv file by language pair.
+    def add(self, elt, out_fname):
+        """Adds an element into the buffer linked to 'out_fname'. Once the 
+        buffer is full, this element is appended to the file at 
+        'out_dir/out_fname'.
         """
-        logging.info("classifying translations by language")
+        if out_fname not in self._data:
+            self._data[out_fname] = []
+            # reinitialize the out file
+            out_fp = Path(self._dir, out_fname)
+            fpaths = {fp for fp in self._dir.iterdir()}
+            if out_fp in fpaths:
+                out_fp.unlink()
 
-        # init the progress bar
-        pbar = tqdm(total=self.size, unit="iB", unit_scale=True)
-        # init buffer
-        buffer = Buffer(self.path.parent)
-        # classify the rows
-        for link in self:
-            src_lg = language_mapping.get(int(link[0]))
-            tgt_lg = language_mapping.get(int(link[1]))
+        self._data.setdefault(out_fname, []).append(elt)
 
-            if src_lg and tgt_lg:
-                fname = f"{src_lg}-{tgt_lg}_{self.name}"
-                buffer.add(link, fname)
+        if getsizeof(self._data[out_fname]) > self._max:
+            self._save(out_fname)
 
-            # imcrement progress bar by the byte size of the row
-            s = "\t".join(link) + "\n"
-            pbar.update(len(s.encode("utf-8")))
+    def _save(self, out_fname, end=False):
+        """Appends buffered elements into their out datafile and then clears
+        the buffer.
+        """
+        data = self._data[out_fname]
+        out_fp = Path(self._dir, f"{out_fname}.part")
+        try:
+            with open(out_fp, mode="a") as f:
+                wt = csv.writer(f, delimiter="\t")
+                wt.writerows(data)
+        except OSError:
+            logging.exception()
+        else:
+            self._data[out_fname].clear()
 
-        buffer.clear()
+            if end:
+                # removes '.part' extension
+                out_fp.rename(out_fp.parent.joinpath(out_fp.stem))
+
+    def clear(self):
+        """Saves the data remaining in the buffer into the corresponding 
+        outfiles.
+        """
+        for out_fname in self._data.keys():
+            self._save(out_fname, end=True)
+
+        self._data.clear()
+
+    @property
+    def out_filenames(self):
+        """List every out file name.
+        """
+        return list(self._data.keys())
