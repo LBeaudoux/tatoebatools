@@ -24,6 +24,7 @@ def update(*language_codes):
             "links.csv", DOWNLOAD_URL, LINKS_DIR, is_archived=True
         )
         if links_datafile.fetch():
+            logging.info("mapping sentences' ids to languages")
             lg_index = {
                 str(s.id): s.lang for lg in language_codes for s in Corpus(lg)
             }

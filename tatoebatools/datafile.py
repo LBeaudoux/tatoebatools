@@ -87,6 +87,8 @@ class DataFile:
             versions.update(fn, self.version)
 
         buffer.clear()
+        
+        pbar.close()
 
     @property
     def name(self):
