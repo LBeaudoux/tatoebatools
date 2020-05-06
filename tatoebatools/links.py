@@ -2,6 +2,8 @@ import csv
 import logging
 
 from .config import LINKS_DIR
+from .version import Versions
+from .utils import lazy_property
 
 
 class Links:
@@ -41,6 +43,24 @@ class Links:
         pair are saved.
         """
         return f"{self._src_lg}-{self._tgt_lg}_links.csv"
+
+    @lazy_property
+    def sentence_ids(self):
+        """Get the source ids of the links.
+        """
+        return {lk.sentence_id for lk in self}
+
+    @lazy_property
+    def translation_ids(self):
+        """Get the target ids of the links.
+        """
+        return {lk.translation_id for lk in self}
+
+    @lazy_property
+    def version(self):
+        """Get the version of the downloaded data of these links.
+        """
+        return Versions().get(self.filename)
 
 
 class Link:

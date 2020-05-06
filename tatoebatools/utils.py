@@ -88,3 +88,22 @@ def extract(archive_path):
             tar.extractall(arx_path.parent)
     except tarfile.ReadError:
         logging.exception(f"{arx_path} is not extractable")
+
+
+class lazy_property(object):
+    """Implements a lazy property decorator. Lazy attributes are computed
+    attributes that are evaluated only once, the first time they are used. 
+    Subsequent uses return the results of the first call. 
+    """
+
+    def __init__(self, f):
+        self.f = f
+        self.name = f.__name__
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        val = self.f(instance)
+        setattr(instance, self.name, val)
+        
+        return val        

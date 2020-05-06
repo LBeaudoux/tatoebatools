@@ -11,6 +11,7 @@ from .utils import (
     extract,
     get_path_last_modified_datetime,
     get_url_last_modified_datetime,
+    lazy_property,
 )
 from .version import Versions
 
@@ -158,7 +159,7 @@ class DataFile:
         """
         versions.update(self.name, new_version)
 
-    @property
+    @lazy_property
     def online_version(self):
         """Get the online version of a datafile.
         """

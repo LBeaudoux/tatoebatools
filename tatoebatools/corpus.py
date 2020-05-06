@@ -3,6 +3,8 @@ import logging
 from datetime import datetime
 
 from .config import SENTENCES_DIR
+from .utils import lazy_property
+from .version import Versions
 
 
 class Corpus:
@@ -45,6 +47,12 @@ class Corpus:
         """Get the path of the corpus' datafile.
         """
         return Corpus._dir.joinpath(self.filename)
+
+    @lazy_property
+    def version(self):
+        """Get the version of the downloaded data of this corpus.
+        """
+        return Versions().get(self.filename)
 
 
 class Sentence:
