@@ -62,7 +62,7 @@ def decompress(compressed_path):
     in_path = Path(compressed_path)
     out_path = in_path.parent.joinpath(in_path.stem)
 
-    logging.info(f"decompressing {in_path.name}")
+    logging.debug(f"decompressing {in_path.name}")
 
     try:
         with bz2.open(in_path) as in_f:
@@ -81,7 +81,7 @@ def extract(archive_path):
     """
     arx_path = Path(archive_path)
 
-    logging.info(f"extracting {arx_path.name}")
+    logging.debug(f"extracting {arx_path.name}")
 
     try:
         with tarfile.open(arx_path) as tar:
