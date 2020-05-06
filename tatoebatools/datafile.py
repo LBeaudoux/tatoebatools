@@ -9,13 +9,10 @@ from .utils import (
     decompress,
     download,
     extract,
-    get_path_last_modified_datetime,
     get_url_last_modified_datetime,
     lazy_property,
 )
 from .version import Versions
-
-versions = Versions()
 
 
 class DataFile:
@@ -85,7 +82,7 @@ class DataFile:
 
         # update versions
         for fn in buffer.out_filenames:
-            versions.update(fn, self.version)
+            Versions().update(fn, self.version)
 
         buffer.clear()
 
@@ -151,25 +148,19 @@ class DataFile:
     def version(self):
         """Get the local version of the datafile.
         """
-        return versions.get(self.name)
+        return Versions().get(self.name)
 
     @version.setter
     def version(self, new_version):
         """Set the local version of the datafile
         """
-        versions.update(self.name, new_version)
+        Versions().update(self.name, new_version)
 
     @lazy_property
     def online_version(self):
         """Get the online version of a datafile.
         """
         return get_url_last_modified_datetime(self.url)
-
-    @property
-    def bz2_version(self):
-        """Get the version of the local compressed file.
-        """
-        return get_path_last_modified_datetime(self.bz2_path)
 
     @property
     def size(self):
