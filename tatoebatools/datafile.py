@@ -19,7 +19,9 @@ class DataFile:
     """A parent class for handling data files.
     """
 
-    def __init__(self, filename, endpoint, directory, is_archived=False):
+    def __init__(
+        self, filename, endpoint, directory, is_archived=False, delimiter="\t"
+    ):
         # the name of the datafile
         self._fn = filename
         # the endpoint url from which the datafile is downloadable
@@ -28,12 +30,14 @@ class DataFile:
         self._dp = Path(directory)
         # if the datafile is archived
         self._ax = is_archived
+        # the delimiter used in the csv file
+        self._dm = delimiter
 
     def __iter__(self):
 
         try:
             with open(self.path) as f:
-                rows = csv.reader(f, delimiter="\t")
+                rows = csv.reader(f, delimiter=self._dm)
                 for row in rows:
                     yield row
         except OSError:
@@ -57,19 +61,23 @@ class DataFile:
 
         return self.version
 
-    def split(self, index, *columns):
+    def split(self, columns=[], index=None):
         """Split the file according to the values mapped by the index
-        in a chosen set of columns.
+        in a chosen set of columns. 
         """
         logging.info(f"splitting {self.name}")
 
         # init the progress bar
         pbar = tqdm(total=self.size, unit="iB", unit_scale=True)
         # init buffer
-        buffer = Buffer(self.path.parent)
+        buffer = Buffer(self.path.parent, delimiter=self._dm)
         # classify the rows
         for row in self:
-            mapped_vals = [index.get(row[col]) for col in columns]
+            mapped_vals = [
+                index.get(row[col]) if index else row[col]
+                for col in columns
+                if len(row) > col
+            ]
 
             if all(mapped_vals):
                 mapped_vals_string = "-".join(mapped_vals)
@@ -77,7 +85,7 @@ class DataFile:
                 buffer.add(row, fname)
 
             # imcrement progress bar by the byte size of the row
-            line = "\t".join(row) + "\n"
+            line = self._dm.join(row) + "\n"
             pbar.update(len(line.encode("utf-8")))
 
         # update versions
@@ -160,6 +168,8 @@ class DataFile:
     def online_version(self):
         """Get the online version of a datafile.
         """
+        print(self.url)
+
         return get_url_last_modified_datetime(self.url)
 
     @property
@@ -178,9 +188,11 @@ class Buffer:
     data files.
     """
 
-    def __init__(self, out_dir, max_size=10000):
+    def __init__(self, out_dir, delimiter="\t", max_size=10000):
         # directory path where out files are saved.
         self._dir = Path(out_dir)
+        # the feed delimiter used in the out files
+        self._dm = delimiter
         # maximum number elements in a buffer
         self._max = max_size
         # the buffer data is classified in a dict. The dict keys are named
@@ -213,10 +225,10 @@ class Buffer:
         out_fp = Path(self._dir, f"{out_fname}.part")
         try:
             with open(out_fp, mode="a") as f:
-                wt = csv.writer(f, delimiter="\t")
+                wt = csv.writer(f, delimiter=self._dm)
                 wt.writerows(data)
         except OSError:
-            logging.exception()
+            logging.debug(f"an error occured when opening {out_fp}")
         else:
             self._data[out_fname].clear()
 
