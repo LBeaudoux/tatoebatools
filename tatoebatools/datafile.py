@@ -39,7 +39,7 @@ class DataFile:
             with open(self.path) as f:
                 reader = csv.reader(f, delimiter=self._dm)
                 nb_cols = len(next(reader))
-                f.seek(0) 
+                f.seek(0)
                 for row in reader:
                     if len(row) == nb_cols:
                         yield row
