@@ -2,7 +2,7 @@ import csv
 import logging
 from datetime import datetime
 
-from .config import SENTENCES_DIR
+from .config import DATA_DIR
 from .utils import lazy_property
 from .version import Versions
 
@@ -11,7 +11,7 @@ class Sentences:
     """The Tatoeba file containing the detailed sentences in a given language.
     """
 
-    _dir = SENTENCES_DIR
+    _dir = DATA_DIR.joinpath("sentences_detailed")
 
     def __init__(self, language_code):
 

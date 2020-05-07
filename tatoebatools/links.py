@@ -1,7 +1,7 @@
 import csv
 import logging
 
-from .config import LINKS_DIR
+from .config import DATA_DIR
 from .utils import lazy_property
 from .version import Versions
 
@@ -10,7 +10,7 @@ class Links:
     """The links between the Tatoeba sentences of a pair of languages.  
     """
 
-    _dir = LINKS_DIR
+    _dir = DATA_DIR.joinpath("links")
 
     def __init__(self, source_language, target_language):
 
@@ -32,6 +32,18 @@ class Links:
             logging.exception(f"an error occurred while reading {self.path}")
 
     @property
+    def source_language(self):
+        """Get the source language of these links.
+        """
+        return self._src_lg
+
+    @property
+    def target_language(self):
+        """Get the target language of these links.
+        """
+        return self._tgt_lg
+
+    @property
     def path(self):
         """Get the path where the links are saved for this language pair.
         """
@@ -39,7 +51,7 @@ class Links:
 
     @property
     def filename(self):
-        """Get the name of the file where the the links for this language
+        """Get the name of the file where the links for this language
         pair are saved.
         """
         return f"{self._src_lg}-{self._tgt_lg}_links.csv"
