@@ -1,7 +1,7 @@
 import logging
 
 from .config import LINKS_DIR, SENTENCES_DIR
-from .corpus import Corpus
+from .sentences import Sentences
 from .datafile import DataFile
 from .links import Links
 
@@ -49,6 +49,8 @@ def update_links(*language_codes):
         if not all(vs == links_datafile.version for vs in links_versions):
             logging.info("mapping sentences' ids to languages")
             lg_index = {
-                str(s.id): s.lang for lg in language_codes for s in Corpus(lg)
+                str(s.id): s.lang
+                for lg in language_codes
+                for s in Sentences(lg)
             }
             links_datafile.split(lg_index, 0, 1)

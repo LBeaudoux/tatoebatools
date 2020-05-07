@@ -7,7 +7,7 @@ from .utils import lazy_property
 from .version import Versions
 
 
-class Corpus:
+class Sentences:
     """The Tatoeba file containing the detailed sentences in a given language.
     """
 
@@ -37,20 +37,26 @@ class Corpus:
             logging.exception(f"an error occurred while reading {self.path}")
 
     @property
+    def language(self):
+        """Get the language of the sentences.
+        """
+        return self._lg
+
+    @property
     def filename(self):
-        """Get the name of the file of this corpus.
+        """Get the name of the file of these sentences.
         """
         return f"{self._lg}_sentences_detailed.tsv"
 
     @property
     def path(self):
-        """Get the path of the corpus' datafile.
+        """Get the path of the sentences' datafile.
         """
-        return Corpus._dir.joinpath(self.filename)
+        return Sentences._dir.joinpath(self.filename)
 
     @lazy_property
     def version(self):
-        """Get the version of the downloaded data of this corpus.
+        """Get the version of the downloaded data of these sentences.
         """
         return Versions().get(self.filename)
 
