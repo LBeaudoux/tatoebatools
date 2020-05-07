@@ -14,9 +14,11 @@ def get_url_last_modified_datetime(file_url):
     try:
         with requests.get(file_url, stream=True) as r:
             dt_string = r.headers["last-modified"]
-            dt = datetime.strptime(dt_string, "%a, %d %B %Y %H:%M:%S %Z")
+            dt = datetime.strptime(dt_string, "%a, %d %b %Y %H:%M:%S %Z")
     except Exception:
-        return
+        logging.exception(
+            f"did not get url last modified datetime of {file_url}"
+        )
     else:
         return dt
 
