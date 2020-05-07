@@ -37,9 +37,12 @@ class DataFile:
 
         try:
             with open(self.path) as f:
-                rows = csv.reader(f, delimiter=self._dm)
-                for row in rows:
-                    yield row
+                reader = csv.reader(f, delimiter=self._dm)
+                nb_cols = len(next(reader))
+                f.seek(0) 
+                for row in reader:
+                    if len(row) == nb_cols:
+                        yield row
         except OSError:
             logging.exception(f"an error occurred while reading {self.path}")
 
@@ -228,7 +231,7 @@ class Buffer:
                 wt = csv.writer(f, delimiter=self._dm)
                 wt.writerows(data)
         except OSError:
-            logging.debug(f"an error occured when opening {out_fp}")
+            logging.exception(f"an error occured when opening {out_fp}")
         else:
             self._data[out_fname].clear()
 
