@@ -1,13 +1,15 @@
 import logging
 
+from tqdm import tqdm
+
 from .corpus import Corpus
 from .links import Links
 from .utils import lazy_property
 
 
-class ParallelCorpora:
+class Translations:
     """A parallel corpora, i.e. a collection of sentences placed alongside
-    their translations
+    their translations.
     """
 
     def __init__(self, source_language_code, target_language_code):
@@ -32,23 +34,19 @@ class ParallelCorpora:
                 "the versions of the data files difer. an update is advised."
             )
 
+        # load source and target sentences
+        self._sentences = self._load_sentences(self._src_lg, self.sentence_ids)
+        self._translations = self._load_sentences(
+            self._tgt_lg, self.translation_ids
+        )
+
     def __iter__(self):
 
-        # load useful sentences from corpora
-        logging.info(f"loading {self._src_lg} sentences")
-        sentences = {
-            s.id: s for s in Corpus(self._src_lg) if s.id in self.sentence_ids
-        }
-
-        logging.info(f"loading {self._tgt_lg} sentences")
-        translations = {
-            s.id: s
-            for s in Corpus(self._tgt_lg)
-            if s.id in self.translation_ids
-        }
-
         for lk in self._links:
-            yield (sentences[lk.sentence_id], translations[lk.translation_id])
+            yield (
+                self._sentences[lk.sentence_id],
+                self._translations[lk.translation_id],
+            )
 
     @lazy_property
     def sentence_ids(self):
@@ -61,3 +59,17 @@ class ParallelCorpora:
         """Get the ids of the target translations.
         """
         return self._links.translation_ids
+
+    def _load_sentences(self, language_code, sentence_ids):
+        """Load chosen sentences data from corpus.
+        """
+        logging.info(f"loading {language_code} sentences")
+
+        sentences = {}
+        with tqdm(total=len(sentence_ids)) as pbar:
+            for s in Corpus(language_code):
+                if s.id in sentence_ids:
+                    sentences[s.id] = s
+                    pbar.update()
+
+        return sentences
