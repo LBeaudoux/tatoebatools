@@ -51,23 +51,6 @@ def get_multilingual_datafile(filename):
     )
 
 
-# def are_links_split(datafile, languages):
-#     """Check if the links datafile has been split by language.
-#     """
-#     lg_pairs = [(lg1, lg2) for lg1 in languages for lg2 in languages]
-#     versions = [vs for vs in [Links(*pair).version for pair in lg_pairs] if vs]
-
-#     return versions and all(vs == datafile.version for vs in versions)
-
-
-# def are_audios_split(datafile, languages):
-#     """Check if the audios datafile has been split by language.
-#     """
-#     versions = [vs for vs in [Audios(lg).version for lg in languages] if vs]
-
-#     return versions and all(vs == datafile.version for vs in versions)
-
-
 def get_language_index(*language_codes):
     """Get the index that maps the sentences' ids to their language.
     """
