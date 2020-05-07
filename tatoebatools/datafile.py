@@ -45,7 +45,7 @@ class DataFile:
         new_version = self.online_version
 
         if self.version == new_version:
-            pass
+            return
         elif not self.version or self.version < self.online_version:
             if download(self.url, self.bz2_path) and decompress(self.bz2_path):
                 self.bz2_path.unlink()
@@ -55,7 +55,7 @@ class DataFile:
 
                 self.version = new_version
 
-        return self.version == new_version
+        return self.version
 
     def split(self, index, *columns):
         """Split the file according to the values mapped by the index
@@ -178,7 +178,7 @@ class Buffer:
     data files.
     """
 
-    def __init__(self, out_dir, max_size=1000):
+    def __init__(self, out_dir, max_size=10000):
         # directory path where out files are saved.
         self._dir = Path(out_dir)
         # maximum number elements in a buffer

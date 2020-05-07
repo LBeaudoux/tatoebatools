@@ -1,9 +1,8 @@
 import logging
 
-from .config import LINKS_DIR, SENTENCES_DIR
-from .sentences import Sentences
+from .config import DATA_DIR
 from .datafile import DataFile
-from .links import Links
+from .sentences import Sentences
 
 DOWNLOAD_URL = "https://downloads.tatoeba.org/exports"
 
@@ -11,46 +10,67 @@ DOWNLOAD_URL = "https://downloads.tatoeba.org/exports"
 def update(*language_codes):
     """Update all data files required for these languages.
     """
-    if update_sentences(*language_codes):
-        update_links(*language_codes)
+    datafiles = get_monolingual_datafiles(
+        "sentences_detailed.tsv", *language_codes
+    )
+    links_datafile = get_multilingual_datafile("links.csv")
+    audios_datafile = get_multilingual_datafile("sentences_with_audio.csv")
+    datafiles.extend([links_datafile, audios_datafile])
+
+    if any(df.fetch() for df in datafiles):
+        language_index = get_language_index(*language_codes)
+        links_datafile.split(language_index, 0, 1)
+        audios_datafile.split(language_index, 0)
 
     logging.info(
         "data files up to date for {}".format(", ".join(language_codes))
     )
 
 
-def update_sentences(*language_codes):
-    """Update the sentences datafiles for these languahes.
+def get_monolingual_datafiles(filename, *language_codes):
+    """Get the sentences datafile instances for these languages.
     """
-    lang_datafiles = [
+    return [
         DataFile(
-            f"{lg}_sentences_detailed.tsv",
+            f"{lg}_{filename}",
             f"{DOWNLOAD_URL}/per_language/{lg}",
-            SENTENCES_DIR,
+            DATA_DIR.joinpath(filename.rsplit(".", 1)[0]),
         )
         for lg in language_codes
     ]
-    return all(df.fetch() for df in lang_datafiles)
 
 
-def update_links(*language_codes):
-    """Update the links data file and split it by language pair for these 
-    languages.
+def get_multilingual_datafile(filename):
+    """Get the multilingual datafile instance with this name.
     """
-    links_datafile = DataFile(
-        "links.csv", DOWNLOAD_URL, LINKS_DIR, is_archived=True
+    return DataFile(
+        filename,
+        DOWNLOAD_URL,
+        DATA_DIR.joinpath(filename.rsplit(".", 1)[0]),
+        is_archived=True,
     )
-    if links_datafile.fetch():
-        lg_pairs = [
-            (lg1, lg2) for lg1 in language_codes for lg2 in language_codes
-        ]
-        links_versions = [Links(*pair).version for pair in lg_pairs]
 
-        if not all(vs == links_datafile.version for vs in links_versions):
-            logging.info("mapping sentences' ids to languages")
-            lg_index = {
-                str(s.id): s.lang
-                for lg in language_codes
-                for s in Sentences(lg)
-            }
-            links_datafile.split(lg_index, 0, 1)
+
+# def are_links_split(datafile, languages):
+#     """Check if the links datafile has been split by language.
+#     """
+#     lg_pairs = [(lg1, lg2) for lg1 in languages for lg2 in languages]
+#     versions = [vs for vs in [Links(*pair).version for pair in lg_pairs] if vs]
+
+#     return versions and all(vs == datafile.version for vs in versions)
+
+
+# def are_audios_split(datafile, languages):
+#     """Check if the audios datafile has been split by language.
+#     """
+#     versions = [vs for vs in [Audios(lg).version for lg in languages] if vs]
+
+#     return versions and all(vs == datafile.version for vs in versions)
+
+
+def get_language_index(*language_codes):
+    """Get the index that maps the sentences' ids to their language.
+    """
+    logging.info("mapping sentences' ids to languages")
+
+    return {str(s.id): s.lang for lg in language_codes for s in Sentences(lg)}
