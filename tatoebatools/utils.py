@@ -45,7 +45,11 @@ def download(from_url, to_path, chunk_size=1024):
             r.raise_for_status()
             # init progress bar
             total_size = int(r.headers.get("content-length", 0))
-            tqdm_args = {"total": total_size, "unit": "iB", "unit_scale": True}
+            tqdm_args = {
+                "total": total_size,
+                "unit": "iB",
+                "unit_scale": True,
+            }
             with tqdm(**tqdm_args) as pbar:
                 with open(to_path, "wb") as f:
                     for chunk in r.iter_content(chunk_size=chunk_size):
