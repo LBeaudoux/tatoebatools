@@ -8,47 +8,49 @@ DOWNLOAD_URL = "https://downloads.tatoeba.org"
 
 
 def update_corpus(*language_codes):
-    """Update all data files required for these languages.
+    """Update corpus-related data and classify it by language.
+    The following data files are downloaded from downloads.tatoeba.org:
+    - '<lang>_sentences_detailed.tsv'
+    - 'links.csv'
+    - 'sentences_with_audio.csv'
     """
-    datafiles = get_monolingual_datafiles(
-        "sentences_detailed.tsv", *language_codes
-    )
+    datafiles = [
+        get_monolingual_datafile("sentences_detailed.tsv", lg)
+        for lg in language_codes
+    ]
     links_datafile = get_exports_datafile("links.csv")
     audios_datafile = get_exports_datafile("sentences_with_audio.csv")
     datafiles.extend([links_datafile, audios_datafile])
 
     if any(df.fetch() for df in datafiles):
+        # split multilingual files by language for efficient access
         language_index = get_language_index(*language_codes)
         links_datafile.split(columns=[0, 1], index=language_index)
         audios_datafile.split(columns=[0], index=language_index)
 
-    logging.info(
-        "corpus data files up to date for {}".format(", ".join(language_codes))
-    )
+    lg_string = ", ".join(language_codes)
+    logging.info(f"corpus data files up to date for {lg_string}")
 
 
-def update_stats():
-    """Update all stats related datafiles.
+def update_stats(self):
+    """Update statistics-related data and classify it by language.
     """
     queries_datafile = get_stats_datafile("queries.csv")
-    print(queries_datafile.url)
     if queries_datafile.fetch():
+        # split multilingual file by language for efficient access
         queries_datafile.split(columns=[1])
 
     logging.info("stats data files up to date")
 
 
-def get_monolingual_datafiles(filename, *language_codes):
-    """Get the sentences datafile instances for these languages.
+def get_monolingual_datafile(filename, language_code):
+    """Get the sentences datafile instance for this languages.
     """
-    return [
-        DataFile(
-            f"{lg}_{filename}",
-            f"{DOWNLOAD_URL}/exports/per_language/{lg}",
-            DATA_DIR.joinpath(filename.rsplit(".", 1)[0]),
-        )
-        for lg in language_codes
-    ]
+    return DataFile(
+        f"{language_code}_{filename}",
+        f"{DOWNLOAD_URL}/exports/per_language/{language_code}",
+        DATA_DIR.joinpath(filename.rsplit(".", 1)[0]),
+    )
 
 
 def get_exports_datafile(filename):
