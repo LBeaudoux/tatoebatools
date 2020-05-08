@@ -66,7 +66,13 @@ class Sentence:
     """
 
     def __init__(
-        self, sentence_id, lang, text, username, date_added, date_last_modified
+        self,
+        sentence_id,
+        lang,
+        text,
+        username,
+        date_added,
+        date_last_modified,
     ):
 
         self._id = sentence_id
