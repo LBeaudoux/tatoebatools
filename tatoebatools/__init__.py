@@ -3,44 +3,122 @@ import logging
 from .config import DATA_DIR
 from .datafile import DataFile
 from .sentences import Sentences
+from .utils import lazy_property
 
 DOWNLOAD_URL = "https://downloads.tatoeba.org"
 
 
-def update_corpus(*language_codes):
-    """Update corpus-related data and classify it by language.
-    The following data files are downloaded from downloads.tatoeba.org:
-    - '<lang>_sentences_detailed.tsv'
-    - 'links.csv'
-    - 'sentences_with_audio.csv'
+class Tatoeba:
     """
-    datafiles = [
-        get_monolingual_datafile("sentences_detailed.tsv", lg)
-        for lg in language_codes
-    ]
-    links_datafile = get_exports_datafile("links.csv")
-    audios_datafile = get_exports_datafile("sentences_with_audio.csv")
-    datafiles.extend([links_datafile, audios_datafile])
-
-    if any(df.fetch() for df in datafiles):
-        # split multilingual files by language for efficient access
-        language_index = get_language_index(*language_codes)
-        links_datafile.split(columns=[0, 1], index=language_index)
-        audios_datafile.split(columns=[0], index=language_index)
-
-    lg_string = ", ".join(language_codes)
-    logging.info(f"corpus data files up to date for {lg_string}")
-
-
-def update_stats(self):
-    """Update statistics-related data and classify it by language.
     """
-    queries_datafile = get_stats_datafile("queries.csv")
-    if queries_datafile.fetch():
-        # split multilingual file by language for efficient access
-        queries_datafile.split(columns=[1])
 
-    logging.info("stats data files up to date")
+    def __init__(self, *language_codes):
+
+        self._lgs = language_codes
+
+    def update(self, *table_names):
+        """
+        """
+        # datafile containing sentences has a priority because it is
+        # necessary for splitting files by language
+        if any(tbl == "sentences_detailed" for tbl in table_names):
+            table_names = sorted(
+                table_names,
+                key=lambda x: x == "sentences_detailed",
+                reverse=True,
+            )
+
+        datafiles_queue = []
+        for tbl in table_names:
+            tbl_datafiles = self._get_datafiles(tbl)
+            datafiles_queue.extend(tbl_datafiles)
+
+        updated_datafiles = [df.name for df in datafiles_queue if df.fetch()]
+
+        logging.info("classifying data by language")
+        for df in datafiles_queue:
+            self._classify(df)
+
+        if updated_datafiles:
+            logging.info("{} updated".format(", ".join(updated_datafiles)))
+        else:
+            logging.info("already up to date")
+
+    def _get_datafiles(self, table_name):
+        """
+        """
+        datafiles = []
+        if table_name in {
+            "sentence",
+            "sentences_detailed",
+            "sentences_CC0",
+            "transcriptions",
+        }:
+            datafiles.extend(
+                [
+                    get_monolingual_datafile(f"{table_name}.tsv", lg)
+                    for lg in self._lgs
+                ]
+            )
+        elif table_name in {
+            "links",
+            "tags",
+            "user_lists",
+            "sentences_in_lists",
+            "jpn_indices",
+            "sentences_with_audio",
+            "user_languages",
+        }:
+            datafiles.append(get_exports_datafile(f"{table_name}.csv"))
+        elif table_name in {
+            "queries",
+        }:
+            datafiles.append(get_stats_datafile(f"{table_name}.csv"))
+
+        return datafiles
+
+    def _classify(self, datafile):
+        """"Split multilingual files by language for efficient access
+        """
+        if datafile.name == "links.csv" and self.language_index:
+            datafile.split(columns=[0, 1], index=self.language_index)
+        elif datafile.name == "tags.csv" and self.language_index:
+            datafile.split(columns=[0], index=self.language_index)
+        elif datafile.name == "sentences_in_lists.csv" and self.language_index:
+            datafile.split(columns=[1], index=self.language_index)
+        elif datafile.name == "jpn_indices.csv" and self.language_index:
+            datafile.split(columns=[0], index=self.language_index)
+        elif (
+            datafile.name == "sentences_with_audio.csv" and self.language_index
+        ):
+            datafile.split(columns=[0], index=self.language_index)
+        elif datafile.name == "user_languages.csv":
+            datafile.split(columns=[0])
+        elif datafile.name == "queries.csv":
+            datafile.split(columns=[1])
+
+    @lazy_property
+    def language_index(self):
+        """Get the index that maps the sentences' ids to their language.
+        """
+        return {str(s.id): s.lang for lg in self._lgs for s in Sentences(lg)}
+
+    @property
+    def downloadable_tables(self):
+        """
+        """
+        return [
+            "sentences_detailed",
+            "transcriptions",
+            "links",
+            "tags",
+            "user_lists",
+            "sentences_in_lists",
+            "jpn_indices",
+            "sentences_with_audio",
+            "user_languages",
+            "queries",
+        ]
 
 
 def get_monolingual_datafile(filename, language_code):
@@ -74,11 +152,3 @@ def get_stats_datafile(filename):
         is_archived=False,
         delimiter=",",
     )
-
-
-def get_language_index(*language_codes):
-    """Get the index that maps the sentences' ids to their language.
-    """
-    logging.info("mapping sentences' ids to languages")
-
-    return {str(s.id): s.lang for lg in language_codes for s in Sentences(lg)}
