@@ -28,6 +28,7 @@ class DataFile:
         self._ep = endpoint
         # the path of the directory where the datafile is downloaded
         self._dp = Path(directory)
+        self._dp.mkdir(parents=True, exist_ok=True)
         # if the datafile is archived
         self._ax = is_archived
         # the delimiter used in the csv file
@@ -171,8 +172,6 @@ class DataFile:
     def online_version(self):
         """Get the online version of a datafile.
         """
-        print(self.url)
-
         return get_url_last_modified_datetime(self.url)
 
     @property
@@ -194,6 +193,7 @@ class Buffer:
     def __init__(self, out_dir, delimiter="\t", max_size=10000):
         # directory path where out files are saved.
         self._dir = Path(out_dir)
+        self._dir.mkdir(parents=True, exist_ok=True)
         # the feed delimiter used in the out files
         self._dm = delimiter
         # maximum number elements in a buffer
