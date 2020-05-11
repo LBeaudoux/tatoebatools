@@ -10,12 +10,13 @@ from .version import Version
 
 
 class DataFile:
-    """
+    """A file containing table data.
     """
 
     def __init__(self, file_path, delimiter="\t"):
-
-        self._fp = file_path
+        # the local path of this data file
+        self._fp = Path(file_path)
+        # the delimiter that distinguishes table columns
         self._dm = delimiter
 
     def __iter__(self):
@@ -68,15 +69,30 @@ class DataFile:
 
     @property
     def path(self):
-        """
+        """Get the path of this datafile.
         """
         return self._fp
 
     @property
     def name(self):
-        """
+        """Get the name of this datafile.
         """
         return self._fp.name
+
+    @property
+    def version(self):
+        """Get the local version of this datafile.
+        """
+        return Version()[self.name]
+
+    @property
+    def size(self):
+        """Get the byte size of this data file.
+        """
+        if self.path.is_file():
+            return self.path.stat().st_size
+        else:
+            return 0
 
 
 class Buffer:
