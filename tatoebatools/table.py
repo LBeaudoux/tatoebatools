@@ -7,16 +7,17 @@ DOWNLOAD_URL = "https://downloads.tatoeba.org"
 
 
 class Table:
-    """
+    """A Tatoeba table.
     """
 
     def __init__(self, name, languages):
-
+        # the name of this table
         self._name = name
+        # the languages in which some data is required
         self._lgs = languages
 
     def update(self):
-        """
+        """Update this table for these languages on this machine.
         """
         for dl in self.downloads:
             is_fetched = dl.fetch()
@@ -31,7 +32,7 @@ class Table:
         return is_fetched
 
     def classify(self, language_index):
-        """
+        """Classify this table data by language.
         """
         if self.name == "links" and language_index:
             self.main_datafile.split(columns=[0, 1], index=language_index)
@@ -50,19 +51,19 @@ class Table:
 
     @property
     def name(self):
-        """
+        """Get the name of this table.
         """
         return self._name
 
     @property
     def path(self):
-        """
+        """Get the local path of this table.
         """
         return DATA_DIR.joinpath(self._name)
 
     @property
     def main_datafile(self):
-        """
+        """Get the multilingual datafile of this table.
         """
         main_filename = f"{self.name}.csv"
         delimiter = "," if self.name == "queries" else "\t"
@@ -72,7 +73,7 @@ class Table:
 
     @property
     def language_detafiles(self):
-        """
+        """Get the monolingual datafiles of this table.
         """
         if (
             self.name
@@ -114,7 +115,7 @@ class Table:
 
     @property
     def downloads(self):
-        """
+        """List the downloads used to update the local Tatoeba data.
         """
         downloads = []
         if (
@@ -171,9 +172,3 @@ class Table:
             )
 
         return downloads
-
-    @property
-    def version(self):
-        """
-        """
-        return
