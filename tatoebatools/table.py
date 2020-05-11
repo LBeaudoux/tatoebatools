@@ -1,7 +1,6 @@
 from .config import DATA_DIR
 from .datafile import DataFile
 from .download import Download
-from .index import Index
 
 DOWNLOAD_URL = "https://downloads.tatoeba.org"
 
@@ -19,17 +18,7 @@ class Table:
     def update(self):
         """Update this table for these languages on this machine.
         """
-        for dl in self.downloads:
-            is_fetched = dl.fetch()
-            if is_fetched and self.name in (
-                "sentence",
-                "sentences_detailed",
-                "sentences_CC0",
-            ):
-                for df in self.language_detafiles:
-                    Index(df, 0, 1)
-
-        return is_fetched
+        return [dl.name for dl in self.downloads if dl.fetch()]
 
     def classify(self, language_index):
         """Classify this table data by language.
@@ -120,12 +109,7 @@ class Table:
         downloads = []
         if (
             self.name
-            in {
-                "sentence",
-                "sentences_detailed",
-                "sentences_CC0",
-                "transcriptions",
-            }
+            in {"sentences_detailed", "sentences_CC0", "transcriptions",}
             and self._lgs
         ):
             downloads.extend(
@@ -139,7 +123,6 @@ class Table:
                 ]
             )
         elif self.name in {
-            "sentence",
             "sentences_detailed",
             "sentences_CC0",
             "transcriptions",
