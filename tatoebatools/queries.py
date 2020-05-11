@@ -4,7 +4,7 @@ from datetime import datetime
 
 from .config import DATA_DIR
 from .utils import lazy_property
-from .version import Versions
+from .version import Version
 
 
 class Queries:
@@ -66,7 +66,7 @@ class Queries:
     def version(self):
         """Get the version of the downloaded data of these queries.
         """
-        return Versions().get(self.filename)
+        return Version()[self.filename]
 
 
 class Query:

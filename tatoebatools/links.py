@@ -3,7 +3,7 @@ import logging
 
 from .config import DATA_DIR
 from .utils import lazy_property
-from .version import Versions
+from .version import Version
 
 
 class Links:
@@ -72,7 +72,7 @@ class Links:
     def version(self):
         """Get the version of the downloaded data of these links.
         """
-        return Versions().get(self.filename)
+        return Version()[self.filename]
 
 
 class Link:

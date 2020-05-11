@@ -4,7 +4,7 @@ from datetime import datetime
 
 from .config import DATA_DIR
 from .utils import lazy_property
-from .version import Versions
+from .version import Version
 
 
 class Sentences:
@@ -58,7 +58,7 @@ class Sentences:
     def version(self):
         """Get the version of the downloaded data of these sentences.
         """
-        return Versions().get(self.filename)
+        return Version()[self.filename]
 
 
 class Sentence:

@@ -3,7 +3,7 @@ import logging
 
 from .config import DATA_DIR
 from .utils import lazy_property
-from .version import Versions
+from .version import Version
 
 
 class Audios:
@@ -60,7 +60,7 @@ class Audios:
     def version(self):
         """Get the version of these sentences with audio.
         """
-        return Versions().get(self.filename)
+        return Version()[self.filename]
 
 
 class Audio:
