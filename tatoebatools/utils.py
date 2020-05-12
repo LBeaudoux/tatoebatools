@@ -55,8 +55,8 @@ def download(from_url, to_path, chunk_size=1024):
                     for chunk in r.iter_content(chunk_size=chunk_size):
                         f.write(chunk)
                         pbar.update(len(chunk))  # update progress bar
-    except Exception:
-        logging.exception(f"error while downloading {from_url} to {to_path}")
+    except requests.exceptions.HTTPError:
+        logging.info(f"no file found at {from_url}")
         return False
     else:
         return True
