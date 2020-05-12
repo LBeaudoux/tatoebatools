@@ -34,9 +34,11 @@ class Sentences:
                     else:
                         yield Sentence(**row)
         except OSError:
-            msg = (f"no data locally available for the '{self.table}' "
-                   f"table in {self._lg}.")
-            
+            msg = (
+                f"no data locally available for the '{self.table}' "
+                f"table in {self._lg}."
+            )
+
             logger.warning(msg)
 
     @property
