@@ -30,9 +30,11 @@ class Links:
                 for row in rows:
                     yield Link(**row)
         except OSError:
-            msg = (f"no data locally available for the '{Links._table}' "
-                   f"table from {self._src_lg} to {self._tgt_lg}.")
-            
+            msg = (
+                f"no data locally available for the '{Links._table}' "
+                f"table from {self._src_lg} to {self._tgt_lg}."
+            )
+
             logger.warning(msg)
 
     @property
