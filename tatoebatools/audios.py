@@ -81,7 +81,7 @@ class Audio:
     def sentence_id(self):
         """The id of the sentence with audio.
         """
-        return int(self._src_id)
+        return int(self._id)
 
     @property
     def username(self):
@@ -93,10 +93,10 @@ class Audio:
     def license(self):
         """The license of the sentence with audio.
         """
-        return self._lic
+        return self._lic if self._lic != "\\N" else ""
 
     @property
     def attribution_url(self):
         """The url to the attrbution of the sentence with audio.
         """
-        return self._atr
+        return self._atr if self._atr != "\\N" else ""
