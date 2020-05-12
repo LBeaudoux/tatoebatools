@@ -132,7 +132,7 @@ class Sentence:
     def username(self):
         """Get the name of the author of the sentence.
         """
-        return self._usr
+        return self._usr if self._usr != "\\N" else ""
 
     @property
     def date_added(self):
