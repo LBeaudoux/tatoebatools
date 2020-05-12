@@ -42,7 +42,7 @@ class Table:
         elif self.name == "jpn_indices" and language_index:
             self.main_datafile.split(columns=[0], index=language_index)
         elif self.name == "sentences_with_audio" and language_index:
-            self.main_datafile.split(columns=[0], index=language_index)            
+            self.main_datafile.split(columns=[0], index=language_index)
 
     @property
     def name(self):
