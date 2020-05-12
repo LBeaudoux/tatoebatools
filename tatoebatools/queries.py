@@ -66,7 +66,8 @@ class Queries:
     def version(self):
         """Get the version of the downloaded data of these queries.
         """
-        return Version()[self.filename]
+        with Version() as vs:
+            return vs[self.filename]
 
 
 class Query:

@@ -17,6 +17,14 @@ class Version:
 
         self._dict = self._load()
 
+    def __enter__(self):
+
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+
+        self.save()
+
     def __getitem__(self, filename):
         """Get the local or online version for this file.
         """
@@ -28,7 +36,6 @@ class Version:
         """Update the version value for this file.
         """
         self._dict[filename] = new_version.strftime("%Y-%m-%d %H:%M:%S")
-        self._save()
 
     def _load(self):
         """Load the data file.
@@ -41,7 +48,7 @@ class Version:
 
         return data
 
-    def _save(self):
+    def save(self):
         """Save the data file.
         """
         with open(Version._path, "w") as f:

@@ -103,13 +103,15 @@ class Download:
     def version(self):
         """Get the local version of the file.
         """
-        return Version()[self.name]
+        with Version() as vs:
+            return vs[self.filename]
 
     @version.setter
     def version(self, new_version):
         """Set the local version of the file
         """
-        Version()[self.name] = new_version
+        with Version() as vs:
+            vs[self.name] = new_version
 
     @lazy_property
     def online_version(self):

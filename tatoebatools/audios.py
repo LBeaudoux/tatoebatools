@@ -60,7 +60,8 @@ class Audios:
     def version(self):
         """Get the version of these sentences with audio.
         """
-        return Version()[self.filename]
+        with Version() as vs:
+            return vs[self.filename]
 
 
 class Audio:

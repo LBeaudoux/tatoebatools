@@ -5,31 +5,35 @@ from .config import DATA_DIR
 from .utils import lazy_property
 from .version import Version
 
+logger = logging.getLogger(__name__)
+
 
 class Links:
     """The links between the Tatoeba sentences of a pair of languages.  
     """
 
-    _dir = DATA_DIR.joinpath("links")
+    _table = "links"
+    _dir = DATA_DIR.joinpath(_table)
 
     def __init__(self, source_language, target_language):
-
+        # the source language of the links
         self._src_lg = source_language
+        # the target language of the links
         self._tgt_lg = target_language
 
     def __iter__(self):
 
         try:
             with open(self.path) as f:
-                fieldnames = [
-                    "sentence_id",
-                    "translation_id",
-                ]
+                fieldnames = ["sentence_id", "translation_id"]
                 rows = csv.DictReader(f, delimiter="\t", fieldnames=fieldnames)
                 for row in rows:
                     yield Link(**row)
         except OSError:
-            logging.exception(f"an error occurred while reading {self.path}")
+            msg = (f"no data locally available for the '{Links._table}' "
+                   f"table from {self._src_lg} to {self._tgt_lg}.")
+            
+            logger.warning(msg)
 
     @property
     def source_language(self):
@@ -44,17 +48,17 @@ class Links:
         return self._tgt_lg
 
     @property
-    def path(self):
-        """Get the path where the links are saved for this language pair.
-        """
-        return Links._dir.joinpath(self.filename)
-
-    @property
     def filename(self):
         """Get the name of the file where the links for this language
         pair are saved.
         """
-        return f"{self._src_lg}-{self._tgt_lg}_links.csv"
+        return f"{self._src_lg}-{self._tgt_lg}_{Links._table}.csv"
+
+    @property
+    def path(self):
+        """Get the path where the links are saved for this language pair.
+        """
+        return Links._dir.joinpath(self.filename)
 
     @lazy_property
     def sentence_ids(self):
@@ -72,7 +76,8 @@ class Links:
     def version(self):
         """Get the version of the downloaded data of these links.
         """
-        return Version()[self.filename]
+        with Version() as vs:
+            return vs[self.filename]
 
 
 class Link:

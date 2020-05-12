@@ -5,8 +5,8 @@ from sys import getsizeof
 
 from tqdm import tqdm
 
-
 from .version import Version
+from .utils import lazy_property
 
 
 class DataFile:
@@ -52,7 +52,8 @@ class DataFile:
 
             if all(mapped_vals):
                 mapped_vals_string = "-".join(mapped_vals)
-                fname = f"{mapped_vals_string}_{self.name}"
+                ext = "tsv" if self._dm == "\t" else "csv"
+                fname = f"{mapped_vals_string}_{self.stem}.{ext}"
                 buffer.add(row, fname)
 
             # imcrement progress bar by the byte size of the row
@@ -60,8 +61,9 @@ class DataFile:
             pbar.update(len(line.encode("utf-8")))
 
         # update versions
-        for fn in buffer.out_filenames:
-            Version()[fn] = self.version
+        with Version() as vs:
+            for fn in buffer.out_filenames:
+                vs[fn] = self.version
 
         buffer.clear()
 
@@ -80,10 +82,17 @@ class DataFile:
         return self._fp.name
 
     @property
+    def stem(self):
+        """Get the name of this datafile without its extension.
+        """
+        return self._fp.stem
+
+    @lazy_property
     def version(self):
         """Get the local version of this datafile.
         """
-        return Version()[self.name]
+        with Version() as vs:
+            return vs[self.filename]
 
     @property
     def size(self):
