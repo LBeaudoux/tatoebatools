@@ -20,23 +20,29 @@ class Table:
         """
         return [dl.name for dl in self.downloads if dl.fetch()]
 
-    def classify(self, language_index):
+    def classify(self, language_index=None):
         """Classify this table data by language.
         """
-        if self.name == "links" and language_index:
+        if self.name == "sentences_detailed":
+            self.main_datafile.split(columns=[1])
+        elif self.name == "sentences_CC0":
+            self.main_datafile.split(columns=[1])
+        elif self.name == "transcriptions":
+            self.main_datafile.split(columns=[1])
+        elif self.name == "user_languages":
+            self.main_datafile.split(columns=[0])
+        elif self.name == "queries":
+            self.main_datafile.split(columns=[1])
+        elif self.name == "links" and language_index:
             self.main_datafile.split(columns=[0, 1], index=language_index)
         elif self.name == "tags" and language_index:
             self.main_datafile.split(columns=[0], index=language_index)
         elif self.name == "sentences_in_lists" and language_index:
             self.main_datafile.split(columns=[1], index=language_index)
-        elif self.name == "jpn_indices" and self.language_index:
+        elif self.name == "jpn_indices" and language_index:
             self.main_datafile.split(columns=[0], index=language_index)
         elif self.name == "sentences_with_audio" and language_index:
-            self.main_datafile.split(columns=[0], index=language_index)
-        elif self.name == "user_languages":
-            self.main_datafile.split(columns=[0])
-        elif self.name == "queries":
-            self.main_datafile.split(columns=[1])
+            self.main_datafile.split(columns=[0], index=language_index)            
 
     @property
     def name(self):
@@ -64,19 +70,7 @@ class Table:
     def language_detafiles(self):
         """Get the monolingual datafiles of this table.
         """
-        if (
-            self.name
-            in (
-                "sentence",
-                "sentences_detailed",
-                "sentences_CC0",
-                "transcriptions",
-            )
-            and self._lgs
-        ):
-            filenames = [f"{lg}_{self.name}.tsv" for lg in self._lgs]
-        elif self.name in (
-            "sentence",
+        if self.name in (
             "sentences_detailed",
             "sentences_CC0",
             "transcriptions",
@@ -85,19 +79,22 @@ class Table:
             "jpn_indices",
             "sentences_with_audio",
             "user_languages",
-            "queries",
         ):
+            filenames = [f"{lg}_{self.name}.tsv" for lg in self._lgs]
+            delimiter = "\t"
+        elif self.name in ("queries",):
             filenames = [f"{lg}_{self.name}.csv" for lg in self._lgs]
+            delimiter = ","
         elif self.name in ("links",):
             filenames = [
-                f"{lg1}-{lg2}_{self.name}.csv"
+                f"{lg1}-{lg2}_{self.name}.tsv"
                 for lg1 in self._lgs
                 for lg2 in self._lgs
             ]
+            delimiter = "\t"
         else:
             return []
 
-        delimiter = "," if self.name == "queries" else "\t"
         filepaths = [self.path.joinpath(fn) for fn in filenames]
 
         return [DataFile(fp, delimiter=delimiter) for fp in filepaths]
@@ -109,7 +106,7 @@ class Table:
         downloads = []
         if (
             self.name
-            in {"sentences_detailed", "sentences_CC0", "transcriptions",}
+            in ("sentences_detailed", "sentences_CC0", "transcriptions")
             and self._lgs
         ):
             downloads.extend(
