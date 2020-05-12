@@ -14,16 +14,20 @@ class Version:
     _path = Path(resource_filename(__package__, "data/versions.json"))
 
     def __init__(self):
-
+        # the dict from which versions' values are fetched
         self._dict = self._load()
+        # a boolean that indicates if the data has been modified since the 
+        # last file loading
+        self._save = False
 
     def __enter__(self):
 
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-
-        self.save()
+        
+        if self._save:
+            self.save()
 
     def __getitem__(self, filename):
         """Get the local or online version for this file.
@@ -36,6 +40,7 @@ class Version:
         """Update the version value for this file.
         """
         self._dict[filename] = new_version.strftime("%Y-%m-%d %H:%M:%S")
+        self._save = True
 
     def _load(self):
         """Load the data file.
