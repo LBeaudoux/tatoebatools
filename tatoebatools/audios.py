@@ -5,15 +5,18 @@ from .config import DATA_DIR
 from .utils import lazy_property
 from .version import Version
 
+logger = logging.getLogger(__name__)
+
 
 class Audios:
     """The Tatoeba sentences with audio for a given language.
     """
 
-    _dir = DATA_DIR.joinpath("sentences_with_audio")
+    _table = "sentences_with_audio"
+    _dir = DATA_DIR.joinpath(_table)
 
     def __init__(self, language):
-
+        # the language of the sentences with audio
         self._lg = language
 
     def __iter__(self):
@@ -30,7 +33,12 @@ class Audios:
                 for row in rows:
                     yield Audio(**row)
         except OSError:
-            logging.exception(f"an error occurred while reading {self.path}")
+            msg = (
+                f"no data locally available for the '{self.table}' "
+                f"table in {self._lg}."
+            )
+
+            logger.warning(msg)
 
     @property
     def language(self):
@@ -48,13 +56,7 @@ class Audios:
     def filename(self):
         """Get the name of the file where the sentences with audio are saved.
         """
-        return f"{self._lg}_sentences_with_audio.csv"
-
-    @lazy_property
-    def sentence_ids(self):
-        """Get the ids of the sentences with audio.
-        """
-        return {audio.sentence_id for audio in self}
+        return f"{self._lg}_{Audios._table}.tsv"
 
     @lazy_property
     def version(self):
