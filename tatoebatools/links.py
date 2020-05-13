@@ -54,7 +54,7 @@ class Links:
         """Get the name of the file where the links for this language
         pair are saved.
         """
-        return f"{self._src_lg}-{self._tgt_lg}_{Links._table}.csv"
+        return f"{self._src_lg}-{self._tgt_lg}_{Links._table}.tsv"
 
     @property
     def path(self):
