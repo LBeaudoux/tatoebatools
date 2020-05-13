@@ -29,7 +29,9 @@ class Audios:
                     "license",
                     "attribution_url",
                 ]
-                rows = csv.DictReader(f, delimiter="\t", fieldnames=fieldnames)
+                rows = csv.DictReader(
+                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
+                )
                 for row in rows:
                     yield Audio(**row)
         except OSError:

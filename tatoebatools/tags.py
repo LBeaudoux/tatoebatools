@@ -26,12 +26,14 @@ class Tags:
             with open(self.path) as f:
                 fieldnames = ["sentence_id", "tag_name"]
 
-                rows = csv.DictReader(f, delimiter="\t", fieldnames=fieldnames)
+                rows = csv.DictReader(
+                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
+                )
                 for row in rows:
                     yield Tag(**row)
         except OSError:
             msg = (
-                f"no data locally available for the '{self.table}' "
+                f"no data locally available for the '{Tags._table}' "
                 f"table in {self._lg}."
             )
 

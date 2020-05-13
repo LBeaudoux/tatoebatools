@@ -34,7 +34,9 @@ class SentencesDetailed:
                     "date_last_modified",
                 ]
 
-                rows = csv.DictReader(f, delimiter="\t", fieldnames=fieldnames)
+                rows = csv.DictReader(
+                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
+                )
                 for row in rows:
                     yield SentenceDetailed(**row)
         except OSError:

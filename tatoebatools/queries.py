@@ -22,7 +22,9 @@ class Queries:
         try:
             with open(self.path) as f:
                 fieldnames = ["date", "language", "content"]
-                rows = csv.DictReader(f, delimiter=",", fieldnames=fieldnames)
+                rows = csv.DictReader(
+                    f, delimiter=",", escapechar="\\", fieldnames=fieldnames
+                )
                 for i, row in enumerate(rows):
 
                     if not (i % 2) == 0:  # each query is recorded twice
