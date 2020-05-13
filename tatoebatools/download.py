@@ -104,7 +104,7 @@ class Download:
         """Get the local version of the file.
         """
         with Version() as vs:
-            return vs[self.filename]
+            return vs[self.name]
 
     @version.setter
     def version(self, new_version):
