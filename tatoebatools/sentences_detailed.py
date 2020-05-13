@@ -116,7 +116,7 @@ class SentenceDetailed:
     def username(self):
         """Get the name of the author of the sentence.
         """
-        return self._usr if self._usr != "\\N" else ""
+        return self._usr if self._usr != "N" else ""
 
     @property
     def date_added(self):
