@@ -23,7 +23,7 @@ class DataFile:
 
         try:
             with open(self.path) as f:
-                reader = csv.reader(f, delimiter=self._dm)
+                reader = csv.reader(f, delimiter=self._dm, escapechar="\\")
                 nb_cols = len(next(reader))
                 f.seek(0)
                 for row in reader:
