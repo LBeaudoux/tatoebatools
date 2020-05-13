@@ -8,7 +8,7 @@ from .version import Version
 logger = logging.getLogger(__name__)
 
 
-class Audios:
+class SentencesWithAudio:
     """The Tatoeba sentences with audio for a given language.
     """
 
@@ -33,7 +33,7 @@ class Audios:
                     f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
                 )
                 for row in rows:
-                    yield Audio(**row)
+                    yield SentenceWithAudio(**row)
         except OSError:
             msg = (
                 f"no data locally available for the '{self.table}' "
@@ -52,13 +52,13 @@ class Audios:
     def path(self):
         """Get the path where the sentences with audio are saved.
         """
-        return Audios._dir.joinpath(self.filename)
+        return SentencesWithAudio._dir.joinpath(self.filename)
 
     @property
     def filename(self):
         """Get the name of the file where the sentences with audio are saved.
         """
-        return f"{self._lg}_{Audios._table}.tsv"
+        return f"{self._lg}_{SentencesWithAudio._table}.tsv"
 
     @lazy_property
     def version(self):
@@ -68,7 +68,7 @@ class Audios:
             return vs[self.filename]
 
 
-class Audio:
+class SentenceWithAudio:
     """A Tatoeba sentence with audio.
     """
 
@@ -95,10 +95,10 @@ class Audio:
     def license(self):
         """The license of the sentence with audio.
         """
-        return self._lic if self._lic != "\\N" else ""
+        return self._lic if self._lic != "N" else ""
 
     @property
     def attribution_url(self):
         """The url to the attrbution of the sentence with audio.
         """
-        return self._atr if self._atr != "\\N" else ""
+        return self._atr if self._atr != "N" else ""

@@ -9,6 +9,7 @@ from .links import Links
 from .sentences_cc0 import SentencesCC0
 from .sentences_detailed import SentencesDetailed
 from .sentences_in_lists import SentencesInLists
+from .sentences_with_audio import SentencesWithAudio
 from .transcriptions import Transcriptions
 from .table import Table
 from .user_languages import UserLanguages
@@ -60,6 +61,11 @@ class Tatoeba:
         """Iterate through all Japanese indices.
         """
         return JpnIndices().__iter__()
+
+    def sentences_with_audio(self, language):
+        """Iterate through sentences with audio file.
+        """
+        return SentencesWithAudio(language=language).__iter__()
 
     def user_languages(self, language):
         """Iterate through all users' skills in this language.
