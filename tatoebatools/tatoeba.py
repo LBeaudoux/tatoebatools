@@ -90,7 +90,7 @@ class Tatoeba:
             "queries",
         ]
 
-    @property
+    @lazy_property
     def all_languages(self):
         """List all languages available on tatoeba.org
         """
@@ -100,7 +100,7 @@ class Tatoeba:
         except requests.exceptions.ConnectionError:
             return []
         else:
-            soup = BeautifulSoup(r.text)
+            soup = BeautifulSoup(r.text, features="html.parser")
             links = [a.get("href") for a in soup.find_all("a")]
 
             return [lk[:-1] for lk in links if lk[:-1].isalpha()]
