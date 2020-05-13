@@ -104,9 +104,10 @@ class Table:
         """List the downloads used to update the local Tatoeba data.
         """
         downloads = []
-        if (
-            self.name
-            in ("sentences_detailed", "sentences_CC0", "transcriptions")
+        if self.name in (
+            "sentences_detailed",
+            "sentences_CC0",
+            "transcriptions",
         ):
             downloads.extend(
                 [

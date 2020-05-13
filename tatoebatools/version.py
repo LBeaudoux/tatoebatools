@@ -16,7 +16,7 @@ class Version:
     def __init__(self):
         # the dict from which versions' values are fetched
         self._dict = self._load()
-        # a boolean that indicates if the data has been modified since the 
+        # a boolean that indicates if the data has been modified since the
         # last file loading
         self._save = False
 
@@ -25,7 +25,7 @@ class Version:
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        
+
         if self._save:
             self.save()
 
