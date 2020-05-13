@@ -4,7 +4,16 @@ import requests
 from bs4 import BeautifulSoup
 
 from .index import Index
+from .jpn_indices import JpnIndices
+from .links import Links
+from .sentences_cc0 import SentencesCC0
+from .sentences_detailed import SentencesDetailed
+from .sentences_in_lists import SentencesInLists
+from .transcriptions import Transcriptions
 from .table import Table
+from .user_languages import UserLanguages
+from .user_lists import UserLists
+from .tags import Tags
 from .utils import lazy_property
 
 logger = logging.getLogger(__name__)
@@ -13,6 +22,54 @@ logger = logging.getLogger(__name__)
 class Tatoeba:
     """A handler for managing Tatoeba data on the client side.
     """
+
+    def sentences_detailed(self, language):
+        """Iterate through all sentences in this language.
+        """
+        return SentencesDetailed(language=language).__iter__()
+
+    def sentences_CC0(self, language):
+        """Iterate through all sentences in this language with a CC0 license.
+        """
+        return SentencesCC0(language=language).__iter__()
+
+    def links(self, source_language, target_language):
+        """Iterate through all links from sentences in this source language 
+        to sentences in this target language
+        """
+        return Links(
+            source_language=source_language, target_language=target_language
+        ).__iter__()
+
+    def tags(self, language):
+        """Iterate through all taged sentences in this language.
+        """
+        return Tags(language=language).__iter__()
+
+    def user_lists(self):
+        """Iterate trough all sentences' lists.
+        """
+        return UserLists().__iter__()
+
+    def sentences_in_lists(self, language):
+        """Iterate through all sentences in this language which are in a list.
+        """
+        return SentencesInLists(language=language).__iter__()
+
+    def jpn_indices(self):
+        """Iterate through all Japanese indices.
+        """
+        return JpnIndices().__iter__()
+
+    def user_languages(self, language):
+        """Iterate through all users' skills in this language.
+        """
+        return UserLanguages(language=language).__iter__()
+
+    def transcriptions(self, language):
+        """Iterate through all transcriptions for this language.
+        """
+        return Transcriptions(language=language).__iter__()
 
     def update(self, table_names, language_codes):
         """Update the tables and classify them by required language.
