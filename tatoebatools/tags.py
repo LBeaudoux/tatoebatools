@@ -15,10 +15,10 @@ class Tags:
     _table = "tags"
     _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language_code):
+    def __init__(self, language):
 
         # the language code of the sentences (ISO-639 code most of the time)
-        self._lg = language_code
+        self._lg = language
 
     def __iter__(self):
 

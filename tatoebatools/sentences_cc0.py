@@ -17,10 +17,10 @@ class SentencesCC0:
     _table = "sentences_CC0"
     _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language_code, cc0_only=False):
+    def __init__(self, language):
 
         # the language code of the sentences (ISO-639 code most of the time)
-        self._lg = language_code
+        self._lg = language
 
     def __iter__(self):
 
@@ -73,7 +73,7 @@ class SentencesCC0:
 
 
 class SentenceCC0:
-    """A sentence from the Tatoeba corpus witha CC0 licence.
+    """A sentence from the Tatoeba corpus with a CC0 licence.
     """
 
     def __init__(
