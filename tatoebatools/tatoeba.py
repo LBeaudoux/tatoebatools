@@ -1,5 +1,8 @@
 import logging
 
+import requests
+from bs4 import BeautifulSoup
+
 from .index import Index
 from .table import Table
 from .utils import lazy_property
@@ -11,19 +14,15 @@ class Tatoeba:
     """A handler for managing Tatoeba data on the client side.
     """
 
-    def __init__(self, *language_codes):
-        # the languages for which some Tatoeba data is required
-        self._lgs = language_codes
-
-    def update(self, *table_names):
+    def update(self, table_names, language_codes):
         """Update the tables and classify them by required language.
         """
         # datafile containing sentences comes first because it is
         # necessary for splitting files by language
-        sentences_tbl = Table("sentences_detailed", self._lgs)
+        sentences_tbl = Table("sentences_detailed", language_codes)
         if sentences_tbl.update():
             updated_tables = ["sentences_detailed"]
-            if not self._lgs:
+            if not language_codes:
                 sentences_tbl.classify()
         else:
             updated_tables = []
@@ -32,18 +31,11 @@ class Tatoeba:
             if tbl_name == "sentences_detailed":  # already done
                 continue
 
-            tbl = Table(tbl_name, self._lgs)
+            tbl = Table(tbl_name, language_codes)
             if tbl.update():
                 updated_tables.append(tbl_name)
 
-            if (
-                tbl_name in updated_tables
-                and not self._lgs
-                and tbl_name in ("sentences_CC0", "transcriptions")
-            ):
-                tbl.classify()
-
-            elif tbl_name in updated_tables and tbl_name in (
+            if tbl_name in updated_tables and tbl_name in (
                 "links",
                 "tags",
                 "sentences_in_lists",
@@ -81,8 +73,8 @@ class Tatoeba:
         return get_language_index(*self._lgs)
 
     @property
-    def downloadable_tables(self):
-        """
+    def all_tables(self):
+        """List all tables that are downloadable from tatoeba.org.
         """
         return [
             "sentences_detailed",
@@ -97,6 +89,21 @@ class Tatoeba:
             "user_languages",
             "queries",
         ]
+
+    @property
+    def all_languages(self):
+        """List all languages available on tatoeba.org
+        """
+        url = "https://downloads.tatoeba.org/exports/per_language/"
+        try:
+            r = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            return []
+        else:
+            soup = BeautifulSoup(r.text)
+            links = [a.get("href") for a in soup.find_all("a")]
+
+            return [lk[:-1] for lk in links if lk[:-1].isalpha()]
 
 
 def get_language_index(*languages):

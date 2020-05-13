@@ -107,7 +107,6 @@ class Table:
         if (
             self.name
             in ("sentences_detailed", "sentences_CC0", "transcriptions")
-            and self._lgs
         ):
             downloads.extend(
                 [
@@ -120,9 +119,6 @@ class Table:
                 ]
             )
         elif self.name in {
-            "sentences_detailed",
-            "sentences_CC0",
-            "transcriptions",
             "links",
             "tags",
             "user_lists",
