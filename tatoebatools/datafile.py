@@ -5,8 +5,9 @@ from sys import getsizeof
 
 from tqdm import tqdm
 
-from .version import Version
-from .utils import lazy_property
+from .utils import desplit_field
+
+logger = logging.getLogger(__name__)
 
 
 class DataFile:
@@ -23,20 +24,40 @@ class DataFile:
 
         try:
             with open(self.path) as f:
-                reader = csv.reader(f, delimiter=self._dm, escapechar="\\")
+                reader = csv.reader(
+                    f, delimiter=self._dm, quoting=csv.QUOTE_NONE,
+                )
+                # count the number of columns in a regular row
                 nb_cols = len(next(reader))
                 f.seek(0)
+
+                real_row = []
                 for row in reader:
+                    # regroup last field if split by delimiter
+                    row = desplit_field(row, nb_cols, self._dm, nb_cols - 1)
+
+                    # regroup multiliner end fields
                     if len(row) == nb_cols:
-                        yield row
+                        if real_row:
+                            yield real_row
+                            real_row = []
+                        real_row.extend(row)
+                    elif len(row) == 1 and real_row:
+                        real_row[-1] += " " + row[0]
+                    elif not row and real_row:
+                        real_row[-1] += " "
+                    else:
+                        logger.debug(f"row skipped in {self.path}: {row}")
+                if real_row:
+                    yield real_row
         except OSError:
-            logging.debug(f"an error occurred while reading {self.path}")
+            logger.debug(f"an error occurred while reading {self.path}")
 
     def split(self, columns=[], index=None):
         """Split the file according to the values mapped by the index
         in a chosen set of columns. 
         """
-        logging.info(f"splitting {self.name}")
+        logger.info(f"splitting {self.name}")
 
         # init the progress bar
         pbar = tqdm(total=self.size, unit="iB", unit_scale=True)
@@ -60,11 +81,6 @@ class DataFile:
             line = self._dm.join(row) + "\n"
             pbar.update(len(line.encode("utf-8")))
 
-        # update versions
-        with Version() as vs:
-            for fn in buffer.out_filenames:
-                vs[fn] = self.version
-
         buffer.clear()
 
         pbar.close()
@@ -86,13 +102,6 @@ class DataFile:
         """Get the name of this datafile without its extension.
         """
         return self._fp.stem
-
-    @lazy_property
-    def version(self):
-        """Get the local version of this datafile.
-        """
-        with Version() as vs:
-            return vs[self.filename]
 
     @property
     def size(self):
@@ -151,7 +160,7 @@ class Buffer:
                 wt = csv.writer(f, delimiter=self._dm)
                 wt.writerows(data)
         except OSError:
-            logging.exception(f"an error occured when opening {out_fp}")
+            logger.debug(f"an error occured when opening {out_fp}")
         else:
             self._data[out_fname].clear()
 
