@@ -35,10 +35,15 @@ def get_path_last_modified_datetime(file_path):
         return dt
 
 
-def download(from_url, to_path, chunk_size=1024):
-    """Download a file.
+def download(from_url, to_directory):
+    """Download a file. Overwrite previous version.
     """
     logging.info(f"downloading {from_url}")
+
+    filename = from_url.rsplit("/", 1)[-1]
+    to_dir_path = Path(to_directory)
+    to_dir_path.mkdir(parents=True, exist_ok=True)
+    to_path = to_dir_path.joinpath(filename)
 
     try:
         with requests.get(from_url, stream=True) as r:
@@ -52,18 +57,18 @@ def download(from_url, to_path, chunk_size=1024):
             }
             with tqdm(**tqdm_args) as pbar:
                 with open(to_path, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=chunk_size):
+                    for chunk in r.iter_content(chunk_size=1024):
                         f.write(chunk)
                         pbar.update(len(chunk))  # update progress bar
     except requests.exceptions.HTTPError:
         logging.info(f"no file found at {from_url}")
-        return False
+        return
     else:
-        return True
+        return to_path
 
 
 def decompress(compressed_path):
-    """Decompress here a bz2 file.
+    """Decompress a bz2 file here. Overwrite previous version.
     """
     in_path = Path(compressed_path)
     out_path = in_path.parent.joinpath(in_path.stem)
@@ -77,13 +82,13 @@ def decompress(compressed_path):
                 out_f.write(data)
     except Exception:
         logging.exception(f"error while decompressing {compressed_path}")
-        return False
+        return
     else:
-        return True
+        return out_path
 
 
 def extract(archive_path):
-    """Extract here all files in an archive.
+    """Extract here all files in an archive. Overwrite previous versions.
     """
     arx_path = Path(archive_path)
 
@@ -92,8 +97,33 @@ def extract(archive_path):
     try:
         with tarfile.open(arx_path) as tar:
             tar.extractall(arx_path.parent)
+            extracted_filenames = tar.getnames()
     except tarfile.ReadError:
         logging.exception(f"{arx_path} is not extractable")
+        return []
+    else:
+        return [arx_path.parent.joinpath(fn) for fn in extracted_filenames]
+
+
+def fetch(from_url, to_directory):
+    """Download a file, decompress it, extract it and delete temporary files.
+    Overwrite previous versions.
+    """
+    dl_path = download(from_url, to_directory)
+
+    if not dl_path:
+        return []
+    elif str(dl_path).endswith(".bz2"):
+        uz_path = decompress(dl_path)
+        dl_path.unlink()
+        if str(uz_path).endswith(".tar"):
+            out_paths = extract(uz_path)
+            uz_path.unlink()
+            return out_paths
+        else:
+            return [uz_path]
+    else:
+        return [dl_path]
 
 
 class lazy_property(object):
@@ -113,3 +143,28 @@ class lazy_property(object):
         setattr(instance, self.name, val)
 
         return val
+
+
+def desplit_field(row, nb_cols, delimiter, index_field):
+    """Regroup the chosen field of a csv row if split by mistake. Useful if
+    the fields are not quoted or if extra delimiters are not escaped.
+    """
+    nb_extra = len(row) - nb_cols
+    if nb_extra > 0:
+        fields_to_join = row[index_field : index_field + nb_extra + 1]
+        row[index_field] = delimiter.join(fields_to_join)
+        del row[index_field + 1 : index_field + nb_extra + 1]
+
+    return row
+
+
+def get_filestem(url):
+    """Get the stem of the file at this url.
+    """
+    return url.rsplit("/", 1)[-1].split(".", 1)[0]
+
+
+def get_endpoint(url):
+    """Get the parent url of this url.
+    """
+    return url.rsplit("/", 1)[0]
