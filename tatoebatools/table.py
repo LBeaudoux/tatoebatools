@@ -1,8 +1,5 @@
 from .config import DATA_DIR
 from .datafile import DataFile
-from .download import Download
-
-DOWNLOAD_URL = "https://downloads.tatoeba.org"
 
 
 class Table:
@@ -14,11 +11,6 @@ class Table:
         self._name = name
         # the languages in which some data is required
         self._lgs = languages
-
-    def update(self):
-        """Update this table for these languages on this machine.
-        """
-        return [dl.name for dl in self.downloads if dl.fetch()]
 
     def classify(self, language_index=None):
         """Classify this table data by language.
@@ -98,54 +90,3 @@ class Table:
         filepaths = [self.path.joinpath(fn) for fn in filenames]
 
         return [DataFile(fp, delimiter=delimiter) for fp in filepaths]
-
-    @property
-    def downloads(self):
-        """List the downloads used to update the local Tatoeba data.
-        """
-        downloads = []
-        if self.name in (
-            "sentences_detailed",
-            "sentences_CC0",
-            "transcriptions",
-        ):
-            downloads.extend(
-                [
-                    Download(
-                        f"{lg}_{self.name}.tsv",
-                        f"{DOWNLOAD_URL}/exports/per_language/{lg}",
-                        self.path,
-                    )
-                    for lg in self._lgs
-                ]
-            )
-        elif self.name in {
-            "links",
-            "tags",
-            "user_lists",
-            "sentences_in_lists",
-            "jpn_indices",
-            "sentences_with_audio",
-            "user_languages",
-        }:
-            downloads.append(
-                Download(
-                    f"{self.name}.csv",
-                    f"{DOWNLOAD_URL}/exports",
-                    self.path,
-                    is_archived=True,
-                )
-            )
-        elif self.name in {
-            "queries",
-        }:
-            downloads.append(
-                Download(
-                    f"{self.name}.csv",
-                    f"{DOWNLOAD_URL}/stats",
-                    self.path,
-                    is_archived=False,
-                )
-            )
-
-        return downloads

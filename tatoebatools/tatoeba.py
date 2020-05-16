@@ -3,6 +3,7 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 
+from .download import Download
 from .index import Index
 from .jpn_indices import JpnIndices
 from .links import Links
@@ -10,14 +11,28 @@ from .sentences_cc0 import SentencesCC0
 from .sentences_detailed import SentencesDetailed
 from .sentences_in_lists import SentencesInLists
 from .sentences_with_audio import SentencesWithAudio
-from .transcriptions import Transcriptions
 from .table import Table
+from .tags import Tags
+from .transcriptions import Transcriptions
+from .update import check_updates
 from .user_languages import UserLanguages
 from .user_lists import UserLists
-from .tags import Tags
 from .utils import lazy_property
 
 logger = logging.getLogger(__name__)
+
+
+INDEX_SPLIT_TABLES = (
+    "links",
+    "tags",
+    "sentences_in_lists",
+    "jpn_indices",
+    "sentences_with_audio",
+)
+SIMPLE_SPLIT_TABLES = (
+    "user_languages",
+    "queries",
+)
 
 
 class Tatoeba:
@@ -77,50 +92,47 @@ class Tatoeba:
         """
         return Transcriptions(language=language).__iter__()
 
+    def update_all(self):
+        """Update all local tables for all languages.
+        """
+        self.update(self.all_tables, self.all_languages)
+
     def update(self, table_names, language_codes):
         """Update the tables and classify them by required language.
         """
-        # datafile containing sentences comes first because it is
-        # necessary for splitting files by language
-        sentences_tbl = Table("sentences_detailed", language_codes)
-        if sentences_tbl.update():
-            updated_tables = ["sentences_detailed"]
-            if not language_codes:
-                sentences_tbl.classify()
-        else:
-            updated_tables = []
+        # sentences table can be added because it is necessary in case of
+        # index splitting of files by language
+        if (
+            any(tn in INDEX_SPLIT_TABLES for tn in table_names)
+            and "sentences_detailed" not in table_names
+        ):
+            table_names.append("sentences_detailed")
 
+        to_download = check_updates(table_names, language_codes)
+        logger.info(f"{len(to_download)} files to download")
+
+        updated_tables = {
+            Download(url, vs).fetch() for url, vs in to_download.items()
+        }
+
+        language_index = {}
         for tbl_name in table_names:
-            if tbl_name == "sentences_detailed":  # already done
-                continue
-
             tbl = Table(tbl_name, language_codes)
-            if tbl.update():
-                updated_tables.append(tbl_name)
 
-            if tbl_name in updated_tables and tbl_name in (
-                "links",
-                "tags",
-                "sentences_in_lists",
-                "jpn_indices",
-                "sentences_with_audio",
+            if tbl_name in INDEX_SPLIT_TABLES and (
+                tbl_name in updated_tables
+                or "sentences_detailed" in updated_tables
             ):
-                tbl.classify(self.language_index)
+                if not language_index:
+                    logger.info("mapping sentence ids to languages")
+                    language_index = get_language_index(*language_codes)
 
-            elif tbl_name in updated_tables and tbl_name in (
-                "user_languages",
-                "queries",
+                tbl.classify(language_index)
+
+            elif (
+                tbl_name in updated_tables and tbl_name in SIMPLE_SPLIT_TABLES
             ):
                 tbl.classify()
-
-            elif "sentences_detailed" in updated_tables and tbl_name in (
-                "links",
-                "tags",
-                "sentences_in_lists",
-                "jpn_indices",
-                "sentences_with_audio",
-            ):
-                tbl.classify(self.language_index)
 
         if updated_tables:
             logger.info("{} updated".format(", ".join(updated_tables)))
@@ -173,11 +185,9 @@ def get_language_index(*languages):
     """Get the mapping between the sentences' ids and their language.
     """
     sentence_tbl = Table("sentences_detailed", languages)
-    if languages:
-        return {
-            id: lg
-            for df in sentence_tbl.language_detafiles
-            for id, lg in Index(df, 0, 1)
-        }
-    else:
-        return {id: lg for id, lg in Index(sentence_tbl.main_datafile, 0, 1)}
+
+    return {
+        id: lg
+        for df in sentence_tbl.language_detafiles
+        for id, lg in Index(df, 0, 1)
+    }
