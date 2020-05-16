@@ -63,16 +63,16 @@ class Links:
         return Links._dir.joinpath(self.filename)
 
     @lazy_property
-    def sentence_ids(self):
-        """Get the source ids of the links.
+    def ids(self):
+        """Get all sentences' and translations' ids.
         """
-        return {lk.sentence_id for lk in self}
+        source_ids = set()
+        target_ids = set()
+        for link in self:
+            source_ids.add(link.sentence_id)
+            target_ids.add(link.translation_id)
 
-    @lazy_property
-    def translation_ids(self):
-        """Get the target ids of the links.
-        """
-        return {lk.translation_id for lk in self}
+        return source_ids, target_ids
 
     @lazy_property
     def version(self):
