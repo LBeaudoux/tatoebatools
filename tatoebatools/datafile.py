@@ -53,7 +53,7 @@ class DataFile:
         except OSError:
             logger.debug(f"an error occurred while reading {self.path}")
 
-    def split(self, columns=[], index=None):
+    def split(self, columns=[], index=None, int_key=False):
         """Split the file according to the values mapped by the index
         in a chosen set of columns. 
         """
@@ -65,11 +65,20 @@ class DataFile:
         buffer = Buffer(self.path.parent, delimiter=self._dm)
         # classify the rows
         for row in self:
-            mapped_vals = [
-                index.get(row[col]) if index else row[col]
-                for col in columns
-                if len(row) > col
-            ]
+            mapped_vals = []
+            for col in columns:
+                if len(row) > col:
+                    val = row[col]
+
+                    if index:
+                        if int_key:
+                            val = int(val)
+                        val = index.get(val)
+
+                    mapped_vals.append(val)
+                else:
+                    mapped_vals.append("")
+                    logger.debug(f"{row} does not have column {col}")
 
             if all(mapped_vals):
                 mapped_vals_string = "-".join(mapped_vals)
@@ -123,6 +132,7 @@ class Buffer:
         # directory path where out files are saved.
         self._dir = Path(out_dir)
         self._dir.mkdir(parents=True, exist_ok=True)
+        self._fps = set(self._dir.iterdir())  # files already in the out_dir
         # the feed delimiter used in the out files
         self._dm = delimiter
         # maximum number elements in a buffer
@@ -140,9 +150,9 @@ class Buffer:
             self._data[out_fname] = []
             # reinitialize the out file
             out_fp = Path(self._dir, out_fname)
-            fpaths = {fp for fp in self._dir.iterdir()}
-            if out_fp in fpaths:
+            if out_fp in self._fps:
                 out_fp.unlink()
+                self._fps.remove(out_fp)
 
         self._data.setdefault(out_fname, []).append(elt)
 
