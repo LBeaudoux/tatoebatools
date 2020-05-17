@@ -1,17 +1,22 @@
-import csv
 import logging
 from datetime import datetime
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
+
+
+logger = logging.getLogger(__name__)
 
 
 class Queries:
     """The content of the queries to tatoeba.org.
     """
 
-    _dir = DATA_DIR.joinpath("queries")
+    _table = "queries"
+    _dir = DATA_DIR.joinpath(_table)
 
     def __init__(self, language):
 
@@ -20,31 +25,33 @@ class Queries:
     def __iter__(self):
 
         try:
-            with open(self.path) as f:
-                fieldnames = ["date", "language", "content"]
-                rows = csv.DictReader(
-                    f, delimiter=",", escapechar="\\", fieldnames=fieldnames
-                )
-                for i, row in enumerate(rows):
+            fieldnames = ["date", "language", "content"]
 
-                    if not (i % 2) == 0:  # each query is recorded twice
-                        continue
+            for i, row in enumerate(
+                DataFile(self.path, delimiter=",", text_col=-1)
+            ):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
 
-                    if not len(row) == 3:
-                        continue
+                if not (i % 2) == 0:  # each query is recorded twice
+                    continue
 
-                    q = Query(**row)
+                q = Query(**row)
 
-                    if not q.content:
-                        continue
+                if not q.content:
+                    continue
 
-                    if not len(q.language) in (3, 4):
-                        continue
+                if not len(q.language) in (3, 4):
+                    continue
 
-                    yield q
+                yield q
 
-        except OSError:
-            logging.exception(f"an error occurred while reading {self.path}")
+        except NoDataFile:
+            msg = (
+                f"no data locally available for the '{Queries._table}' "
+                f"table in {self._lg}."
+            )
+
+            logger.warning(msg)
 
     @property
     def language(self):
@@ -82,19 +89,25 @@ class Query:
         self._lg = language
         self._ct = content
 
-    @lazy_property
+    @property
     def date(self):
         """The date when the query was made. e.g. '5 Apr 2019'
         """
-        return datetime.strptime(self._dt, "%-d %b %Y")
+        try:
+            date = datetime.strptime(self._dt, "%d %b %Y")
+        except ValueError:
+            logger.debug(f"{self._dt} is not a valid date")
+            return
+        else:
+            return date.date()
 
-    @lazy_property
+    @property
     def language(self):
         """The language in which the query has been made, e.g. 'fra'
         """
         return self._lg
 
-    @lazy_property
+    @property
     def content(self):
         """The content of the query (i.e. the searched text).
         """

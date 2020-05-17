@@ -1,7 +1,8 @@
-import csv
 import logging
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
 
@@ -22,19 +23,18 @@ class SentencesInLists:
 
     def __iter__(self):
 
-        try:
-            with open(self.path) as f:
-                fieldnames = [
-                    "list_id",
-                    "sentence_id",
-                ]
+        fieldnames = [
+            "list_id",
+            "sentence_id",
+        ]
 
-                rows = csv.DictReader(
-                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
-                )
-                for row in rows:
-                    yield SentenceInList(**row)
-        except OSError:
+        try:
+            for row in DataFile(self.path, delimiter="\t"):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
+
+                yield SentenceInList(**row)
+
+        except NoDataFile:
             msg = (
                 f"no data locally available for the "
                 f"'{SentencesInLists._table}' table in {self._lg}."

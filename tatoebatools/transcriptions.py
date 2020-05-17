@@ -1,7 +1,8 @@
-import csv
 import logging
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
 
@@ -22,21 +23,20 @@ class Transcriptions:
     def __iter__(self):
 
         try:
-            with open(self.path) as f:
-                fieldnames = [
-                    "sentence_id",
-                    "lang",
-                    "script_name",
-                    "username",
-                    "transcription",
-                ]
+            fieldnames = [
+                "sentence_id",
+                "lang",
+                "script_name",
+                "username",
+                "transcription",
+            ]
 
-                rows = csv.DictReader(
-                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
-                )
-                for row in rows:
-                    yield Transcription(**row)
-        except OSError:
+            for row in DataFile(self.path, delimiter="\t"):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
+
+                yield Transcription(**row)
+
+        except NoDataFile:
             msg = (
                 f"no data locally available for the "
                 f"'{Transcriptions._table}' table."

@@ -1,7 +1,8 @@
-import csv
 import logging
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
 
@@ -23,15 +24,14 @@ class Tags:
     def __iter__(self):
 
         try:
-            with open(self.path) as f:
-                fieldnames = ["sentence_id", "tag_name"]
+            fieldnames = ["sentence_id", "tag_name"]
 
-                rows = csv.DictReader(
-                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
-                )
-                for row in rows:
-                    yield Tag(**row)
-        except OSError:
+            for row in DataFile(self.path, delimiter="\t"):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
+
+                yield Tag(**row)
+
+        except NoDataFile:
             msg = (
                 f"no data locally available for the '{Tags._table}' "
                 f"table in {self._lg}."

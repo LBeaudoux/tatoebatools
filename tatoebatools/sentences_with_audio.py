@@ -1,7 +1,8 @@
-import csv
 import logging
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
 
@@ -22,19 +23,19 @@ class SentencesWithAudio:
     def __iter__(self):
 
         try:
-            with open(self.path) as f:
-                fieldnames = [
-                    "sentence_id",
-                    "username",
-                    "license",
-                    "attribution_url",
-                ]
-                rows = csv.DictReader(
-                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
-                )
-                for row in rows:
-                    yield SentenceWithAudio(**row)
-        except OSError:
+            fieldnames = [
+                "sentence_id",
+                "username",
+                "license",
+                "attribution_url",
+            ]
+
+            for row in DataFile(self.path, delimiter="\t"):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
+
+                yield SentenceWithAudio(**row)
+
+        except NoDataFile:
             msg = (
                 f"no data locally available for the '{self.table}' "
                 f"table in {self._lg}."
@@ -95,10 +96,10 @@ class SentenceWithAudio:
     def license(self):
         """The license of the sentence with audio.
         """
-        return self._lic if self._lic != "N" else ""
+        return self._lic if self._lic != "\\N" else ""
 
     @property
     def attribution_url(self):
         """The url to the attrbution of the sentence with audio.
         """
-        return self._atr if self._atr != "N" else ""
+        return self._atr if self._atr != "\\N" else ""

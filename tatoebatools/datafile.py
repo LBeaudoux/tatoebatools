@@ -5,6 +5,8 @@ from sys import getsizeof
 
 from tqdm import tqdm
 
+from .exceptions import NoDataFile
+
 logger = logging.getLogger(__name__)
 
 
@@ -34,7 +36,8 @@ class DataFile:
                 real_row = []
                 for row in reader:
                     # regroup text field if split by delimiter
-                    row = unsplit_field(row, nb_cols, self._dm, self._tc)
+                    if self._tc:
+                        row = unsplit_field(row, nb_cols, self._dm, self._tc)
 
                     # regroup multiline end fields
                     if len(row) == nb_cols:
@@ -52,6 +55,8 @@ class DataFile:
                     yield real_row
         except OSError:
             logger.debug(f"an error occurred while reading {self.path}")
+
+            raise NoDataFile
 
     def split(self, columns=[], index=None, int_key=False):
         """Split the file according to the values mapped by the index

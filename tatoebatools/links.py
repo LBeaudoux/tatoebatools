@@ -1,7 +1,8 @@
-import csv
 import logging
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
 
@@ -23,13 +24,13 @@ class Links:
 
     def __iter__(self):
 
+        fieldnames = ["sentence_id", "translation_id"]
+
         try:
-            with open(self.path) as f:
-                fieldnames = ["sentence_id", "translation_id"]
-                rows = csv.DictReader(f, delimiter="\t", fieldnames=fieldnames)
-                for row in rows:
-                    yield Link(**row)
-        except OSError:
+            for row in DataFile(self.path, delimiter="\t", text_col=None):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
+                yield Link(**row)
+        except NoDataFile:
             msg = (
                 f"no data locally available for the '{Links._table}' "
                 f"table from {self._src_lg} to {self._tgt_lg}."

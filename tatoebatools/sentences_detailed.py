@@ -1,8 +1,9 @@
-import csv
 import logging
 from datetime import datetime
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
 
@@ -24,22 +25,21 @@ class SentencesDetailed:
     def __iter__(self):
 
         try:
-            with open(self.path) as f:
-                fieldnames = [
-                    "sentence_id",
-                    "lang",
-                    "text",
-                    "username",
-                    "date_added",
-                    "date_last_modified",
-                ]
+            fieldnames = [
+                "sentence_id",
+                "lang",
+                "text",
+                "username",
+                "date_added",
+                "date_last_modified",
+            ]
 
-                rows = csv.DictReader(
-                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
-                )
-                for row in rows:
-                    yield SentenceDetailed(**row)
-        except OSError:
+            for row in DataFile(self.path, delimiter="\t", text_col=2):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
+
+                yield SentenceDetailed(**row)
+
+        except NoDataFile:
             msg = (
                 f"no data locally available for the "
                 f"'{SentencesDetailed._table}' table in {self._lg}."
@@ -116,7 +116,7 @@ class SentenceDetailed:
     def username(self):
         """Get the name of the author of the sentence.
         """
-        return self._usr if self._usr != "N" else ""
+        return self._usr if self._usr != "\\N" else ""
 
     @property
     def date_added(self):

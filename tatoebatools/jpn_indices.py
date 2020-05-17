@@ -1,7 +1,8 @@
-import csv
 import logging
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
 
@@ -22,20 +23,17 @@ class JpnIndices:
 
     def __iter__(self):
 
-        try:
-            with open(self.path) as f:
-                fieldnames = [
-                    "sentence_id",
-                    "meaning_id",
-                    "text",
-                ]
+        fieldnames = [
+            "sentence_id",
+            "meaning_id",
+            "text",
+        ]
 
-                rows = csv.DictReader(
-                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
-                )
-                for row in rows:
-                    yield JpnIndex(**row)
-        except OSError:
+        try:
+            for row in DataFile(JpnIndices._path, delimiter="\t", text_col=-1):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
+                yield JpnIndex(**row)
+        except NoDataFile:
             msg = (
                 f"no data locally available for the "
                 f"'{JpnIndices._table}' table."

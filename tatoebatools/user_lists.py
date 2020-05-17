@@ -1,8 +1,9 @@
-import csv
 import logging
 from datetime import datetime
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
 
@@ -21,22 +22,21 @@ class UserLists:
     def __iter__(self):
 
         try:
-            with open(self.path) as f:
-                fieldnames = [
-                    "list_id",
-                    "username",
-                    "date_created",
-                    "date_last_modified",
-                    "list_name",
-                    "editable_by",
-                ]
+            fieldnames = [
+                "list_id",
+                "username",
+                "date_created",
+                "date_last_modified",
+                "list_name",
+                "editable_by",
+            ]
 
-                rows = csv.DictReader(
-                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
-                )
-                for row in rows:
-                    yield UserList(**row)
-        except OSError:
+            for row in DataFile(self.path, delimiter="\t", text_col=4):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
+
+                yield UserList(**row)
+
+        except NoDataFile:
             msg = (
                 f"no data locally available for the '{UserLists._table}' "
                 f"table."

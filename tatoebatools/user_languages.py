@@ -1,7 +1,8 @@
-import csv
 import logging
 
 from .config import DATA_DIR
+from .datafile import DataFile
+from .exceptions import NoDataFile
 from .utils import lazy_property
 from .version import Version
 
@@ -22,20 +23,19 @@ class UserLanguages:
     def __iter__(self):
 
         try:
-            with open(self.path) as f:
-                fieldnames = [
-                    "lang",
-                    "skill_level",
-                    "username",
-                    "details",
-                ]
+            fieldnames = [
+                "lang",
+                "skill_level",
+                "username",
+                "details",
+            ]
 
-                rows = csv.DictReader(
-                    f, delimiter="\t", escapechar="\\", fieldnames=fieldnames
-                )
-                for row in rows:
-                    yield UserLanguage(**row)
-        except OSError:
+            for row in DataFile(self.path, delimiter="\t"):
+                row = {fieldnames[i]: x for i, x in enumerate(row)}
+
+                yield UserLanguage(**row)
+
+        except NoDataFile:
             msg = (
                 f"no data locally available for the "
                 f"'{UserLanguages._table}' table."
@@ -93,7 +93,7 @@ class UserLanguage:
     def skill_level(self):
         """Get the value of this skill level. 
         """
-        return int(self._skl) if self._skl != "N" else None
+        return int(self._skl) if self._skl != "\\N" else None
 
     @property
     def username(self):
