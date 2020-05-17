@@ -62,7 +62,7 @@ def download(from_url, to_directory):
                     for chunk in r.iter_content(chunk_size=1024):
                         f.write(chunk)
                         pbar.update(len(chunk))  # update progress bar
-    except requests.exceptions.RequestException: 
+    except requests.exceptions.RequestException:
         logger.info(f"downloading of {from_url} failed")
         return
     else:
@@ -145,19 +145,6 @@ class lazy_property(object):
         setattr(instance, self.name, val)
 
         return val
-
-
-def desplit_field(row, nb_cols, delimiter, index_field):
-    """Regroup the chosen field of a csv row if split by mistake. Useful if
-    the fields are not quoted or if extra delimiters are not escaped.
-    """
-    nb_extra = len(row) - nb_cols
-    if nb_extra > 0:
-        fields_to_join = row[index_field : index_field + nb_extra + 1]
-        row[index_field] = delimiter.join(fields_to_join)
-        del row[index_field + 1 : index_field + nb_extra + 1]
-
-    return row
 
 
 def get_filestem(url):

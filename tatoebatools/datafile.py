@@ -5,8 +5,6 @@ from sys import getsizeof
 
 from tqdm import tqdm
 
-from .utils import desplit_field
-
 logger = logging.getLogger(__name__)
 
 
@@ -14,11 +12,13 @@ class DataFile:
     """A file containing table data.
     """
 
-    def __init__(self, file_path, delimiter="\t"):
+    def __init__(self, file_path, delimiter="\t", text_col=-1):
         # the local path of this data file
         self._fp = Path(file_path)
         # the delimiter that distinguishes table columns
         self._dm = delimiter
+        # the column that must not be split by delimiters
+        self._tc = text_col
 
     def __iter__(self):
 
@@ -33,10 +33,10 @@ class DataFile:
 
                 real_row = []
                 for row in reader:
-                    # regroup last field if split by delimiter
-                    row = desplit_field(row, nb_cols, self._dm, nb_cols - 1)
+                    # regroup text field if split by delimiter
+                    row = unsplit_field(row, nb_cols, self._dm, self._tc)
 
-                    # regroup multiliner end fields
+                    # regroup multiline end fields
                     if len(row) == nb_cols:
                         if real_row:
                             yield real_row
@@ -192,3 +192,19 @@ class Buffer:
         """List every out file name.
         """
         return list(self._data.keys())
+
+
+def unsplit_field(row, nb_cols, delimiter, index_field):
+    """Regroup the chosen field of a csv row if split by mistake. Useful if
+    the fields are not quoted or if extra delimiters are not escaped.w
+    """
+    if index_field < 0:
+        index_field = nb_cols + index_field
+
+    nb_extra = len(row) - nb_cols
+    if nb_extra > 0:
+        fields_to_join = row[index_field : index_field + nb_extra + 1]
+        row[index_field] = delimiter.join(fields_to_join)
+        del row[index_field + 1 : index_field + nb_extra + 1]
+
+    return row
