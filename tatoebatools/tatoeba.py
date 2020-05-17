@@ -172,7 +172,7 @@ class Tatoeba:
         url = "https://downloads.tatoeba.org/exports/per_language/"
         try:
             r = requests.get(url)
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.RequestException:
             return []
         else:
             soup = BeautifulSoup(r.text, features="html.parser")

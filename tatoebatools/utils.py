@@ -7,6 +7,8 @@ from pathlib import Path
 import requests
 from tqdm import tqdm
 
+logger = logging.getLogger(__name__)
+
 
 def get_url_last_modified_datetime(file_url):
     """Get the last modified datetime of a file which is online.
@@ -16,7 +18,7 @@ def get_url_last_modified_datetime(file_url):
             dt_string = r.headers["last-modified"]
             dt = datetime.strptime(dt_string, "%a, %d %b %Y %H:%M:%S %Z")
     except Exception:
-        logging.exception(
+        logger.exception(
             f"did not get url last modified datetime of {file_url}"
         )
     else:
@@ -38,7 +40,7 @@ def get_path_last_modified_datetime(file_path):
 def download(from_url, to_directory):
     """Download a file. Overwrite previous version.
     """
-    logging.info(f"downloading {from_url}")
+    logger.info(f"downloading {from_url}")
 
     filename = from_url.rsplit("/", 1)[-1]
     to_dir_path = Path(to_directory)
@@ -60,8 +62,8 @@ def download(from_url, to_directory):
                     for chunk in r.iter_content(chunk_size=1024):
                         f.write(chunk)
                         pbar.update(len(chunk))  # update progress bar
-    except requests.exceptions.HTTPError:
-        logging.info(f"no file found at {from_url}")
+    except requests.exceptions.RequestException: 
+        logger.info(f"downloading of {from_url} failed")
         return
     else:
         return to_path
@@ -73,7 +75,7 @@ def decompress(compressed_path):
     in_path = Path(compressed_path)
     out_path = in_path.parent.joinpath(in_path.stem)
 
-    logging.debug(f"decompressing {in_path.name}")
+    logger.debug(f"decompressing {in_path.name}")
 
     try:
         with bz2.open(in_path) as in_f:
@@ -81,7 +83,7 @@ def decompress(compressed_path):
                 data = in_f.read()
                 out_f.write(data)
     except Exception:
-        logging.exception(f"error while decompressing {compressed_path}")
+        logger.exception(f"error while decompressing {compressed_path}")
         return
     else:
         return out_path
@@ -92,14 +94,14 @@ def extract(archive_path):
     """
     arx_path = Path(archive_path)
 
-    logging.debug(f"extracting {arx_path.name}")
+    logger.debug(f"extracting {arx_path.name}")
 
     try:
         with tarfile.open(arx_path) as tar:
             tar.extractall(arx_path.parent)
             extracted_filenames = tar.getnames()
     except tarfile.ReadError:
-        logging.exception(f"{arx_path} is not extractable")
+        logger.exception(f"{arx_path} is not extractable")
         return []
     else:
         return [arx_path.parent.joinpath(fn) for fn in extracted_filenames]
