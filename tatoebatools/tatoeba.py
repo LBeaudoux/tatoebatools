@@ -3,6 +3,7 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 
+from .config import SIMPLE_SPLIT_TABLES, SUPPORTED_TABLES, INDEX_SPLIT_TABLES
 from .download import Download
 from .index import Index
 from .jpn_indices import JpnIndices
@@ -20,19 +21,6 @@ from .user_lists import UserLists
 from .utils import lazy_property
 
 logger = logging.getLogger(__name__)
-
-
-INDEX_SPLIT_TABLES = (
-    "links",
-    "tags",
-    "sentences_in_lists",
-    "jpn_indices",
-    "sentences_with_audio",
-)
-SIMPLE_SPLIT_TABLES = (
-    "user_languages",
-    "queries",
-)
 
 
 class Tatoeba:
@@ -100,8 +88,15 @@ class Tatoeba:
     def update(self, table_names, language_codes):
         """Update the tables and classify them by required language.
         """
+        if not language_codes and any(
+            tn in INDEX_SPLIT_TABLES or tn in SIMPLE_SPLIT_TABLES
+            for tn in table_names
+        ):
+            logger.warning("missing 'language_codes' arguments")
+            return []
+
         # sentences table can be added because it is necessary in case of
-        # index splitting of files by language
+        # index splitting of files
         if (
             any(tn in INDEX_SPLIT_TABLES for tn in table_names)
             and "sentences_detailed" not in table_names
@@ -139,6 +134,8 @@ class Tatoeba:
         else:
             logger.info("data already up to date")
 
+        return updated_tables
+
     @lazy_property
     def language_index(self):
         """Get the index that maps the sentences' ids to their language.
@@ -151,19 +148,7 @@ class Tatoeba:
     def all_tables(self):
         """List all tables that are downloadable from tatoeba.org.
         """
-        return [
-            "sentences_detailed",
-            "sentences_CC0",
-            "transcriptions",
-            "links",
-            "tags",
-            "user_lists",
-            "sentences_in_lists",
-            "jpn_indices",
-            "sentences_with_audio",
-            "user_languages",
-            "queries",
-        ]
+        return sorted(list(SUPPORTED_TABLES))
 
     @lazy_property
     def all_languages(self):
