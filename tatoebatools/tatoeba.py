@@ -3,8 +3,12 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 
-from .config import SIMPLE_SPLIT_TABLES, SUPPORTED_TABLES, INDEX_SPLIT_TABLES
+from .config import INDEX_SPLIT_TABLES, SIMPLE_SPLIT_TABLES, SUPPORTED_TABLES
 from .download import Download
+from .exceptions import (
+    NotAvailableLanguage,
+    NotAvailableTable,
+)
 from .index import Index
 from .jpn_indices import JpnIndices
 from .links import Links
@@ -80,61 +84,69 @@ class Tatoeba:
         """
         return Transcriptions(language=language).__iter__()
 
-    def update_all(self):
-        """Update all local tables for all languages.
-        """
-        self.update(self.all_tables, self.all_languages)
-
     def update(self, table_names, language_codes):
         """Update the tables and classify them by required language.
         """
-        if not language_codes and any(
-            tn in INDEX_SPLIT_TABLES or tn in SIMPLE_SPLIT_TABLES
-            for tn in table_names
-        ):
-            logger.warning("missing 'language_codes' arguments")
-            return []
+        try:
+            # check if the tables are available
+            not_available_tables = set(table_names) - set(self.all_tables)
+            if not_available_tables:
+                raise NotAvailableTable(not_available_tables)
 
-        # sentences table can be added because it is necessary in case of
-        # index splitting of files
-        if (
-            any(tn in INDEX_SPLIT_TABLES for tn in table_names)
-            and "sentences_detailed" not in table_names
-        ):
-            table_names.append("sentences_detailed")
+            # check if the language codes are available
+            not_available_langs = set(language_codes) - set(self.all_languages)
+            if not_available_langs:
+                raise NotAvailableLanguage(not_available_langs)
 
-        to_download = check_updates(table_names, language_codes)
-        logger.info(f"{len(to_download)} files to download")
-
-        updated_tables = {
-            Download(url, vs).fetch() for url, vs in to_download.items()
-        }
-
-        language_index = {}
-        for tbl_name in table_names:
-            tbl = Table(tbl_name, language_codes)
-
-            if tbl_name in INDEX_SPLIT_TABLES and (
-                tbl_name in updated_tables
-                or "sentences_detailed" in updated_tables
+            # sentences table can be added because it is necessary in case of
+            # index splitting of files
+            if (
+                any(tn in INDEX_SPLIT_TABLES for tn in table_names)
+                and "sentences_detailed" not in table_names
             ):
-                if not language_index:
-                    logger.info("mapping sentence ids to languages")
-                    language_index = get_language_index(*language_codes)
+                table_names.append("sentences_detailed")
 
-                tbl.classify(language_index)
+            # get the urls of the datafiles that need an update
+            to_download = check_updates(table_names, language_codes)
+            logger.info(f"{len(to_download)} files to download")
 
-            elif (
-                tbl_name in updated_tables and tbl_name in SIMPLE_SPLIT_TABLES
-            ):
-                tbl.classify()
+            # download the files of the update
+            updated_tables = {
+                Download(url, vs).fetch() for url, vs in to_download.items()
+            }
 
-        if updated_tables:
-            logger.info("{} updated".format(", ".join(updated_tables)))
+            # classify the multilingual datafiles by language
+            language_index = {}
+            for tbl_name in table_names:
+                tbl = Table(tbl_name, language_codes)
+
+                if tbl_name in INDEX_SPLIT_TABLES and (
+                    tbl_name in updated_tables
+                    or "sentences_detailed" in updated_tables
+                ):
+                    if not language_index:
+                        logger.info("mapping sentence ids to languages")
+                        language_index = get_language_index(*language_codes)
+
+                    tbl.classify(language_index)
+
+                elif (
+                    tbl_name in updated_tables
+                    and tbl_name in SIMPLE_SPLIT_TABLES
+                ):
+                    tbl.classify()
+
+        except (NotAvailableLanguage, NotAvailableLanguage) as e:
+            logger.exception(e)
         else:
-            logger.info("data already up to date")
+            if updated_tables:
+                msg = "{} updated".format(", ".join(updated_tables))
+            else:
+                msg = "data already up to date"
+            
+            logger.info(msg)
 
-        return updated_tables
+            return updated_tables            
 
     @lazy_property
     def language_index(self):
