@@ -31,7 +31,7 @@ class DataFile:
             with open(self.path) as f:
                 for row in custom_reader(f, self._dm, self._tc):
                     yield row
-    
+
     def split(self, columns=[], index=None, int_key=False):
         """Split the file according to the values mapped by the index
         in a chosen set of columns. 
@@ -195,8 +195,8 @@ def custom_reader(string_io, delimiter, text_col):
     - regroup unquoted multiline fields (i.e. containing newline characters)
     """
     reader = csv.reader(
-            string_io, delimiter=delimiter, quoting=csv.QUOTE_NONE,
-        )
+        string_io, delimiter=delimiter, quoting=csv.QUOTE_NONE,
+    )
     # count the number of columns in a regular row
     nb_cols = len(next(reader))
     string_io.seek(0)
