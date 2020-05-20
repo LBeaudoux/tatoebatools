@@ -15,7 +15,7 @@ def check_updates(tables, languages):
     """Check for updates on 'downloads.tatoeba.org' for these tables and these
     languages.
     """
-    logger.info("checking for updates...")
+    logger.info("checking for updates on https://downloads.tatoeba.org")
 
     # get the urls where newer versions of datafiles could be found
     urls_to_check = _get_urls_to_check(tables, languages)
