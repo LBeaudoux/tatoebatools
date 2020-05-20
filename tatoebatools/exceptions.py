@@ -32,4 +32,3 @@ class NotAvailableLanguage(Exception):
         super().__init__(msg)
 
         self.language_codes = not_available_langs
-
