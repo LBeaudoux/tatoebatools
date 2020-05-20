@@ -24,40 +24,14 @@ class DataFile:
 
     def __iter__(self):
 
-        try:
-            with open(self.path) as f:
-                reader = csv.reader(
-                    f, delimiter=self._dm, quoting=csv.QUOTE_NONE,
-                )
-                # count the number of columns in a regular row
-                nb_cols = len(next(reader))
-                f.seek(0)
-
-                real_row = []
-                for row in reader:
-                    # regroup text field if split by delimiter
-                    if self._tc:
-                        row = unsplit_field(row, nb_cols, self._dm, self._tc)
-
-                    # regroup multiline end fields
-                    if len(row) == nb_cols:
-                        if real_row:
-                            yield real_row
-                            real_row = []
-                        real_row.extend(row)
-                    elif len(row) == 1 and real_row:
-                        real_row[-1] += " " + row[0]
-                    elif not row and real_row:
-                        real_row[-1] += " "
-                    else:
-                        logger.debug(f"row skipped in {self.path}: {row}")
-                if real_row:
-                    yield real_row
-        except OSError:
-            logger.debug(f"an error occurred while reading {self.path}")
-
+        if not self.path.is_file():
+            logger.debug(f"{self.path} datafile not found")
             raise NoDataFile
-
+        else:
+            with open(self.path) as f:
+                for row in custom_reader(f, self._dm, self._tc):
+                    yield row
+    
     def split(self, columns=[], index=None, int_key=False):
         """Split the file according to the values mapped by the index
         in a chosen set of columns. 
@@ -201,7 +175,7 @@ class Buffer:
 
 def unsplit_field(row, nb_cols, delimiter, index_field):
     """Regroup the chosen field of a csv row if split by mistake. Useful if
-    the fields are not quoted or if extra delimiters are not escaped.w
+    the fields are not quoted or if extra delimiters are not escaped.
     """
     if index_field < 0:
         index_field = nb_cols + index_field
@@ -213,3 +187,37 @@ def unsplit_field(row, nb_cols, delimiter, index_field):
         del row[index_field + 1 : index_field + nb_extra + 1]
 
     return row
+
+
+def custom_reader(string_io, delimiter, text_col):
+    """A customized version of csv.reader that:
+    - unsplit unquoted field that contain delimiters
+    - regroup unquoted multiline fields (i.e. containing newline characters)
+    """
+    reader = csv.reader(
+            string_io, delimiter=delimiter, quoting=csv.QUOTE_NONE,
+        )
+    # count the number of columns in a regular row
+    nb_cols = len(next(reader))
+    string_io.seek(0)
+
+    real_row = []
+    for row in reader:
+        # regroup text field if split by delimiter
+        if text_col:
+            row = unsplit_field(row, nb_cols, delimiter, text_col)
+
+        # regroup multiline end fields
+        if len(row) == nb_cols:
+            if real_row:
+                yield real_row
+                real_row = []
+            real_row.extend(row)
+        elif len(row) == 1 and real_row:
+            real_row[-1] += " " + row[0]
+        elif not row and real_row:
+            real_row[-1] += " "
+        else:
+            logger.debug(f"row skipped: {row}")
+    if real_row:
+        yield real_row
