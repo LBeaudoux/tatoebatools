@@ -143,10 +143,8 @@ class Tatoeba:
                 msg = "{} updated".format(", ".join(updated_tables))
             else:
                 msg = "data already up to date"
-            
-            logger.info(msg)
 
-            return updated_tables            
+            logger.info(msg)
 
     @lazy_property
     def language_index(self):
