@@ -44,34 +44,26 @@ class DataFile:
         buffer = Buffer(self.path.parent, delimiter=self._dm)
         # classify the rows
         for row in self:
-            mapped_vals = []
-            for col in columns:
-                if len(row) > col:
-                    val = row[col]
+            mapped_fields = get_mapped_fields(row)
 
-                    if index:
-                        if int_key:
-                            val = int(val)
-                        val = index.get(val)
-
-                    mapped_vals.append(val)
-                else:
-                    mapped_vals.append("")
-                    logger.debug(f"{row} does not have column {col}")
-
-            if all(mapped_vals):
-                mapped_vals_string = "-".join(mapped_vals)
-                ext = "tsv" if self._dm == "\t" else "csv"
-                fname = f"{mapped_vals_string}_{self.stem}.{ext}"
+            if all(mapped_fields):
+                fname = self._get_out_filename(mapped_fields)
                 buffer.add(row, fname)
 
             # imcrement progress bar by the byte size of the row
-            line = self._dm.join(row) + "\n"
-            pbar.update(len(line.encode("utf-8")))
+            pbar.update(get_byte_size_of_row(row))
 
         buffer.clear()
 
         pbar.close()
+
+    def _get_out_filename(self, mapped_fields):
+        """Get the name of the file that corespond to this mapped fields.
+        """
+        mapped_fields_string = "-".join(mapped_fields)
+        ext = "tsv" if self._dm == "\t" else "csv"
+
+        return f"{mapped_fields_string}_{self.stem}.{ext}"
 
     @property
     def path(self):
@@ -221,3 +213,35 @@ def custom_reader(string_io, delimiter, text_col):
             logger.debug(f"row skipped: {row}")
     if real_row:
         yield real_row
+
+
+def get_mapped_fields(row, columns, index, int_key):
+    """For this row, get the values of the fields in these columns.
+    If index is True, get the value mapped by the index dictionary.
+    If int_ky is True, convert the field value to integer before passing it
+    as a key to the dict.
+    """
+    mapped_fields = []
+    for col in columns:
+        if len(row) > col:
+            val = row[col]
+
+            if index:
+                if int_key:
+                    val = int(val)
+                val = index.get(val)
+
+            mapped_fields.append(val)
+        else:
+            mapped_fields.append("")
+            logger.debug(f"{row} does not have column {col}")
+
+    return mapped_fields
+
+
+def get_byte_size_of_row(row, delimiter):
+    """Get the byte size of this row split by this delimiter.
+    """
+    line = delimiter.join(row) + "\n"
+
+    return len(line.encode("utf-8"))
