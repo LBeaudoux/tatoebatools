@@ -1,3 +1,6 @@
+from .exceptions import NoDataFile
+
+
 class Index:
     """An index that maps values from two columns of a datafile.
     """
@@ -22,7 +25,14 @@ class Index:
     def _build(self):
         """Build the index from scratch.
         """
-        if self._int:
-            return {int(row[self._kcol]): row[self._vcol] for row in self._df}
-        else:
-            return {row[self._kcol]: row[self._vcol] for row in self._df}
+        try:
+            if self._int:
+                ind = {
+                    int(row[self._kcol]): row[self._vcol] for row in self._df
+                }
+            else:
+                ind = {row[self._kcol]: row[self._vcol] for row in self._df}
+        except NoDataFile:
+            ind = {}
+        finally:
+            return ind
