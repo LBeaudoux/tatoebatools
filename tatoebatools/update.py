@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 from .utils import get_endpoint, get_filestem
-from .version import Version
+from .version import version
 
 logger = logging.getLogger(__name__)
 
@@ -22,16 +22,14 @@ def check_updates(tables, languages):
     # get the urls of the web pages from which file versions will be scraped
     urls_to_scrap = {get_endpoint(url) for url in urls_to_check}
 
-    local_versions = Version()
-
     to_update = {}
     with tqdm(total=len(urls_to_scrap)) as pbar:
         for url in urls_to_scrap:
-            versions = _scrap_versions(url)
+            online_versions = _scrap_versions(url)
             # compare versions
-            for url, vs in versions.items():
+            for url, vs in online_versions.items():
                 if url in urls_to_check:
-                    current_vs = local_versions[get_filestem(url)]
+                    current_vs = version[get_filestem(url)]
                     if not current_vs or current_vs.date() < vs.date():
                         to_update[url] = vs
 

@@ -3,8 +3,7 @@ import logging
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import lazy_property
-from .version import Version
+from .version import version
 
 logger = logging.getLogger(__name__)
 
@@ -57,12 +56,11 @@ class Tags:
         """
         return Tags._dir.joinpath(self.filename)
 
-    @lazy_property
-    def version(self):
+    @classmethod
+    def get_version(cls):
         """Get the version of the downloaded data of these tagged sentences.
         """
-        with Version() as vs:
-            return vs[self.filename]
+        return version[cls._table]
 
 
 class Tag:

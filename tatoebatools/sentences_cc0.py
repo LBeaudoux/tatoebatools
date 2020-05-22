@@ -5,7 +5,7 @@ from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
 from .utils import lazy_property
-from .version import Version
+from .version import version
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +51,16 @@ class SentencesCC0:
         return self._lg
 
     @property
+    def stem(self):
+        """Get the stem of the file of these sentences.
+        """
+        return f"{self._lg}_{SentencesCC0._table}"
+
+    @property
     def filename(self):
         """Get the name of the file of these sentences.
         """
-        return f"{self._lg}_{SentencesCC0._table}.tsv"
+        return f"{self.stem}.tsv"
 
     @property
     def path(self):
@@ -66,8 +72,7 @@ class SentencesCC0:
     def version(self):
         """Get the version of the downloaded data of these sentences.
         """
-        with Version() as vs:
-            return vs[self.filename]
+        return version[self.stem]
 
 
 class SentenceCC0:

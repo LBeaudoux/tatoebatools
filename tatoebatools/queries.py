@@ -76,7 +76,7 @@ class Queries:
         """Get the version of the downloaded data of these queries.
         """
         with Version() as vs:
-            return vs[self.filename]
+            return vs[Queries._table]
 
 
 class Query:

@@ -5,7 +5,7 @@ from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
 from .utils import lazy_property
-from .version import Version
+from .version import version
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +60,7 @@ class UserLists:
     def version(self):
         """Get the version of the downloaded data of these tagged sentences.
         """
-        with Version() as vs:
-            return vs[UserLists._filename]
+        return version[UserLists._table]
 
 
 class UserList:

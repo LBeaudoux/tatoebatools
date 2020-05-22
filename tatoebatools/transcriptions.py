@@ -4,7 +4,7 @@ from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
 from .utils import lazy_property
-from .version import Version
+from .version import version
 
 logger = logging.getLogger(__name__)
 
@@ -51,10 +51,16 @@ class Transcriptions:
         return self._lg
 
     @property
+    def stem(self):
+        """Get the stem of the name of the datafile.
+        """
+        return f"{self._lg}_{Transcriptions._table}"
+
+    @property
     def filename(self):
         """Get the name of the datafile.
         """
-        return f"{self._lg}_{Transcriptions._table}.tsv"
+        return f"{self.stem}.tsv"
 
     @property
     def path(self):
@@ -66,8 +72,7 @@ class Transcriptions:
     def version(self):
         """Get the version of the downloaded data.
         """
-        with Version() as vs:
-            return vs[self.filename]
+        return version[self.filename]
 
 
 class Transcription:

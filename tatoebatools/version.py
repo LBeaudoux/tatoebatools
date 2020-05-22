@@ -1,8 +1,11 @@
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 
 from pkg_resources import resource_filename
+
+logger = logging.getLogger(__name__)
 
 
 class Version:
@@ -16,18 +19,6 @@ class Version:
     def __init__(self):
         # the dict from which versions' values are fetched
         self._dict = self._load()
-        # a boolean that indicates if the data has been modified since the
-        # last file loading
-        self._save = False
-
-    def __enter__(self):
-
-        return self
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-
-        if self._save:
-            self.save()
 
     def __getitem__(self, filename):
         """Get the local or online version for this file.
@@ -40,7 +31,7 @@ class Version:
         """Update the version value for this file.
         """
         self._dict[filename] = new_version.strftime("%Y-%m-%d %H:%M:%S")
-        self._save = True
+        self._save()
 
     def _load(self):
         """Load the data file.
@@ -48,13 +39,18 @@ class Version:
         try:
             with open(Version._path) as f:
                 data = json.load(f)
-        except OSError:
+        except FileNotFoundError:
             data = {}
+        else:
+            logger.debug("version datafile loaded")
 
         return data
 
-    def save(self):
+    def _save(self):
         """Save the data file.
         """
         with open(Version._path, "w") as f:
             json.dump(self._dict, f)
+
+
+version = Version()

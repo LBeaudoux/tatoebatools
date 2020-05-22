@@ -4,7 +4,7 @@ from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
 from .utils import lazy_property
-from .version import Version
+from .version import version
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +65,7 @@ class SentencesWithAudio:
     def version(self):
         """Get the version of these sentences with audio.
         """
-        with Version() as vs:
-            return vs[self.filename]
+        return version[SentencesWithAudio._table]
 
 
 class SentenceWithAudio:

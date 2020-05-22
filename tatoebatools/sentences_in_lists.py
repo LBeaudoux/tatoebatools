@@ -4,7 +4,7 @@ from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
 from .utils import lazy_property
-from .version import Version
+from .version import version
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +64,7 @@ class SentencesInLists:
     def version(self):
         """Get the version of the downloaded data of these sentences.
         """
-        with Version() as vs:
-            return vs[self.filename]
+        return version[SentencesInLists._table]
 
 
 class SentenceInList:

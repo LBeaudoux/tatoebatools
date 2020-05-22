@@ -1,6 +1,6 @@
 from .config import DATA_DIR
 from .utils import fetch, get_filestem
-from .version import Version
+from .version import version
 
 
 class Download:
@@ -18,8 +18,7 @@ class Download:
         local version value.
         """
         if fetch(self.from_url, self.out_dir):
-            with Version() as local_versions:
-                local_versions[self.stem] = self.version
+            version[self.stem] = self.version
 
             return self.table
 
