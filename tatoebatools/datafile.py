@@ -44,14 +44,14 @@ class DataFile:
         buffer = Buffer(self.path.parent, delimiter=self._dm)
         # classify the rows
         for row in self:
-            mapped_fields = get_mapped_fields(row)
+            mapped_fields = get_mapped_fields(row, columns, index, int_key)
 
             if all(mapped_fields):
                 fname = self._get_out_filename(mapped_fields)
                 buffer.add(row, fname)
 
             # imcrement progress bar by the byte size of the row
-            pbar.update(get_byte_size_of_row(row))
+            pbar.update(get_byte_size_of_row(row, self._dm))
 
         buffer.clear()
 
