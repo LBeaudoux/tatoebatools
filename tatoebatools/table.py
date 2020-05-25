@@ -1,5 +1,9 @@
+import logging
+
 from .config import DATA_DIR
 from .datafile import DataFile
+
+logger = logging.getLogger(__name__)
 
 
 class Table:
@@ -11,6 +15,15 @@ class Table:
         self._name = name
         # the languages in which some data is required
         self._lgs = languages
+
+    def index(self, key_column, value_column):
+        """Get the index that maps 2 columns of this table.
+        """
+        tbl_index = {}
+        for df in self.language_detafiles:
+            tbl_index.update(df.index(key_column, value_column))
+
+        return tbl_index
 
     def classify(self, language_index=None):
         """Classify this table data by language.

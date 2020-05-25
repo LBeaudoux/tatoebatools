@@ -157,3 +157,11 @@ def get_endpoint(url):
     """Get the parent url of this url.
     """
     return url.rsplit("/", 1)[0]
+
+
+def get_byte_size_of_row(row, delimiter):
+    """Get the byte size of this row split by this delimiter.
+    """
+    line = delimiter.join(row) + "\n"
+
+    return len(line.encode("utf-8"))
