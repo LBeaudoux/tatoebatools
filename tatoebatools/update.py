@@ -39,7 +39,8 @@ def check_updates(tables, languages):
 
 
 def _get_urls_to_check(tables, languages):
-    """
+    """Get the urls where datafiles may be downloadable for these tables 
+    and languages.
     """
     ROOT_URL = "https://downloads.tatoeba.org"
 
