@@ -1,7 +1,6 @@
 import bz2
 import logging
 import tarfile
-from datetime import datetime
 from pathlib import Path
 
 import requests
@@ -10,38 +9,10 @@ from tqdm import tqdm
 logger = logging.getLogger(__name__)
 
 
-def get_url_last_modified_datetime(file_url):
-    """Get the last modified datetime of a file which is online.
-    """
-    try:
-        with requests.get(file_url, stream=True) as r:
-            dt_string = r.headers["last-modified"]
-            dt = datetime.strptime(dt_string, "%a, %d %b %Y %H:%M:%S %Z")
-    except Exception:
-        logger.exception(
-            f"did not get url last modified datetime of {file_url}"
-        )
-    else:
-        return dt
-
-
-def get_path_last_modified_datetime(file_path):
-    """Get the last modified datetime of a local file.
-    """
-    try:
-        fp = Path(file_path)
-        dt = datetime.fromtimestamp(fp.stat().st_mtime)
-    except FileNotFoundError:
-        return
-    else:
-        return dt
-
-
 def download(from_url, to_directory):
     """Download a file. Overwrite previous version.
     """
-    logger.info(f"downloading {from_url}")
-
+    # build out file path
     filename = from_url.rsplit("/", 1)[-1]
     to_dir_path = Path(to_directory)
     to_dir_path.mkdir(parents=True, exist_ok=True)
@@ -63,27 +34,30 @@ def download(from_url, to_directory):
                         f.write(chunk)
                         pbar.update(len(chunk))  # update progress bar
     except requests.exceptions.RequestException:
-        logger.info(f"downloading of {from_url} failed")
+        logger.error(f"downloading of {from_url} failed")
         return
     else:
         return to_path
 
 
 def decompress(compressed_path):
-    """Decompress a bz2 file here. Overwrite previous version.
+    """Decompress a bz2 file here. Overwrite previous version. Delete 
+    compressed file after decompression.
     """
     in_path = Path(compressed_path)
     out_path = in_path.parent.joinpath(in_path.stem)
-
-    logger.debug(f"decompressing {in_path.name}")
 
     try:
         with bz2.open(in_path) as in_f:
             with open(out_path, "wb") as out_f:
                 data = in_f.read()
                 out_f.write(data)
-    except Exception:
-        logger.exception(f"error while decompressing {compressed_path}")
+        in_path.unlink()
+    except FileNotFoundError:
+        logger.error(f"{compressed_path} not found by file decompressor")
+        return
+    except OSError:
+        logger.error(f"{compressed_path} is not a valid compressed file")
         return
     else:
         return out_path
@@ -91,36 +65,40 @@ def decompress(compressed_path):
 
 def extract(archive_path):
     """Extract here all files in an archive. Overwrite previous versions.
+    Delete archive after extraction.
     """
     arx_path = Path(archive_path)
-
-    logger.debug(f"extracting {arx_path.name}")
 
     try:
         with tarfile.open(arx_path) as tar:
             tar.extractall(arx_path.parent)
-            extracted_filenames = tar.getnames()
+            out_filenames = tar.getnames()
+        arx_path.unlink()
+    except FileNotFoundError:
+        logger.error(f"{arx_path} not found by file extractor")
+        return []
     except tarfile.ReadError:
-        logger.exception(f"{arx_path} is not extractable")
+        logger.error(f"{arx_path} is not an extractable archive")
         return []
     else:
-        return [arx_path.parent.joinpath(fn) for fn in extracted_filenames]
+        return [arx_path.parent.joinpath(fn) for fn in out_filenames]
 
 
 def fetch(from_url, to_directory):
     """Download a file, decompress it, extract it and delete temporary files.
     Overwrite previous versions.
     """
+    logger.info(f"downloading {from_url}")
     dl_path = download(from_url, to_directory)
 
     if not dl_path:
         return []
     elif str(dl_path).endswith(".bz2"):
+        logger.info(f"decompressing {dl_path.name}")
         uz_path = decompress(dl_path)
-        dl_path.unlink()
         if str(uz_path).endswith(".tar"):
+            logger.info(f"extracting {uz_path.name}")
             out_paths = extract(uz_path)
-            uz_path.unlink()
             return out_paths
         else:
             return [uz_path]

@@ -84,6 +84,12 @@ class Buffer:
         self._data.clear()
 
     @property
+    def directory(self):
+        """Get the path of the directory where the buffer files are saved.
+        """
+        return self._dir
+
+    @property
     def out_filenames(self):
         """List every out file name.
         """

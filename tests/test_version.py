@@ -13,8 +13,8 @@ class TestVersion:
         m_load.return_value = {"foo": "2020-05-22 11:51:00"}
         version = Version()
 
-        m_open.assert_called_once()
-        m_load.assert_called_once()
+        assert m_open.call_count == 1
+        assert m_load.call_count == 1
         assert len(version) == 1
 
     @patch("builtins.open")
@@ -22,7 +22,7 @@ class TestVersion:
         m_open.side_effect = FileNotFoundError
         version = Version()
 
-        m_open.assert_called_once()
+        assert m_open.call_count == 1
         assert len(version) == 0
 
     @patch("tatoebatools.version.json.load")

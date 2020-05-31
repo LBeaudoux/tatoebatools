@@ -6,7 +6,8 @@ from tqdm import tqdm
 
 from .buffer import Buffer
 from .exceptions import NoDataFile
-from .utils import get_byte_size_of_row
+from .utils import get_byte_size_of_row, lazy_property
+from .version import version
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +113,12 @@ class DataFile:
             return self._fp.stat().st_size
         else:
             return 0
+
+    @lazy_property
+    def version(self):
+        """Get the version datetime of this datafile.
+        """
+        return version[self.stem]
 
 
 def _unsplit_field(row, nb_cols, delimiter, index_field):

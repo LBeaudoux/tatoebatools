@@ -30,68 +30,67 @@ class Tatoeba:
     def update(self, table_names, language_codes):
         """Update the tables and classify them by required language.
         """
-        try:
-            # check if the tables are available
-            not_available_tables = set(table_names) - set(self.all_tables)
-            if not_available_tables:
-                raise NotAvailableTable(not_available_tables)
+        if not table_names and not language_codes:
+            return
 
-            # check if the language codes are available
-            not_available_langs = set(language_codes) - set(self.all_languages)
-            if not_available_langs:
-                raise NotAvailableLanguage(not_available_langs)
+        # check if the tables are available
+        not_available_tables = set(table_names) - set(self.all_tables)
+        if not_available_tables:
+            raise NotAvailableTable(not_available_tables)
 
-            # sentences table can be added because it is necessary in case of
-            # index splitting of files
-            if (
-                any(tn in INDEX_SPLIT_TABLES for tn in table_names)
-                and "sentences_detailed" not in table_names
+        # check if the language codes are available
+        not_available_langs = set(language_codes) - set(self.all_languages)
+        if not_available_langs:
+            raise NotAvailableLanguage(not_available_langs)
+
+        # sentences table can be added because it is necessary in case of
+        # index splitting of files
+        if (
+            any(tn in INDEX_SPLIT_TABLES for tn in table_names)
+            and "sentences_detailed" not in table_names
+        ):
+            table_names.append("sentences_detailed")
+
+        # get the urls of the datafiles that need an update
+        to_download = check_updates(table_names, language_codes)
+        logger.info(f"{len(to_download)} files to download")
+
+        # download the files of the update
+        updated_tables = {
+            Download(url, vs).fetch() for url, vs in to_download.items()
+        }
+
+        # classify the multilingual datafiles by language
+        language_index = {}
+        for table_name in table_names:
+            table = Table(table_name, language_codes)
+
+            if table_name in INDEX_SPLIT_TABLES and (
+                table_name in updated_tables
+                or "sentences_detailed" in updated_tables
             ):
-                table_names.append("sentences_detailed")
+                if not language_index:
+                    logger.info("mapping sentence ids to languages")
 
-            # get the urls of the datafiles that need an update
-            to_download = check_updates(table_names, language_codes)
-            logger.info(f"{len(to_download)} files to download")
+                    sentence_table = Table(
+                        "sentences_detailed", language_codes
+                    )
+                    language_index = sentence_table.index(0, 1)
 
-            # download the files of the update
-            updated_tables = {
-                Download(url, vs).fetch() for url, vs in to_download.items()
-            }
+                table.classify(language_index)
 
-            # classify the multilingual datafiles by language
-            language_index = {}
-            for table_name in table_names:
-                table = Table(table_name, language_codes)
+            elif (
+                table_name in updated_tables
+                and table_name in SIMPLE_SPLIT_TABLES
+            ):
+                table.classify()
 
-                if table_name in INDEX_SPLIT_TABLES and (
-                    table_name in updated_tables
-                    or "sentences_detailed" in updated_tables
-                ):
-                    if not language_index:
-                        logger.info("mapping sentence ids to languages")
-
-                        sentence_table = Table(
-                            "sentences_detailed", language_codes
-                        )
-                        language_index = sentence_table.index(0, 1)
-
-                    table.classify(language_index)
-
-                elif (
-                    table_name in updated_tables
-                    and table_name in SIMPLE_SPLIT_TABLES
-                ):
-                    table.classify()
-
-        except (NotAvailableLanguage, NotAvailableTable) as e:
-            logger.exception(e)
+        if updated_tables:
+            msg = "{} updated".format(", ".join(updated_tables))
         else:
-            if updated_tables:
-                msg = "{} updated".format(", ".join(updated_tables))
-            else:
-                msg = "data already up to date"
+            msg = "data already up to date"
 
-            logger.info(msg)
+        logger.info(msg)
 
     def sentences_detailed(self, language):
         """Iterate through all sentences in this language.

@@ -2,6 +2,7 @@ import logging
 
 from .config import DATA_DIR
 from .datafile import DataFile
+from .version import version
 
 logger = logging.getLogger(__name__)
 
@@ -28,13 +29,7 @@ class Table:
     def classify(self, language_index=None):
         """Classify this table data by language.
         """
-        if self.name == "sentences_detailed":
-            self.main_datafile.split(columns=[1])
-        elif self.name == "sentences_CC0":
-            self.main_datafile.split(columns=[1])
-        elif self.name == "transcriptions":
-            self.main_datafile.split(columns=[1])
-        elif self.name == "user_languages":
+        if self.name == "user_languages":
             self.main_datafile.split(columns=[0])
         elif self.name == "queries":
             self.main_datafile.split(columns=[1])
@@ -48,7 +43,12 @@ class Table:
             self.main_datafile.split(columns=[0], index=language_index)
         elif self.name == "sentences_with_audio" and language_index:
             self.main_datafile.split(columns=[0], index=language_index)
+        else:
+            return
 
+        for fs in self.language_filestems:
+            version[fs] = self.main_datafile.version
+    
     @property
     def name(self):
         """Get the name of this table.
@@ -75,6 +75,18 @@ class Table:
     def language_detafiles(self):
         """Get the monolingual datafiles of this table.
         """
+        language_datafiles = []
+        for fn in self.language_filenames:
+            fp = self.path.joinpath(fn)
+            delimiter = "\t" if fp.suffix == ".tsv" else ","
+            language_datafiles.append(DataFile(fp, delimiter=delimiter))
+
+        return language_datafiles
+
+    @property
+    def language_filenames(self):
+        """
+        """
         if self.name in (
             "sentences_detailed",
             "sentences_CC0",
@@ -85,21 +97,20 @@ class Table:
             "sentences_with_audio",
             "user_languages",
         ):
-            filenames = [f"{lg}_{self.name}.tsv" for lg in self._lgs]
-            delimiter = "\t"
+            return [f"{lg}_{self.name}.tsv" for lg in self._lgs]
         elif self.name in ("queries",):
-            filenames = [f"{lg}_{self.name}.csv" for lg in self._lgs]
-            delimiter = ","
+            return [f"{lg}_{self.name}.csv" for lg in self._lgs]
         elif self.name in ("links",):
-            filenames = [
+            return [
                 f"{lg1}-{lg2}_{self.name}.tsv"
                 for lg1 in self._lgs
                 for lg2 in self._lgs
             ]
-            delimiter = "\t"
         else:
             return []
 
-        filepaths = [self.path.joinpath(fn) for fn in filenames]
-
-        return [DataFile(fp, delimiter=delimiter) for fp in filepaths]
+    @property
+    def language_filestems(self):
+        """
+        """
+        return [fn.rsplit(".")[0] for fn in self.language_filenames]  

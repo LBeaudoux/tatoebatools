@@ -1,6 +1,6 @@
 import logging
 
-from .tatoeba import Tatoeba
+from .tatoebatools import Tatoeba
 from .parallel_corpora import ParallelCorpora
 
 tatoeba = Tatoeba()

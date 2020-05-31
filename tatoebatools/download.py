@@ -38,7 +38,8 @@ class Download:
 
     @property
     def stem(self):
-        """Get the stem of the downloaded file, e.g. 'foobar.txt' -> 'foobar'
+        """Get the stem of the downloaded file
+        'https://foo.bar/foobar.txt' -> 'foobar'
         """
         return get_filestem(self.from_url)
 
@@ -46,9 +47,8 @@ class Download:
     def table(self):
         """Get the name of the table from which this datafile is extracted.
         """
-        stem = get_filestem(self.from_url)
         for tbl in ("sentences_detailed", "sentences_CC0", "transcriptions"):
-            if stem.endswith(tbl):
+            if self.stem.endswith(tbl):
                 return tbl
 
         for tbl in (
@@ -61,7 +61,7 @@ class Download:
             "user_languages",
             "queries",
         ):
-            if stem == tbl:
+            if self.stem == tbl:
                 return tbl
 
         return

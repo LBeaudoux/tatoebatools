@@ -114,8 +114,8 @@ class TestDataFile:
         df = DataFile("any_file_path", delimiter=",", text_col=-1)
 
         assert [row for row in df] == self.fake_table
-        m_isfile.assert_called_once()
-        m_open.assert_called_once()
+        assert m_isfile.call_count == 1
+        assert m_open.call_count == 1
 
     @patch("tatoebatools.datafile.DataFile.__iter__")
     def test_index_with_ok_rows(self, m_iter):
@@ -123,7 +123,7 @@ class TestDataFile:
         df = DataFile("any_file_path", delimiter=",", text_col=-1)
 
         assert df.index(0, 1) == {"42": "fra", "123": "eng"}
-        m_iter.assert_called_once()
+        assert m_iter.call_count == 1
 
     @patch("tatoebatools.datafile.DataFile.__iter__")
     def test_index_with_bad_rows(self, m_iter):
@@ -131,7 +131,7 @@ class TestDataFile:
         df = DataFile("any_file_path", delimiter=",", text_col=-1)
 
         assert df.index(0, 1) == {"42": "fra"}
-        m_iter.assert_called_once()
+        assert m_iter.call_count == 1
 
     @patch("tatoebatools.datafile.DataFile.__iter__")
     def test_index_with_no_datafile(self, m_iter):
@@ -139,12 +139,13 @@ class TestDataFile:
         df = DataFile("any_file_path", delimiter=",", text_col=-1)
 
         assert df.index(0, 1) == {}
-        m_iter.assert_called_once()
+        assert m_iter.call_count == 1
 
-    @patch("tatoebatools.datafile.Buffer", autospec=True)
-    @patch("tatoebatools.datafile.tqdm", autospec=True)
+    @patch("tatoebatools.datafile.Buffer")
+    @patch("tatoebatools.datafile.tqdm")
+    @patch("tatoebatools.datafile.logger")
     @patch("tatoebatools.datafile.DataFile.__iter__")
-    def test_split_without_index(self, m_iter, m_tqdm, m_buffer):
+    def test_split_without_index(self, m_iter, m_logger, m_tqdm, m_buffer):
         m_iter.return_value = iter(self.fake_table)
         fp = "any_file_path"
         df = DataFile(fp, delimiter=",", text_col=-1)
@@ -154,15 +155,17 @@ class TestDataFile:
         assert add_args[0][0][0] == self.fake_table[0]
         assert add_args[1][0][0] == self.fake_table[1]
         assert add_args[0][0][1] != add_args[1][0][1]
-        m_iter.assert_called_once()
-        m_buffer.return_value.clear.assert_called_once()
+        assert m_iter.call_count == 1
+        assert m_buffer.return_value.clear.call_count == 1
+        assert m_logger.info.call_count == 1
         assert m_tqdm.return_value.update.call_count == 2
-        m_tqdm.return_value.close.assert_called_once()
+        assert m_tqdm.return_value.close.call_count == 1
 
-    @patch("tatoebatools.datafile.Buffer", autospec=True)
-    @patch("tatoebatools.datafile.tqdm", autospec=True)
+    @patch("tatoebatools.datafile.Buffer")
+    @patch("tatoebatools.datafile.tqdm")
+    @patch("tatoebatools.datafile.logger")
     @patch("tatoebatools.datafile.DataFile.__iter__")
-    def test_split_with_index(self, m_iter, m_tqdm, m_buffer):
+    def test_split_with_index(self, m_iter, m_logger, m_tqdm, m_buffer):
         m_iter.return_value = iter(self.fake_table)
         fp = "any_file_path"
         df = DataFile(fp, delimiter=",", text_col=-1)
@@ -173,10 +176,11 @@ class TestDataFile:
         assert add_args[0][0][0] == self.fake_table[0]
         assert add_args[1][0][0] == self.fake_table[1]
         assert add_args[0][0][1] != add_args[1][0][1]
-        m_iter.assert_called_once()
-        m_buffer.return_value.clear.assert_called_once()
+        assert m_iter.call_count == 1
+        assert m_buffer.return_value.clear.call_count == 1
+        assert m_logger.info.call_count == 1
         assert m_tqdm.return_value.update.call_count == 2
-        m_tqdm.return_value.close.assert_called_once()
+        assert m_tqdm.return_value.close.call_count == 1
 
     def test_get_out_filename_csv(self):
         fp = "any_file_path"
