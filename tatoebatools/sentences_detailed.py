@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-
+from tqdm import tqdm
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
@@ -46,6 +46,25 @@ class SentencesDetailed:
             )
 
             logger.warning(msg)
+
+    def get(self, sentence_ids, verbose):
+        """Get chosen detailed sentences.
+        """
+        if verbose:
+            logging.info(f"loading {self.language} sentences")
+
+        sentences = {}
+        pbar = tqdm(total=len(sentence_ids)) if verbose else None
+        for s in self:
+            if s.sentence_id in sentence_ids:
+                sentences[s.sentence_id] = s
+                if pbar:
+                    pbar.update()
+
+        if pbar:
+            pbar.close()
+
+        return sentences
 
     @property
     def language(self):
