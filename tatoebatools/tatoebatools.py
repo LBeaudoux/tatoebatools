@@ -27,7 +27,7 @@ class Tatoeba:
     """A handler for managing Tatoeba data on the client side.
     """
 
-    def update(self, table_names, language_codes):
+    def update(self, table_names, language_codes, verbose=True):
         """Update the tables and classify them by required language.
         """
         if not table_names and not language_codes:
@@ -52,8 +52,11 @@ class Tatoeba:
             table_names.append("sentences_detailed")
 
         # get the urls of the datafiles that need an update
-        to_download = check_updates(table_names, language_codes)
-        logger.info(f"{len(to_download)} files to download")
+        to_download = check_updates(
+            table_names, language_codes, verbose=verbose
+        )
+        if verbose:
+            logger.info(f"{len(to_download)} files to download")
 
         # download the files of the update
         updated_tables = {
@@ -85,12 +88,13 @@ class Tatoeba:
             ):
                 table.classify()
 
-        if updated_tables:
-            msg = "{} updated".format(", ".join(updated_tables))
-        else:
-            msg = "data already up to date"
+        if verbose:
+            if updated_tables:
+                msg = "{} updated".format(", ".join(updated_tables))
+            else:
+                msg = "data already up to date"
 
-        logger.info(msg)
+            logger.info(msg)
 
     def sentences_detailed(self, language):
         """Iterate through all sentences in this language.

@@ -11,11 +11,12 @@ from .version import version
 logger = logging.getLogger(__name__)
 
 
-def check_updates(tables, languages):
+def check_updates(tables, languages, verbose=True):
     """Check for updates on 'downloads.tatoeba.org' for these tables and these
     languages.
     """
-    logger.info("checking for updates on https://downloads.tatoeba.org")
+    if verbose:
+        logger.info("checking for updates on https://downloads.tatoeba.org")
 
     # get the urls where newer versions of datafiles could be found
     urls_to_check = _get_urls_to_check(tables, languages)
@@ -23,17 +24,21 @@ def check_updates(tables, languages):
     urls_to_scrap = {get_endpoint(url) for url in urls_to_check}
 
     to_update = {}
-    with tqdm(total=len(urls_to_scrap)) as pbar:
-        for url in urls_to_scrap:
-            online_versions = _scrap_versions(url)
-            # compare versions
-            for url, vs in online_versions.items():
-                if url in urls_to_check:
-                    current_vs = version[get_filestem(url)]
-                    if not current_vs or current_vs.date() < vs.date():
-                        to_update[url] = vs
+    pbar = tqdm(total=len(urls_to_scrap)) if verbose else None
+    for url in urls_to_scrap:
+        online_versions = _scrap_versions(url)
+        # compare versions
+        for url, vs in online_versions.items():
+            if url in urls_to_check:
+                current_vs = version[get_filestem(url)]
+                if not current_vs or current_vs.date() < vs.date():
+                    to_update[url] = vs
 
+        if pbar:
             pbar.update()
+
+    if pbar:
+        pbar.close()
 
     return to_update
 

@@ -48,7 +48,7 @@ class Table:
 
         for fs in self.language_filestems:
             version[fs] = self.main_datafile.version
-    
+
     @property
     def name(self):
         """Get the name of this table.
@@ -113,4 +113,4 @@ class Table:
     def language_filestems(self):
         """
         """
-        return [fn.rsplit(".")[0] for fn in self.language_filenames]  
+        return [fn.rsplit(".")[0] for fn in self.language_filenames]
