@@ -24,12 +24,36 @@ logger = logging.getLogger(__name__)
 
 
 class Tatoeba:
-    """A handler for managing Tatoeba data on the client side.
+    """A handler for interacting with the local Tatoeba's data
+
+    It enables users to update and parse their tables' data files.
     """
 
     def update(self, table_names, language_codes, verbose=True):
-        """Update the tables and classify them by required language.
+        """Updates the tables' datafiles and classify them by language
+
+        Parameters
+        ----------
+        table_names : list
+            The names of the tables to update. Call the 'all_tables' 
+            attribute to get a list of all available tables
+        language_codes : list
+            ISO 639-3 codes of the languages for which local data is 
+            updated. Call the 'all_languages' attribute to get the list 
+            of all supported languages.
+        verbose : bool, optional
+            Verbosity of the logging, by default True
+
+        Raises
+        ------
+        NotAvailableTable
+            Indicates that at least one of the table naames pased as 
+            argument is not a valid Tatoeba table name.
+        NotAvailableLanguage
+            Indicates that at least one of the language code pased as 
+            argument is not supported by Tatoeba.
         """
+
         if not table_names and not language_codes:
             return
 
@@ -43,8 +67,7 @@ class Tatoeba:
         if not_available_langs:
             raise NotAvailableLanguage(not_available_langs)
 
-        # sentences table can be added because it is necessary in case of
-        # index splitting of files
+        # sentences table added when required for splitting other files
         if (
             any(tn in INDEX_SPLIT_TABLES for tn in table_names)
             and "sentences_detailed" not in table_names
@@ -97,68 +120,213 @@ class Tatoeba:
             logger.info(msg)
 
     def sentences_detailed(self, language):
-        """Iterate through all sentences in this language.
-        """
+        """Iterates through all sentences in this language.       
+
+        Parameters
+        ----------
+        language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages.
+
+        Returns
+        -------
+        iterator
+            DetailedSentence instances with sentence_id, lang, 
+            text, username, date_added and date_last_modified
+            attributes.
+        """  
+              
         return SentencesDetailed(language=language).__iter__()
 
     def sentences_CC0(self, language):
-        """Iterate through all sentences in this language with a CC0 license.
+        """Iterate through all sentences in this language with a CC0 
+        license
+
+        Parameters
+        ----------
+        language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages.        
+
+        Returns
+        -------
+        iterator
+            SentenceCC0 instances with sentence_id, lang, text and 
+            date_last_modified attributes.
         """
+
         return SentencesCC0(language=language).__iter__()
 
     def links(self, source_language, target_language):
-        """Iterate through all links from sentences in this source language 
-        to sentences in this target language
+        """Iterates through all links between sentences in this source 
+        language and sentences in this target language
+
+        Parameters
+        ----------
+        source_language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages.       
+        target_language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages.                  
+
+        Returns
+        -------
+        iterator
+            Link instances with sentence_id and translation_id 
+            attributes
         """
+
         return Links(
             source_language=source_language, target_language=target_language
         ).__iter__()
 
     def tags(self, language):
-        """Iterate through all taged sentences in this language.
+        """Iterates through all tagged sentences in this language.
+
+        Parameters
+        ----------
+        language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages.        
+
+        Returns
+        -------
+        iterator
+            Tag instances with sentence_id and tag_name attributes
         """
+
         return Tags(language=language).__iter__()
 
     def user_lists(self):
-        """Iterate trough all sentences' lists.
+        """Iterate trough all sentences' lists
+
+        Returns
+        -------
+        iterator
+            UserList instances with id, username, date_created,
+            date_last_modified, list_name and editable_by attributes
         """
+
         return UserLists().__iter__()
 
     def sentences_in_lists(self, language):
-        """Iterate through all sentences in this language which are in a list.
+        """Iterates through all sentences in this language which 
+        are in a list
+
+        Parameters
+        ----------
+        language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages.        
+
+        Returns
+        -------
+        iterator
+            SentenceInList instances with list_id and sentence_id
+            attributes
         """
+
         return SentencesInLists(language=language).__iter__()
 
     def jpn_indices(self):
-        """Iterate through all Japanese indices.
+        """Iterates through all Japanese indices.
+
+        Returns
+        -------
+        iterator
+            JpnIndex instances with sentence_id, meaning_id and text
+            attributes
         """
+
         return JpnIndices().__iter__()
 
     def sentences_with_audio(self, language):
-        """Iterate through sentences with audio file.
+        """Iterates through sentences with audio file.
+
+        Parameters
+        ----------
+        language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages.        
+
+        Returns
+        -------
+        iterator
+            SentenceWithAudio instances with sentence_id, username,
+            license and attribution_url attributes
         """
+
         return SentencesWithAudio(language=language).__iter__()
 
     def user_languages(self, language):
-        """Iterate through all users' skills in this language.
+        """Iterates through all users' skills in this language.
+
+        Parameters
+        ----------
+        language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages.        
+
+        Returns
+        -------
+        iterator
+            UserLanguage instances with lang, skill_level, 
+            username and details attributes
         """
+
         return UserLanguages(language=language).__iter__()
 
     def transcriptions(self, language):
-        """Iterate through all transcriptions for this language.
+        """Iterate through all transcriptions for this language
+
+        Parameters
+        ----------
+        language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages.        
+
+        Returns
+        -------
+        iterator
+            Transcription instances with sentence_id, lang, 
+            script_name, username and transcription attributes
         """
+
         return Transcriptions(language=language).__iter__()
 
     @property
     def all_tables(self):
-        """List all tables that are downloadable from tatoeba.org.
-        """
+        """All tables that are downloadable from tatoeba.org
+
+        Returns
+        -------
+        list
+            See https://tatoeba.org/eng/downloads for more information.
+        """       
+
         return sorted(list(SUPPORTED_TABLES))
 
     @lazy_property
     def all_languages(self):
-        """List all languages available on tatoeba.org
+        """All languages with at least one sentence on tatoeba.org
+
+        Returns
+        -------
+        list
+            See https://tatoeba.org/eng/stats/sentences_by_language
+            for more information.
         """
+
         url = "https://downloads.tatoeba.org/exports/per_language/"
         try:
             r = requests.get(url)

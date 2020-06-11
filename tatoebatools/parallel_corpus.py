@@ -70,7 +70,7 @@ class ParallelCorpus:
 
         tables_to_update = set()
         langs_to_update = set()
-        
+
         if self._upd:  # if update explicitly demanded
             tables_to_update |= {"sentences_detailed", "links"}
             langs_to_update |= {self._src_lg, self._tgt_lg}
@@ -89,7 +89,7 @@ class ParallelCorpus:
 
     def _load(self):
         """Loads the sentences and links from their datafiles"""
-        
+
         links = Links(self._src_lg, self._tgt_lg)
         src_corpus = SentencesDetailed(self._src_lg)
         tgt_corpus = SentencesDetailed(self._tgt_lg)
@@ -112,4 +112,3 @@ class ParallelCorpus:
             src_ids, tgt_ids = links.ids
             self._sentences = src_corpus.get(src_ids, verbose=self._vb)
             self._translations = tgt_corpus.get(tgt_ids, verbose=self._vb)
-
