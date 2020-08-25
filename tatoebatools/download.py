@@ -47,18 +47,23 @@ class Download:
     def table(self):
         """Get the name of the table from which this datafile is extracted.
         """
-        for tbl in ("sentences_detailed", "sentences_CC0", "transcriptions"):
+        for tbl in (
+            "sentences_base",
+            "sentences_detailed",
+            "sentences_CC0",
+            "transcriptions",
+            "links",
+            "tags",
+            "sentences_in_lists",
+            "sentences_with_audio",
+            "user_languages",
+        ):
             if self.stem.endswith(tbl):
                 return tbl
 
         for tbl in (
-            "links",
-            "tags",
             "user_lists",
-            "sentences_in_lists",
             "jpn_indices",
-            "sentences_with_audio",
-            "user_languages",
             "queries",
         ):
             if self.stem == tbl:

@@ -51,7 +51,16 @@ def _get_urls_to_check(tables, languages):
 
     urls = set()
     for tbl in tables:
-        if tbl in ("sentences_detailed", "sentences_CC0", "transcriptions",):
+        if tbl in (
+            "sentences_base",
+            "sentences_CC0",
+            "sentences_detailed",
+            "sentences_in_lists",
+            "sentences_with_audio",
+            "tags",
+            "transcriptions",
+            "user_languages",
+        ):
             urls.update(
                 [
                     f"{ROOT_URL}/exports/per_language/{lg}/{lg}_{tbl}.tsv.bz2"
@@ -59,15 +68,20 @@ def _get_urls_to_check(tables, languages):
                 ]
             )
         elif tbl in {
-            "links",
-            "tags",
-            "user_lists",
-            "sentences_in_lists",
             "jpn_indices",
-            "sentences_with_audio",
-            "user_languages",
+            "user_lists",
         }:
             urls.add(f"{ROOT_URL}/exports/{tbl}.tar.bz2")
+        elif tbl in {
+            "links",
+        }:
+            urls.update(
+                [
+                    f"{ROOT_URL}/exports/per_language/{lg1}/{lg1}-{lg2}_{tbl}.tsv.bz2"
+                    for lg1 in languages
+                    for lg2 in languages
+                ]
+            )
         elif tbl == "queries":
             urls.add(f"{ROOT_URL}/stats/{tbl}.csv.bz2")
 

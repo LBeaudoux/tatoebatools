@@ -56,16 +56,23 @@ class SentencesWithAudio:
         return SentencesWithAudio._dir.joinpath(self.filename)
 
     @property
-    def filename(self):
-        """Get the name of the file where the sentences with audio are saved.
+    def stem(self):
+        """Get the stem of the name of the file where the sentences 
+        with audio are saved
         """
-        return f"{self._lg}_{SentencesWithAudio._table}.tsv"
+        return f"{self._lg}_{SentencesWithAudio._table}"
+
+    @property
+    def filename(self):
+        """Get the name of the file where the sentences with audio 
+        are saved
+        """
+        return f"{self.stem}.tsv"
 
     @lazy_property
     def version(self):
-        """Get the version of these sentences with audio.
-        """
-        return version[SentencesWithAudio._table]
+        """Get the version of these sentences with audio"""
+        return version[self.stem]
 
 
 class SentenceWithAudio:

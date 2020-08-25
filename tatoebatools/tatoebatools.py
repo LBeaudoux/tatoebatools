@@ -8,6 +8,7 @@ from .download import Download
 from .exceptions import NotAvailableLanguage, NotAvailableTable
 from .jpn_indices import JpnIndices
 from .links import Links
+from .sentences_base import SentencesBase
 from .sentences_cc0 import SentencesCC0
 from .sentences_detailed import SentencesDetailed
 from .sentences_in_lists import SentencesInLists
@@ -91,9 +92,9 @@ class Tatoeba:
         for table_name in table_names:
             table = Table(table_name, language_codes)
 
-            if table_name in INDEX_SPLIT_TABLES and (
-                table_name in updated_tables
-                or "sentences_detailed" in updated_tables
+            if (
+                table_name in INDEX_SPLIT_TABLES
+                and table_name in updated_tables
             ):
                 if not language_index:
                     logger.info("mapping sentence ids to languages")
@@ -132,12 +133,31 @@ class Tatoeba:
         Returns
         -------
         iterator
-            DetailedSentence instances with sentence_id, lang, 
+            SentenceDetailed instances with sentence_id, lang, 
             text, username, date_added and date_last_modified
             attributes.
-        """  
-              
+        """
+
         return SentencesDetailed(language=language).__iter__()
+
+    def sentences_base(self, language):
+        """Iterates through all sentences' bases in this language.       
+
+        Parameters
+        ----------
+        language : str
+            The IS0 639-3 code of a Tatoeba supported language.
+            Call the 'all_languages' attribute to get the list 
+            of all supported languages
+
+        Returns
+        -------
+        iterator
+            SentenceBase instances with sentence_id and 
+            base_of_the_sentence attributes
+        """
+
+        return SentencesBase(language=language).__iter__()
 
     def sentences_CC0(self, language):
         """Iterate through all sentences in this language with a CC0 
@@ -209,7 +229,7 @@ class Tatoeba:
         Returns
         -------
         iterator
-            UserList instances with id, username, date_created,
+            UserList instances with list_id, username, date_created,
             date_last_modified, list_name and editable_by attributes
         """
 
@@ -312,7 +332,7 @@ class Tatoeba:
         -------
         list
             See https://tatoeba.org/eng/downloads for more information.
-        """       
+        """
 
         return sorted(list(SUPPORTED_TABLES))
 

@@ -3,6 +3,7 @@ import logging
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
+from .utils import lazy_property
 from .version import version
 
 logger = logging.getLogger(__name__)
@@ -45,10 +46,17 @@ class Tags:
         return self._lg
 
     @property
+    def stem(self):
+        """Get the stem of the file where the tags for this language
+        pair are saved.
+        """
+        return f"{self._lg}_{Tags._table}"
+
+    @property
     def filename(self):
         """Get the name of the file of these tagged sentences.
         """
-        return f"{self._lg}_{Tags._table}.tsv"
+        return f"{self.stem}.tsv"
 
     @property
     def path(self):
@@ -56,11 +64,11 @@ class Tags:
         """
         return Tags._dir.joinpath(self.filename)
 
-    @classmethod
-    def get_version(cls):
+    @lazy_property
+    def get_version(self):
         """Get the version of the downloaded data of these tagged sentences.
         """
-        return version[cls._table]
+        return version[self.stem]
 
 
 class Tag:

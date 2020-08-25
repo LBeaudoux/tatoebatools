@@ -50,10 +50,14 @@ class UserLanguages:
         return self._lg
 
     @property
+    def stem(self):
+        """Get the stem of the name of the datafile"""
+        return f"{self._lg}_{UserLanguages._table}"
+
+    @property
     def filename(self):
-        """Get the name of the datafile.
-        """
-        return f"{self._lg}_{UserLanguages._table}.tsv"
+        """Get the name of the datafile"""
+        return f"{self.stem}.tsv"
 
     @property
     def path(self):
@@ -65,7 +69,7 @@ class UserLanguages:
     def version(self):
         """Get the version of the downloaded data.
         """
-        return version[UserLanguages._table]
+        return version[self.stem]
 
 
 class UserLanguage:

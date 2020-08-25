@@ -34,7 +34,7 @@ class TestTatoeba:
     @patch("tatoebatools.tatoebatools.check_updates")
     def test_update_links(self, m_check, m_fetch, m_index, m_classify):
         table_names = ["links"]
-        language_codes = []
+        language_codes = ["eng", "fra"]
         m_check.return_value = {"any_url": datetime(2020, 4, 2, 20, 52, 42)}
         m_fetch.return_value = "links"
         Tatoeba().update(table_names, language_codes)
@@ -43,8 +43,8 @@ class TestTatoeba:
             table_names, language_codes, verbose=True
         )
         assert m_fetch.call_count == 1
-        m_index.assert_called_once_with(0, 1)
-        assert m_classify.call_count == 1
+        assert m_index.call_count == 0
+        assert m_classify.call_count == 0
 
     @patch("tatoebatools.tatoebatools.Table.classify")
     @patch("tatoebatools.tatoebatools.Table.index")

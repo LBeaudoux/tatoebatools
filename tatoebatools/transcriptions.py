@@ -72,7 +72,7 @@ class Transcriptions:
     def version(self):
         """Get the version of the downloaded data.
         """
-        return version[self.filename]
+        return version[self.stem]
 
 
 class Transcription:

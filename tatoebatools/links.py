@@ -51,11 +51,18 @@ class Links:
         return self._tgt_lg
 
     @property
+    def stem(self):
+        """Get the stem of the file where the links for this language
+        pair are saved.
+        """
+        return f"{self._src_lg}-{self._tgt_lg}_{Links._table}"
+
+    @property
     def filename(self):
         """Get the name of the file where the links for this language
         pair are saved.
         """
-        return f"{self._src_lg}-{self._tgt_lg}_{Links._table}.tsv"
+        return f"{self.stem}.tsv"
 
     @property
     def path(self):
@@ -79,7 +86,7 @@ class Links:
     def version(self):
         """Get the version of the downloaded data of these links.
         """
-        return version[Links._table]
+        return version[self.stem]
 
 
 class Link:

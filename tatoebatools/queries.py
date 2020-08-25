@@ -5,7 +5,7 @@ from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
 from .utils import lazy_property
-from .version import Version
+from .version import version
 
 
 logger = logging.getLogger(__name__)
@@ -75,8 +75,7 @@ class Queries:
     def version(self):
         """Get the version of the downloaded data of these queries.
         """
-        with Version() as vs:
-            return vs[Queries._table]
+        return version[Queries._table]
 
 
 class Query:

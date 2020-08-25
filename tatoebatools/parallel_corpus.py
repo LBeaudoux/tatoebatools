@@ -60,10 +60,14 @@ class ParallelCorpus:
 
         if self._sentences and self._translations:
             for lk in Links(self._src_lg, self._tgt_lg):
-                yield (
-                    self._sentences[lk.sentence_id],
-                    self._translations[lk.translation_id],
-                )
+                if (
+                    lk.sentence_id in self._sentences
+                    and lk.translation_id in self._translations
+                ):
+                    yield (
+                        self._sentences[lk.sentence_id],
+                        self._translations[lk.translation_id],
+                    )
 
     def _update(self):
         """Updates local data required for this parallel corpus"""
