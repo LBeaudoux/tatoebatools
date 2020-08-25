@@ -1,4 +1,7 @@
-tatoebatools is a Python library for easily downloading and iterating over data from the Tatoeba project.
+TATOEBA TOOLS
+=============
+
+*tatoebatools* is a Python library for easily downloading and iterating over data from the Tatoeba project.
 
 
 Installation
@@ -14,7 +17,8 @@ This library requires Python 3.6.
 Basic usage
 -----------
 
-Thanks to the Corpus top-level object, you can download all sentences in a language and iterate over them:
+Downloading and iterating over all the sentences in a language
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -22,17 +26,15 @@ Thanks to the Corpus top-level object, you can download all sentences in a langu
 
     >>> corpus = Corpus("fra")
     >>> for s in corpus:
-            print(s.sentence_id, s.text, s.username)
+            print((s.sentence_id, s.text, s.username))
     ...
-    7875 Laissez-moi vous aider. TRANG
-    7876 Donne-m'en quelques-uns. sacredceltic
-    7877 Pouvez-vous me consacrer un peu de temps ? Cocorico
-    7878 S'il te plaît, donne-moi de l'eau. gillux
-    7879 C'est elle qui me l'a dit. Archibald
-    ...
+    (8819708, 'Nous avons rendu visite à mamie hier.', 'felix63')
+    (8819719, 'Elle a été percutée par une voiture.', 'Julien_PDC')
+    (8819766, 'Je te tiens informé.', 'felix63')
 
 
-Thanks to the ParallelCorpus top-level object, you can download all sentence/translation pairs from a source language to a target language and iterate over them:
+Downloading and iterating over all sentence/translation pairs from a source language to a target language
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
@@ -40,11 +42,68 @@ Thanks to the ParallelCorpus top-level object, you can download all sentence/tra
 
     >>> parallel_corpus = ParallelCorpus("cmn", "eng")
     >>> for sentence, translation in parallel_corpus:
-            print(sentence.text, translation.text)
+            print((sentence.text, translation.text))
     ...
-    我不知道这个词的意思。 I don't know the meaning of this word.
-    昨晚雨下得很大。 It rained hard last night.
-    我们都非常喜欢你。 All of us like you very much.
-    我是素食主义者。 I am a vegetarian.
-    我最喜歡吃葡萄果凍。 I like grape jelly best.
+    ('那里有八块小圆石。', 'There were eight pebbles there.')
+    ('这个椅子坐着不舒服。', 'This chair is uncomfortable.')
+    ('我会在这里等着到他回来的。', 'Until he comes back, I will wait here.')
+
+
+Advanced usage
+--------------
+
+Import the lower-level *tatoeba* object to enable extended features.
+
+.. code-block:: python
+
+    >>> from tatoebatools import tatoeba
+
+
+Listing all tables that can be downloaded from tatoeba.org
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: python
+
+    >>> tatoeba.all_tables
+    ['jpn_indices', 'links', ... , 'user_languages', 'user_lists']
+
+
+Listing all languages available on Tatoeba
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    >>> tatoeba.all_languages
+    ['abk', 'acm', 'ady', ... , 'zsm', 'zul', 'zza']
+
+
+Updating chosen tables for a set of languages
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+    >>> tatoeba.update(["tags", "sentences_with_audio"], ["rus", "swe"])
+    checking for updates on https://downloads.tatoeba.org
+    100%|███████████████████████████| 2/2 [00:00<00:00,  4.35it/s]
+    3 files to download
+    downloading https://downloads.tatoeba.org/exports/per_language/swe/swe_tags.tsv.bz2
+    100%|███████████████████████████| 16.4k/16.4k [00:00<00:00, 2.77MiB/s]
+    decompressing swe_tags.tsv.bz2
+    downloading https://downloads.tatoeba.org/exports/per_language/rus/rus_sentences_with_audio.tsv.bz2
+    100%|███████████████████████████| 22.2k/22.2k [00:00<00:00, 3.75MiB/s]
+    decompressing rus_sentences_with_audio.tsv.bz2
     ...
+    tags, sentences_with_audio updated
+
+
+Iterating over a table
+^^^^^^^^^^^^^^^^^^^^^^
+
+Any downloaded table is readable. 
+
+For example, you can list all French native speakers by iterating over *user_languages*:
+
+.. code-block:: python
+
+    >>> native_french = [x.username for x in tatoeba.user_languages("fra") if x.skill_level == 5]
+
+Find out more about the tables and their fields at https://tatoeba.org/eng/downloads

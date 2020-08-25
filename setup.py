@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="tatoebatools",
-    version="0.0.1",
+    version="0.0.2",
     author="L.Beaudoux",
     description="A library for downloading and reading data from Tatoeba",
     long_description=long_description,
@@ -20,8 +20,8 @@ setuptools.setup(
     ],
     python_requires=">=3.6",
     install_requires=[
-        'beautifulsoup4>=4.9.0',
-        'requests>=2.23.0',
-        'tqdm>=4.46.0'
-      ],
+        "beautifulsoup4>=4.9.0",
+        "requests>=2.23.0",
+        "tqdm>=4.46.0",
+    ],
 )
