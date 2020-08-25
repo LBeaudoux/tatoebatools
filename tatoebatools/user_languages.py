@@ -102,7 +102,7 @@ class UserLanguage:
     def username(self):
         """Get the name of the user who have this language skill. 
         """
-        return self._usr
+        return self._usr if self._usr != "\\N" else None
 
     @property
     def details(self):
