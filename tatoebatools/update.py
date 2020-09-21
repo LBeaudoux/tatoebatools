@@ -1,10 +1,8 @@
 import logging
-from datetime import datetime
 
-import requests
-from bs4 import BeautifulSoup
 from tqdm import tqdm
 
+from .export_page import ExportPage
 from .utils import get_endpoint, get_filestem
 from .version import version
 
@@ -24,9 +22,12 @@ def check_updates(tables, languages, verbose=True):
     urls_to_scrap = {get_endpoint(url) for url in urls_to_check}
 
     to_update = {}
-    pbar = tqdm(total=len(urls_to_scrap)) if verbose else None
+    nb_scraps = len(urls_to_scrap)
+    pbar = tqdm(total=nb_scraps) if verbose and nb_scraps > 1 else None
     for url in urls_to_scrap:
-        online_versions = _scrap_versions(url)
+        page = ExportPage(url)
+        page.update()
+        online_versions = page.get_versions()
         # compare versions
         for url, vs in online_versions.items():
             if url in urls_to_check:
@@ -77,7 +78,8 @@ def _get_urls_to_check(tables, languages):
         }:
             urls.update(
                 [
-                    f"{ROOT_URL}/exports/per_language/{lg1}/{lg1}-{lg2}_{tbl}.tsv.bz2"
+                    f"{ROOT_URL}/exports/per_language/{lg1}/"
+                    f"{lg1}-{lg2}_{tbl}.tsv.bz2"
                     for lg1 in languages
                     for lg2 in languages
                 ]
@@ -86,25 +88,3 @@ def _get_urls_to_check(tables, languages):
             urls.add(f"{ROOT_URL}/stats/{tbl}.csv.bz2")
 
     return urls
-
-
-def _scrap_versions(url):
-    """Scrap the versions of the files downloadable from a 
-    'downloads.tatoeba.org' web page.
-    """
-    try:
-        r = requests.get(url)
-    except requests.exceptions.RequestException:
-        return
-    else:
-        soup = BeautifulSoup(r.text, features="html.parser").find("pre")
-
-        texts = [x.strip() for x in soup.findAll(text=True)]
-
-        return {
-            f"{url}/{x}": datetime.strptime(
-                texts[i + 1][:17], "%d-%b-%Y %H:%M"
-            )
-            for i, x in enumerate(texts)
-            if i % 2 == 0 and texts[i + 1] and x[-1] != "/"
-        }

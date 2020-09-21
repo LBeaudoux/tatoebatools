@@ -8,4 +8,8 @@ __pycache__/
 *.bz2
 *.pyc
 *.ipynb
+*.html
 run.py
+build/
+dist/
+tatoebatools.egg-info/
