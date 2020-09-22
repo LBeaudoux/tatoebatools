@@ -1,4 +1,4 @@
-from tatoebatools.export_page import _extract_versions
+from tatoebatools.download_page import _extract_versions
 from datetime import datetime
 
 
