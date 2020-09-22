@@ -29,7 +29,7 @@ class Tatoeba:
     """
 
     def sentences_detailed(
-        self, language, scope="all", update=True, verbose=True
+        self, language, scope="all", update=True, verbose=False
     ):
         """Iterates through all sentences in this language.       
 
@@ -59,7 +59,9 @@ class Tatoeba:
 
         return SentencesDetailed(language=language, scope=scope).__iter__()
 
-    def sentences_base(self, language, scope="all", update=True, verbose=True):
+    def sentences_base(
+        self, language, scope="all", update=True, verbose=False
+    ):
         """Iterates through all sentences' bases in this language.       
 
         Parameters
@@ -87,7 +89,7 @@ class Tatoeba:
 
         return SentencesBase(language=language).__iter__()
 
-    def sentences_CC0(self, language, scope="all", update=True, verbose=True):
+    def sentences_CC0(self, language, scope="all", update=True, verbose=False):
         """Iterate through all sentences in this language with a CC0 
         license
 
@@ -122,7 +124,7 @@ class Tatoeba:
         target_language,
         scope="all",
         update=True,
-        verbose=True,
+        verbose=False,
     ):
         """Iterates through all links between sentences in this source 
         language and sentences in this target language
@@ -163,7 +165,7 @@ class Tatoeba:
             source_language=source_language, target_language=target_language
         ).__iter__()
 
-    def tags(self, language, scope="all", update=True, verbose=True):
+    def tags(self, language, scope="all", update=True, verbose=False):
         """Iterates through all tagged sentences in this language.
 
         Parameters
@@ -190,7 +192,7 @@ class Tatoeba:
 
         return Tags(language=language).__iter__()
 
-    def user_lists(self, scope="all", update=True, verbose=True):
+    def user_lists(self, scope="all", update=True, verbose=False):
         """Iterate trough all sentences' lists
 
         Parameters
@@ -215,7 +217,7 @@ class Tatoeba:
         return UserLists().__iter__()
 
     def sentences_in_lists(
-        self, language, scope="all", update=True, verbose=True
+        self, language, scope="all", update=True, verbose=False
     ):
         """Iterates through all sentences in this language which 
         are in a list
@@ -245,7 +247,7 @@ class Tatoeba:
 
         return SentencesInLists(language=language).__iter__()
 
-    def jpn_indices(self, scope="all", update=True, verbose=True):
+    def jpn_indices(self, scope="all", update=True, verbose=False):
         """Iterates through all Japanese indices
 
         Parameters
@@ -270,7 +272,7 @@ class Tatoeba:
         return JpnIndices().__iter__()
 
     def sentences_with_audio(
-        self, language, scope="all", update=True, verbose=True
+        self, language, scope="all", update=True, verbose=False
     ):
         """Iterates through sentences with audio file
 
@@ -299,7 +301,9 @@ class Tatoeba:
 
         return SentencesWithAudio(language=language).__iter__()
 
-    def user_languages(self, language, scope="all", update=True, verbose=True):
+    def user_languages(
+        self, language, scope="all", update=True, verbose=False
+    ):
         """Iterates through all users' skills in this language
 
         Parameters
@@ -327,7 +331,9 @@ class Tatoeba:
 
         return UserLanguages(language=language).__iter__()
 
-    def transcriptions(self, language, scope="all", update=True, verbose=True):
+    def transcriptions(
+        self, language, scope="all", update=True, verbose=False
+    ):
         """Iterate through all transcriptions for this language
 
         Parameters
@@ -355,7 +361,7 @@ class Tatoeba:
 
         return Transcriptions(language=language).__iter__()
 
-    def queries(self, language, scope="all", update=True, verbose=True):
+    def queries(self, language, scope="all", update=True, verbose=False):
         """Iterate through all queries for this language
 
         Parameters
@@ -384,7 +390,7 @@ class Tatoeba:
         return Queries(language=language, scope=scope).__iter__()
 
     def update(
-        self, table_names, language_codes, oriented_pair=False, verbose=True
+        self, table_names, language_codes, oriented_pair=False, verbose=False
     ):
         """Updates the local Tatoeba datafiles:
         - download newest versions of the datafiles
@@ -496,7 +502,7 @@ class Tatoeba:
         list
             See https://tatoeba.org/eng/downloads for more information.
         """
-        return check_tables()
+        return [tbl for tbl in check_tables() if tbl != "queries"]
 
     @lazy_property
     def all_languages(self):
