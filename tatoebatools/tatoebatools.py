@@ -502,7 +502,7 @@ class Tatoeba:
         list
             See https://tatoeba.org/eng/downloads for more information.
         """
-        return [tbl for tbl in check_tables() if tbl != "queries"]
+        return check_tables()
 
     @lazy_property
     def all_languages(self):
