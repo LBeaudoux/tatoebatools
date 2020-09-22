@@ -4,7 +4,7 @@ from datetime import datetime
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import lazy_property
+from .utils import get_extended_name, lazy_property
 from .version import version
 
 logger = logging.getLogger(__name__)
@@ -19,7 +19,17 @@ class UserLists:
     _filename = f"{_table}.csv"
     _path = _dir.joinpath(_filename)
 
+    def __init__(self, scope="all"):
+
+        self._sp = scope
+
     def __iter__(self):
+
+        if self._sp == "all":
+            fpath = self.path
+        else:
+            fname = get_extended_name(self.path, self._sp)
+            fpath = UserLists._dir.joinpath(fname)
 
         try:
             fieldnames = [
@@ -31,15 +41,15 @@ class UserLists:
                 "editable_by",
             ]
 
-            for row in DataFile(self.path, delimiter="\t", text_col=4):
+            for row in DataFile(fpath, delimiter="\t", text_col=4):
                 row = {fieldnames[i]: x for i, x in enumerate(row)}
 
                 yield UserList(**row)
 
         except NoDataFile:
             msg = (
-                f"no data locally available for the '{UserLists._table}' "
-                f"table."
+                f"no '{self._sp}' data locally available for the "
+                f"'{UserLists._table}' table."
             )
 
             logger.warning(msg)

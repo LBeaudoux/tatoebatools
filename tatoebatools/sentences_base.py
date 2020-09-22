@@ -3,7 +3,7 @@ import logging
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import lazy_property
+from .utils import get_extended_name, lazy_property
 from .version import version
 
 logger = logging.getLogger(__name__)
@@ -17,12 +17,20 @@ class SentencesBase:
     _table = "sentences_base"
     _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language):
+    def __init__(self, language, scope="all"):
 
         # the language code of the sentences (ISO-639 code most of the time)
         self._lg = language
+        # rows that are iterated through
+        self._sp = scope
 
     def __iter__(self):
+
+        if self._sp == "all":
+            fpath = self.path
+        else:
+            fname = get_extended_name(self.path, self._sp)
+            fpath = SentencesBase._dir.joinpath(fname)
 
         try:
             fieldnames = [
@@ -30,12 +38,12 @@ class SentencesBase:
                 "base_of_the_sentence",
             ]
 
-            for row in DataFile(self.path, delimiter="\t"):
+            for row in DataFile(fpath, delimiter="\t"):
                 row = {fieldnames[i]: x for i, x in enumerate(row)}
                 yield SentenceBase(**row)
         except NoDataFile:
             msg = (
-                f"no data locally available for the "
+                f"no '{self._sp}' data locally available for the "
                 f"'{SentencesBase._table}' table in {self._lg}."
             )
 

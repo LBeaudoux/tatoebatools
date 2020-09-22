@@ -44,10 +44,12 @@ class Table:
         elif self.name == "sentences_with_audio" and language_index:
             self.main_datafile.split(columns=[0], index=language_index)
         else:
-            return
+            return []
 
         for fs in self.language_filestems:
             version[fs] = self.main_datafile.version
+
+        return self.language_detafiles
 
     @property
     def name(self):
@@ -85,7 +87,7 @@ class Table:
 
     @property
     def language_filenames(self):
-        """
+        """Get the names of the monolingual datafiles
         """
         if self.name in (
             "sentences_detailed",
@@ -111,6 +113,6 @@ class Table:
 
     @property
     def language_filestems(self):
-        """
+        """Get the stems of the monolingual datafiles
         """
         return [fn.rsplit(".")[0] for fn in self.language_filenames]

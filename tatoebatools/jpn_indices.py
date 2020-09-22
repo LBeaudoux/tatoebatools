@@ -3,7 +3,7 @@ import logging
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import lazy_property
+from .utils import get_extended_name, lazy_property
 from .version import version
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,17 @@ class JpnIndices:
     _dir = DATA_DIR.joinpath(_table)
     _path = _dir.joinpath(_filename)
 
+    def __init__(self, scope="all"):
+
+        self._sp = scope
+
     def __iter__(self):
+
+        if self._sp == "all":
+            fpath = JpnIndices._path
+        else:
+            fname = get_extended_name(JpnIndices._path, self._sp)
+            fpath = JpnIndices._dir.joinpath(fname)
 
         fieldnames = [
             "sentence_id",
@@ -30,12 +40,12 @@ class JpnIndices:
         ]
 
         try:
-            for row in DataFile(JpnIndices._path, delimiter="\t", text_col=-1):
+            for row in DataFile(fpath, delimiter="\t", text_col=-1):
                 row = {fieldnames[i]: x for i, x in enumerate(row)}
                 yield JpnIndex(**row)
         except NoDataFile:
             msg = (
-                f"no data locally available for the "
+                f"no '{self._sp}' data locally available for the "
                 f"'{JpnIndices._table}' table."
             )
 

@@ -71,25 +71,30 @@ class ParallelCorpus:
 
     def _update(self):
         """Updates local data required for this parallel corpus"""
-
-        tables_to_update = set()
-        langs_to_update = set()
-
+        tatoeba = Tatoeba()
         if self._upd:  # if update explicitly demanded
-            tables_to_update |= {"sentences_detailed", "links"}
-            langs_to_update |= {self._src_lg, self._tgt_lg}
+            tatoeba.update(
+                ["sentences_detailed", "links"],
+                [self._src_lg, self._tgt_lg],
+                oriented_pair=True,
+                verbose=False,
+            )
         else:  # if necessary local data missing
             if not SentencesDetailed(self._src_lg).version:
-                tables_to_update.add("sentences_detailed")
-                langs_to_update.add(self._src_lg)
+                tatoeba.update(
+                    ["sentences_detailed"], [self._src_lg], verbose=False,
+                )
             if not SentencesDetailed(self._tgt_lg).version:
-                tables_to_update.add("sentences_detailed")
-                langs_to_update.add(self._tgt_lg)
+                tatoeba.update(
+                    ["sentences_detailed"], [self._tgt_lg], verbose=False,
+                )
             if not Links(self._src_lg, self._tgt_lg).version:
-                tables_to_update.add("links")
-                langs_to_update |= {self._src_lg, self._tgt_lg}
-
-        Tatoeba().update(tables_to_update, langs_to_update, verbose=False)
+                tatoeba.update(
+                    ["links"],
+                    [self._src_lg, self._tgt_lg],
+                    oriented_pair=True,
+                    verbose=False,
+                )
 
     def _load(self):
         """Loads the sentences and links from their datafiles"""

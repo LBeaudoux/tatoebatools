@@ -4,7 +4,7 @@ from datetime import datetime
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import lazy_property
+from .utils import get_extended_name, lazy_property
 from .version import version
 
 logger = logging.getLogger(__name__)
@@ -18,12 +18,20 @@ class SentencesCC0:
     _table = "sentences_CC0"
     _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language):
+    def __init__(self, language, scope="all"):
 
         # the language code of the sentences (ISO-639 code most of the time)
         self._lg = language
+        # rows that are iterated through
+        self._sp = scope
 
     def __iter__(self):
+
+        if self._sp == "all":
+            fpath = self.path
+        else:
+            fname = get_extended_name(self.path, self._sp)
+            fpath = SentencesCC0._dir.joinpath(fname)
 
         try:
             fieldnames = [
@@ -33,12 +41,12 @@ class SentencesCC0:
                 "date_last_modified",
             ]
 
-            for row in DataFile(self.path, delimiter="\t", text_col=2):
+            for row in DataFile(fpath, delimiter="\t", text_col=2):
                 row = {fieldnames[i]: x for i, x in enumerate(row)}
                 yield SentenceCC0(**row)
         except NoDataFile:
             msg = (
-                f"no data locally available for the "
+                f"no '{self._sp}' data locally available for the "
                 f"'{SentencesCC0._table}' table in {self._lg}."
             )
 

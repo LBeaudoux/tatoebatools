@@ -1,28 +1,39 @@
 import logging
 from datetime import datetime
+
 from tqdm import tqdm
+
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import lazy_property
+from .utils import get_extended_name, lazy_property
 from .version import version
 
 logger = logging.getLogger(__name__)
 
 
 class SentencesDetailed:
-    """The Tatoeba file containing the detailed sentences in a given language.
+    """The Tatoeba file containing the detailed sentences
+    in a given language
     """
 
     _table = "sentences_detailed"
     _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language):
+    def __init__(self, language, scope="all"):
 
         # the language code of the sentences (ISO-639 code most of the time)
         self._lg = language
+        # rows that are iterated through
+        self._sp = scope
 
     def __iter__(self):
+
+        if self._sp == "all":
+            fpath = self.path
+        else:
+            fname = get_extended_name(self.path, self._sp)
+            fpath = SentencesDetailed._dir.joinpath(fname)
 
         try:
             fieldnames = [
@@ -34,15 +45,15 @@ class SentencesDetailed:
                 "date_last_modified",
             ]
 
-            for row in DataFile(self.path, delimiter="\t", text_col=2):
+            for row in DataFile(fpath, delimiter="\t", text_col=2):
                 row = {fieldnames[i]: x for i, x in enumerate(row)}
 
                 yield SentenceDetailed(**row)
 
         except NoDataFile:
             msg = (
-                f"no data locally available for the "
-                f"'{SentencesDetailed._table}' table in {self._lg}."
+                f"no '{self._sp}' data locally available for the "
+                f"'{SentencesDetailed._table}' table in '{self._lg}''"
             )
 
             logger.warning(msg)

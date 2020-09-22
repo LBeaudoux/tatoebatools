@@ -4,9 +4,8 @@ from datetime import datetime
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import lazy_property
+from .utils import get_extended_name, lazy_property
 from .version import version
-
 
 logger = logging.getLogger(__name__)
 
@@ -18,17 +17,26 @@ class Queries:
     _table = "queries"
     _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language):
+    def __init__(self, language, scope="all"):
 
+        # the language code of the sentences (ISO-639 code most of the time)
         self._lg = language
+        # rows that are iterated through
+        self._sp = scope
 
     def __iter__(self):
+
+        if self._sp == "all":
+            fpath = self.path
+        else:
+            fname = get_extended_name(self.path, self._sp)
+            fpath = Queries._dir.joinpath(fname)
 
         try:
             fieldnames = ["date", "language", "content"]
 
             for i, row in enumerate(
-                DataFile(self.path, delimiter=",", text_col=-1)
+                DataFile(fpath, delimiter=",", text_col=-1)
             ):
                 row = {fieldnames[i]: x for i, x in enumerate(row)}
 
@@ -47,8 +55,8 @@ class Queries:
 
         except NoDataFile:
             msg = (
-                f"no data locally available for the '{Queries._table}' "
-                f"table in {self._lg}."
+                f"no '{self._sp}' data locally available for the "
+                f"'{Queries._table}' table in '{self._lg}''"
             )
 
             logger.warning(msg)

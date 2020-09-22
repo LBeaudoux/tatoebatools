@@ -10,6 +10,7 @@ __pycache__/
 *.ipynb
 *.html
 run.py
+test.py
 build/
 dist/
 tatoebatools.egg-info/

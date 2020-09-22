@@ -1,4 +1,5 @@
 import bz2
+import csv
 import logging
 import tarfile
 from pathlib import Path
@@ -47,6 +48,9 @@ def decompress(compressed_path):
     in_path = Path(compressed_path)
     out_path = in_path.parent.joinpath(in_path.stem)
 
+    # rename latest decompressed file at this path (enables file comparison)
+    indicate_as_old(out_path)
+
     try:
         with bz2.open(in_path) as in_f:
             with open(out_path, "wb") as out_f:
@@ -71,8 +75,14 @@ def extract(archive_path):
 
     try:
         with tarfile.open(arx_path) as tar:
-            tar.extractall(arx_path.parent)
             out_filenames = tar.getnames()
+            out_paths = [arx_path.parent.joinpath(fn) for fn in out_filenames]
+            # rename latest extracted files at this path for file comparison
+            for fp in out_paths:
+                indicate_as_old(fp)
+
+            tar.extractall(arx_path.parent)
+
         arx_path.unlink()
     except FileNotFoundError:
         logger.error(f"{arx_path} not found by file extractor")
@@ -81,7 +91,7 @@ def extract(archive_path):
         logger.error(f"{arx_path} is not an extractable archive")
         return []
     else:
-        return [arx_path.parent.joinpath(fn) for fn in out_filenames]
+        return out_paths
 
 
 def fetch(from_url, to_directory):
@@ -143,3 +153,31 @@ def get_byte_size_of_row(row, delimiter):
     line = delimiter.join(row) + "\n"
 
     return len(line.encode("utf-8"))
+
+
+def get_extended_name(file_path, extension):
+    """Appends the name of this file"""
+    return f"{file_path.stem}_{extension}{file_path.suffix}"
+
+
+def indicate_as_old(file_path):
+    """Show that a file is an old version by including 'old' in its name
+    'foobar.txt' -> 'foobar_old.txt'
+    """
+    if file_path.is_file():
+        name_of_old = get_extended_name(file_path, "old")
+        file_path.replace(file_path.with_name(name_of_old))
+
+
+def count_csv_columns(csv_path, delimiter):
+    """Count the columns in a CSV file
+    """
+    nb_cols = None
+    try:
+        with open(csv_path) as f:
+            rd = csv.reader(f, delimiter=delimiter)
+            nb_cols = len(next(rd))
+    except FileNotFoundError:
+        logger.exception("csv file not found")
+    finally:
+        return nb_cols

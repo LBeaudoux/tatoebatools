@@ -3,7 +3,7 @@ import logging
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import lazy_property
+from .utils import get_extended_name, lazy_property
 from .version import version
 
 logger = logging.getLogger(__name__)
@@ -16,25 +16,33 @@ class Tags:
     _table = "tags"
     _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language):
+    def __init__(self, language, scope="all"):
 
         # the language code of the sentences (ISO-639 code most of the time)
         self._lg = language
+        # rows that are iterated through
+        self._sp = scope
 
     def __iter__(self):
+
+        if self._sp == "all":
+            fpath = self.path
+        else:
+            fname = get_extended_name(self.path, self._sp)
+            fpath = Tags._dir.joinpath(fname)
 
         try:
             fieldnames = ["sentence_id", "tag_name"]
 
-            for row in DataFile(self.path, delimiter="\t"):
+            for row in DataFile(fpath, delimiter="\t"):
                 row = {fieldnames[i]: x for i, x in enumerate(row)}
 
                 yield Tag(**row)
 
         except NoDataFile:
             msg = (
-                f"no data locally available for the '{Tags._table}' "
-                f"table in {self._lg}."
+                f"no '{self._sp}' data locally available for the "
+                f"'{Tags._table}' table in {self._lg}."
             )
 
             logger.warning(msg)

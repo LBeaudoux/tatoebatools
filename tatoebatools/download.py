@@ -17,12 +17,11 @@ class Download:
         """Download, decompress, extract, delete tamporary files, update
         local version value.
         """
-        if fetch(self.from_url, self.out_dir):
+        fetched = fetch(self.from_url, self.out_dir)
+        if fetched:
             version[self.stem] = self.version
 
-            return self.table
-
-        return
+        return fetched
 
     @property
     def from_url(self):

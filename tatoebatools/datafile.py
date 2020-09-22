@@ -5,8 +5,9 @@ from pathlib import Path
 from tqdm import tqdm
 
 from .buffer import Buffer
+from .difference import compare_csv
 from .exceptions import NoDataFile
-from .utils import get_byte_size_of_row, lazy_property
+from .utils import get_byte_size_of_row, lazy_property, get_extended_name
 from .version import version
 
 logger = logging.getLogger(__name__)
@@ -16,11 +17,15 @@ class DataFile:
     """A file containing table data.
     """
 
-    def __init__(self, file_path, delimiter="\t", text_col=-1):
+    def __init__(
+        self, file_path, delimiter="\t", quoting=csv.QUOTE_NONE, text_col=-1
+    ):
         # the local path of this data file
         self._fp = Path(file_path)
         # the delimiter that distinguishes table columns
         self._dm = delimiter
+        # wether the fields are quoted or not
+        self._qt = quoting
         # the column that must not be split by delimiters
         self._tc = text_col
 
@@ -33,6 +38,27 @@ class DataFile:
             with open(self.path) as f:
                 for row in _custom_reader(f, self._dm, self._tc):
                     yield row
+
+    def find_changes(self, index_col_keys=None):
+        """Compare this file with its older version if there is one"""
+        logger.info(f"finding changes in {self.name}")
+
+        path_old = self._get_side_path("old")
+        diffs = compare_csv(
+            path_old,
+            self._fp,
+            delimiter=self._dm,
+            index_col_keys=index_col_keys,
+        )
+        for tag, df in diffs.items():
+            out_path = self._get_side_path(tag)
+            df.to_csv(
+                path_or_buf=out_path,
+                sep=self._dm,
+                header=False,
+                index=False,
+                quoting=self._qt,
+            )
 
     def index(self, key_column, value_column):
         """Maps values from two columns of this datafile.
@@ -81,34 +107,35 @@ class DataFile:
 
         return f"{mapped_fields_string}_{self.stem}.{ext}"
 
+    def _get_side_path(self, side_tag):
+        """Get the path of a side datafile"""
+        extended_name = get_extended_name(self._fp, side_tag)
+
+        return self._fp.parent.joinpath(extended_name)
+
     @property
     def path(self):
-        """Get the path of this datafile.
-        """
+        """Get the path of this datafile"""
         return self._fp
 
     @property
     def delimiter(self):
-        """Get the string that delimitate fields in this datafile.
-        """
+        """Get the string that delimitate fields in this datafile"""
         return self._dm
 
     @property
     def name(self):
-        """Get the name of this datafile.
-        """
+        """Get the name of this datafile"""
         return self._fp.name
 
     @property
     def stem(self):
-        """Get the name of this datafile without its extension.
-        """
+        """Get the name of this datafile without its extension"""
         return self._fp.stem
 
     @property
     def size(self):
-        """Get the byte size of this data file.
-        """
+        """Get the byte size of this data file"""
         if self._fp.is_file():
             return self._fp.stat().st_size
         else:
@@ -116,8 +143,7 @@ class DataFile:
 
     @lazy_property
     def version(self):
-        """Get the version datetime of this datafile.
-        """
+        """Get the version datetime of this datafile"""
         return version[self.stem]
 
 

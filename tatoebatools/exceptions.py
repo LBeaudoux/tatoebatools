@@ -32,3 +32,18 @@ class NotAvailableLanguage(Exception):
         super().__init__(msg)
 
         self.language_codes = not_available_langs
+
+
+class NotLanguagePair(Exception):
+    """Raised when oriented_pair is activated and the number of 
+    languages passed as argument to the update differs from two
+    """
+
+    def __init__(self, lang_codes):
+
+        s = ", ".join(lang_codes)
+        msg = f"activated 'oriented_pair' requires [{s}] to be a language pair"
+
+        super().__init__(msg)
+
+        self.language_codes = lang_codes
