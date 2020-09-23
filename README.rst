@@ -73,6 +73,7 @@ Each table has its own set of attributes:
 Find out more about the Tatoeba data files and their fields `here <https://tatoeba.org/eng/downloads>`_.
 
 
+
 You can call *all_languages* to list the languages supported by Tatoeba:
 
 .. code-block:: python
@@ -81,15 +82,16 @@ You can call *all_languages* to list the languages supported by Tatoeba:
     ['abk', 'acm', 'ady', ... , 'zsm', 'zul', 'zza']
 
 
+
 Iterating over a table
 ^^^^^^^^^^^^^^^^^^^^^^
-To download/update and read a table, call its iterator.
+To read a table, just call its iterator. The downloading of data files will be automatically handled in the background.
 
 Set the *scope* argument to 'added' to only read rows that did not exist in the previous version of the file. Set it to 'removed' to iterate over the rows that don't exist anymore.
 
 Examples
 """"""""
-List all sentecnces in English:
+List all sentences in English:
 
 .. code-block:: python
 
