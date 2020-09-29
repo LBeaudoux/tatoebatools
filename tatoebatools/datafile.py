@@ -35,7 +35,7 @@ class DataFile:
             logger.debug(f"{self.path} datafile not found")
             raise NoDataFile
         else:
-            with open(self.path) as f:
+            with open(self.path, encoding="utf-8") as f:
                 for row in _custom_reader(f, self._dm, self._tc):
                     yield row
 
