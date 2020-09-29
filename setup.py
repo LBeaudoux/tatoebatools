@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name="tatoebatools",
-    version="0.0.4",
+    version="0.0.5",
     author="L.Beaudoux",
     description="A library for downloading and reading data from Tatoeba",
     long_description=long_description,
