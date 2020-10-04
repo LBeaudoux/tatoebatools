@@ -20,6 +20,7 @@ Basic Usage
 Use the high-level *ParallelCorpus* class to automatically download and iterate over all sentence/translation pairs from a source language to a target language.
 
 .. code-block:: python
+
     >>> from tatoebatools import ParallelCorpus
     >>> for sentence, translation in ParallelCorpus("cmn", "eng"):
             print((sentence.text, translation.text))
