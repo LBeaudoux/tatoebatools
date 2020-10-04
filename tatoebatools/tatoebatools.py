@@ -31,18 +31,18 @@ class Tatoeba:
     def sentences_detailed(
         self, language, scope="all", update=True, verbose=False
     ):
-        """Iterates through all sentences in this language.       
+        """Iterates through all sentences in this language.
 
         Parameters
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
+            Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
+            The data file is updated before being read when update is
             activated
         verbose : bool
             Update steps are printed when verbose is set to True
@@ -50,7 +50,7 @@ class Tatoeba:
         Returns
         -------
         iterator
-            SentenceDetailed instances with sentence_id, lang, 
+            SentenceDetailed instances with sentence_id, lang,
             text, username, date_added and date_last_modified
             attributes.
         """
@@ -62,26 +62,26 @@ class Tatoeba:
     def sentences_base(
         self, language, scope="all", update=True, verbose=False
     ):
-        """Iterates through all sentences' bases in this language.       
+        """Iterates through all sentences' bases in this language.
 
         Parameters
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
+            Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True            
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
         iterator
-            SentenceBase instances with sentence_id and 
+            SentenceBase instances with sentence_id and
             base_of_the_sentence attributes
         """
         if update:
@@ -90,27 +90,27 @@ class Tatoeba:
         return SentencesBase(language=language).__iter__()
 
     def sentences_CC0(self, language, scope="all", update=True, verbose=False):
-        """Iterate through all sentences in this language with a CC0 
+        """Iterate through all sentences in this language with a CC0
         license
 
         Parameters
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
-            of all supported languages. 
+            Call the 'all_languages' attribute to get the list
+            of all supported languages.
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True                   
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
         iterator
-            SentenceCC0 instances with sentence_id, lang, text and 
+            SentenceCC0 instances with sentence_id, lang, text and
             date_last_modified attributes.
         """
         if update:
@@ -126,31 +126,31 @@ class Tatoeba:
         update=True,
         verbose=False,
     ):
-        """Iterates through all links between sentences in this source 
+        """Iterates through all links between sentences in this source
         language and sentences in this target language
 
         Parameters
         ----------
         source_language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
-            of all supported languages.       
+            Call the 'all_languages' attribute to get the list
+            of all supported languages.
         target_language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
-            of all supported languages.  
+            Call the 'all_languages' attribute to get the list
+            of all supported languages.
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True                            
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
         iterator
-            Link instances with sentence_id and translation_id 
+            Link instances with sentence_id and translation_id
             attributes
         """
         if update:
@@ -172,15 +172,15 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
-            of all supported languages.  
+            Call the 'all_languages' attribute to get the list
+            of all supported languages.
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True                  
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
@@ -200,10 +200,10 @@ class Tatoeba:
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True        
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
@@ -219,22 +219,22 @@ class Tatoeba:
     def sentences_in_lists(
         self, language, scope="all", update=True, verbose=False
     ):
-        """Iterates through all sentences in this language which 
+        """Iterates through all sentences in this language which
         are in a list
 
         Parameters
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
-            of all supported languages.     
+            Call the 'all_languages' attribute to get the list
+            of all supported languages.
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True                 
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
@@ -251,14 +251,14 @@ class Tatoeba:
         """Iterates through all Japanese indices
 
         Parameters
-        ----------        
+        ----------
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True          
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
@@ -280,15 +280,15 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
+            Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True                    
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
@@ -310,20 +310,20 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
+            Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True                
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
         iterator
-            UserLanguage instances with lang, skill_level, 
+            UserLanguage instances with lang, skill_level,
             username and details attributes
         """
         if update:
@@ -340,20 +340,20 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
+            Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True                 
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
         iterator
-            Transcription instances with sentence_id, lang, 
+            Transcription instances with sentence_id, lang,
             script_name, username and transcription attributes
         """
         if update:
@@ -368,15 +368,15 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
-            Call the 'all_languages' attribute to get the list 
+            Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
             The scope of the iteration is "all", "added" or "removed"
         update : bool
-            The data file is updated before being read when update is 
-            activated            
+            The data file is updated before being read when update is
+            activated
         verbose : bool
-            Update steps are printed when verbose is set to True                 
+            Update steps are printed when verbose is set to True
 
         Returns
         -------
@@ -400,26 +400,26 @@ class Tatoeba:
         Parameters
         ----------
         table_names : list
-            The names of the tables to update. Call the 'all_tables' 
+            The names of the tables to update. Call the 'all_tables'
             attribute to get a list of all available tables
         language_codes : list
-            ISO 639-3 codes of the languages for which local data is 
-            updated. Call the 'all_languages' attribute to get the list 
+            ISO 639-3 codes of the languages for which local data is
+            updated. Call the 'all_languages' attribute to get the list
             of all supported languages.
         oriented_pair : bool, optional
-            Requires a pair of language codes where the first language 
-            is considered as source and the second as target, 
-            by default False            
+            Requires a pair of language codes where the first language
+            is considered as source and the second as target,
+            by default False
         verbose : bool, optional
             Verbosity of the logging, by default True
 
         Raises
         ------
         NotAvailableTable
-            Indicates that at least one of the table naames pased as 
+            Indicates that at least one of the table naames pased as
             argument is not a valid Tatoeba table name.
         NotAvailableLanguage
-            Indicates that at least one of the language code pased as 
+            Indicates that at least one of the language code pased as
             argument is not supported by Tatoeba.
         """
         if not table_names and not language_codes:

@@ -11,8 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def download(from_url, to_directory):
-    """Download a file. Overwrite previous version.
-    """
+    """Download a file. Overwrite previous version."""
     # build out file path
     filename = from_url.rsplit("/", 1)[-1]
     to_dir_path = Path(to_directory)
@@ -42,7 +41,7 @@ def download(from_url, to_directory):
 
 
 def decompress(compressed_path):
-    """Decompress a bz2 file here. Overwrite previous version. Delete 
+    """Decompress a bz2 file here. Overwrite previous version. Delete
     compressed file after decompression.
     """
     in_path = Path(compressed_path)
@@ -118,8 +117,8 @@ def fetch(from_url, to_directory):
 
 class lazy_property(object):
     """Implements a lazy property decorator. Lazy attributes are computed
-    attributes that are evaluated only once, the first time they are used. 
-    Subsequent uses return the results of the first call. 
+    attributes that are evaluated only once, the first time they are used.
+    Subsequent uses return the results of the first call.
     """
 
     def __init__(self, f):
@@ -136,20 +135,17 @@ class lazy_property(object):
 
 
 def get_filestem(url):
-    """Get the stem of the file at this url.
-    """
+    """Get the stem of the file at this url."""
     return url.rsplit("/", 1)[-1].split(".", 1)[0]
 
 
 def get_endpoint(url):
-    """Get the parent url of this url.
-    """
+    """Get the parent url of this url."""
     return url.rsplit("/", 1)[0]
 
 
 def get_byte_size_of_row(row, delimiter):
-    """Get the byte size of this row split by this delimiter.
-    """
+    """Get the byte size of this row split by this delimiter."""
     line = delimiter.join(row) + "\n"
 
     return len(line.encode("utf-8"))
@@ -170,8 +166,7 @@ def indicate_as_old(file_path):
 
 
 def count_csv_columns(csv_path, delimiter):
-    """Count the columns in a CSV file
-    """
+    """Count the columns in a CSV file"""
     nb_cols = None
     try:
         with open(csv_path) as f:

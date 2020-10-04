@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class Tags:
-    """The tags associated with each sentence. 
-    """
+    """The tags associated with each sentence."""
 
     _table = "tags"
     _dir = DATA_DIR.joinpath(_table)
@@ -49,8 +48,7 @@ class Tags:
 
     @property
     def language(self):
-        """Get the language of the sentences tagged.
-        """
+        """Get the language of the sentences tagged."""
         return self._lg
 
     @property
@@ -62,29 +60,27 @@ class Tags:
 
     @property
     def filename(self):
-        """Get the name of the file of these tagged sentences.
-        """
+        """Get the name of the file of these tagged sentences."""
         return f"{self.stem}.tsv"
 
     @property
     def path(self):
-        """Get the path of the tagged sentences' datafile.
-        """
+        """Get the path of the tagged sentences' datafile."""
         return Tags._dir.joinpath(self.filename)
 
     @lazy_property
     def get_version(self):
-        """Get the version of the downloaded data of these tagged sentences.
-        """
+        """Get the version of the downloaded data of these tagged sentences."""
         return version[self.stem]
 
 
 class Tag:
-    """A tag associated to a sentence from the Tatoeba corpus.
-    """
+    """A tag associated to a sentence from the Tatoeba corpus."""
 
     def __init__(
-        self, sentence_id, tag_name,
+        self,
+        sentence_id,
+        tag_name,
     ):
 
         self._id = sentence_id
@@ -92,12 +88,10 @@ class Tag:
 
     @property
     def sentence_id(self):
-        """Get the id of the sentence tagged.
-        """
+        """Get the id of the sentence tagged."""
         return int(self._id)
 
     @property
     def tag_name(self):
-        """Get the name of the tag.
-        """
+        """Get the name of the tag."""
         return self._tag

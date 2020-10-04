@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class UserLanguages:
-    """The self-reported skill levels of members in individual languages. 
-    """
+    """The self-reported skill levels of members in individual languages."""
 
     _table = "user_languages"
     _dir = DATA_DIR.joinpath(_table)
@@ -53,8 +52,7 @@ class UserLanguages:
 
     @property
     def language(self):
-        """Get the language of the datafile.
-        """
+        """Get the language of the datafile."""
         return self._lg
 
     @property
@@ -69,20 +67,17 @@ class UserLanguages:
 
     @property
     def path(self):
-        """Get the path of the datafile.
-        """
+        """Get the path of the datafile."""
         return UserLanguages._dir.joinpath(self.filename)
 
     @lazy_property
     def version(self):
-        """Get the version of the downloaded data.
-        """
+        """Get the version of the downloaded data."""
         return version[self.stem]
 
 
 class UserLanguage:
-    """The self-reported skill level of a user in a language.
-    """
+    """The self-reported skill level of a user in a language."""
 
     def __init__(self, lang, skill_level, username, details):
         # the language
@@ -96,24 +91,20 @@ class UserLanguage:
 
     @property
     def lang(self):
-        """Get the language for this user skill. 
-        """
+        """Get the language for this user skill."""
         return self._lg
 
     @property
     def skill_level(self):
-        """Get the value of this skill level. 
-        """
+        """Get the value of this skill level."""
         return int(self._skl) if self._skl != "\\N" else None
 
     @property
     def username(self):
-        """Get the name of the user who have this language skill. 
-        """
+        """Get the name of the user who have this language skill."""
         return self._usr if self._usr != "\\N" else None
 
     @property
     def details(self):
-        """Get more details about this user's language skill.
-        """
+        """Get more details about this user's language skill."""
         return self._dtl

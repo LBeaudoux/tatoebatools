@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class SentencesBase:
-    """The Tatoeba file containing the sentences' bases in a given 
+    """The Tatoeba file containing the sentences' bases in a given
     language
     """
 
@@ -71,17 +71,16 @@ class SentencesBase:
 
     @lazy_property
     def version(self):
-        """Get the version of the downloaded data of these sentences.
-        """
+        """Get the version of the downloaded data of these sentences."""
         return version[self.stem]
 
 
 class SentenceBase:
     """The base of a sentence from the Tatoeba corpus
-    
-    A sentence is based on another if it has been initially added as a 
-    translation. 
-    
+
+    A sentence is based on another if it has been initially added as a
+    translation.
+
     The base of a sentence is equal to:
     - 0 when the sentence is original (i.e. not based on another)
     - the sentence id it is based upon when this one is available
@@ -89,7 +88,9 @@ class SentenceBase:
     """
 
     def __init__(
-        self, sentence_id, base_of_the_sentence,
+        self,
+        sentence_id,
+        base_of_the_sentence,
     ):
 
         self._id = sentence_id

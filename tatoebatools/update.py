@@ -27,8 +27,7 @@ def check_tables():
 def check_updates(
     table_names, language_codes, oriented_pair=False, verbose=True
 ):
-    """Check for updates on for these tables and these languages
-    """
+    """Check for updates on for these tables and these languages"""
     if verbose:
         msgs = [
             ", ".join([f"'{x}'" for x in a])
@@ -74,7 +73,7 @@ def check_updates(
 
 
 def _get_urls_to_check(table_names, language_codes, oriented_pair):
-    """Get the urls where datafiles may be downloadable for these tables 
+    """Get the urls where datafiles may be downloadable for these tables
     and languages.
     """
     ROOT_URL = "https://downloads.tatoeba.org"

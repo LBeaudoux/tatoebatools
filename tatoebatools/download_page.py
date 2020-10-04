@@ -48,7 +48,7 @@ class DownloadPages:
         Parameters
         ----------
         update_time : int, optional
-            the time in minutes after which the local file of the web page 
+            the time in minutes after which the local file of the web page
             is re-downloaded, by default 5
         """
         self.url = url if url.endswith("/") else f"{url}/"

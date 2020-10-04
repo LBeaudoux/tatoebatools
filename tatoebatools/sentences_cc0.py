@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class SentencesCC0:
-    """The Tatoeba file containing the sentences with a CC0 license in a given 
+    """The Tatoeba file containing the sentences with a CC0 license in a given
     language.
     """
 
@@ -54,41 +54,39 @@ class SentencesCC0:
 
     @property
     def language(self):
-        """Get the language of the sentences.
-        """
+        """Get the language of the sentences."""
         return self._lg
 
     @property
     def stem(self):
-        """Get the stem of the file of these sentences.
-        """
+        """Get the stem of the file of these sentences."""
         return f"{self._lg}_{SentencesCC0._table}"
 
     @property
     def filename(self):
-        """Get the name of the file of these sentences.
-        """
+        """Get the name of the file of these sentences."""
         return f"{self.stem}.tsv"
 
     @property
     def path(self):
-        """Get the path of the sentences' datafile.
-        """
+        """Get the path of the sentences' datafile."""
         return SentencesCC0._dir.joinpath(self.filename)
 
     @lazy_property
     def version(self):
-        """Get the version of the downloaded data of these sentences.
-        """
+        """Get the version of the downloaded data of these sentences."""
         return version[self.stem]
 
 
 class SentenceCC0:
-    """A sentence from the Tatoeba corpus with a CC0 licence.
-    """
+    """A sentence from the Tatoeba corpus with a CC0 licence."""
 
     def __init__(
-        self, sentence_id, lang, text, date_last_modified,
+        self,
+        sentence_id,
+        lang,
+        text,
+        date_last_modified,
     ):
 
         self._id = sentence_id
@@ -98,26 +96,22 @@ class SentenceCC0:
 
     @property
     def sentence_id(self):
-        """Get the id of the sentence.
-        """
+        """Get the id of the sentence."""
         return int(self._id)
 
     @property
     def lang(self):
-        """Get the language of the sentence.
-        """
+        """Get the language of the sentence."""
         return self._lg
 
     @property
     def text(self):
-        """Get the text of the sentence.
-        """
+        """Get the text of the sentence."""
         return self._txt
 
     @property
     def date_last_modified(self):
-        """Get the date of the last modification of the sentence.
-        """
+        """Get the date of the last modification of the sentence."""
         try:
             dt = datetime.strptime(self._dtlm, "%Y-%m-%d %H:%M:%S")
         except ValueError:

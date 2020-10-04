@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 class Buffer:
-    """A buffer temporarily stores data and then appends it into out files 
-    when full. It is useful to avoid memory overflow when handling very large 
+    """A buffer temporarily stores data and then appends it into out files
+    when full. It is useful to avoid memory overflow when handling very large
     data files.
     """
 
@@ -38,8 +38,8 @@ class Buffer:
         return len(self._data)
 
     def add(self, elt, out_fname):
-        """Adds an element into the buffer linked to 'out_fname'. Once the 
-        buffer is full, this element is appended to the file at 
+        """Adds an element into the buffer linked to 'out_fname'. Once the
+        buffer is full, this element is appended to the file at
         'out_dir/out_fname'.
         """
         if out_fname not in self._data:
@@ -75,7 +75,7 @@ class Buffer:
                 out_fp.rename(out_fp.parent.joinpath(out_fp.stem))
 
     def clear(self):
-        """Saves the data remaining in the buffer into the corresponding 
+        """Saves the data remaining in the buffer into the corresponding
         outfiles.
         """
         for out_fname in self._data.keys():
@@ -85,12 +85,10 @@ class Buffer:
 
     @property
     def directory(self):
-        """Get the path of the directory where the buffer files are saved.
-        """
+        """Get the path of the directory where the buffer files are saved."""
         return self._dir
 
     @property
     def out_filenames(self):
-        """List every out file name.
-        """
+        """List every out file name."""
         return list(self._data.keys())

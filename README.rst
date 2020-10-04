@@ -14,8 +14,23 @@ This library requires Python 3.6
     pip3 install tatoebatools
 
 
-Usage
------
+Basic Usage
+-----------
+
+Use the high-level *ParallelCorpus* class to automatically download and iterate over all sentence/translation pairs from a source language to a target language.
+
+.. code-block:: python
+    >>> from tatoebatools import ParallelCorpus
+    >>> for sentence, translation in ParallelCorpus("cmn", "eng"):
+            print((sentence.text, translation.text))
+    ...
+    ('那里有八块小圆石。', 'There were eight pebbles there.')
+    ('这个椅子坐着不舒服。', 'This chair is uncomfortable.')
+    ('我会在这里等着到他回来的。', 'Until he comes back, I will wait here.')
+
+
+Advanced Usage
+--------------
 
 The data files are handled by the *tatoeba* object.
 

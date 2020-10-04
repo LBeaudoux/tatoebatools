@@ -8,8 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class Table:
-    """A Tatoeba table.
-    """
+    """A Tatoeba table."""
 
     def __init__(self, name, languages):
         # the name of this table
@@ -18,8 +17,7 @@ class Table:
         self._lgs = languages
 
     def index(self, key_column, value_column):
-        """Get the index that maps 2 columns of this table.
-        """
+        """Get the index that maps 2 columns of this table."""
         tbl_index = {}
         for df in self.language_detafiles:
             tbl_index.update(df.index(key_column, value_column))
@@ -27,8 +25,7 @@ class Table:
         return tbl_index
 
     def classify(self, language_index=None):
-        """Classify this table data by language.
-        """
+        """Classify this table data by language."""
         if self.name == "user_languages":
             self.main_datafile.split(columns=[0])
         elif self.name == "queries":
@@ -53,20 +50,17 @@ class Table:
 
     @property
     def name(self):
-        """Get the name of this table.
-        """
+        """Get the name of this table."""
         return self._name
 
     @property
     def path(self):
-        """Get the local path of this table.
-        """
+        """Get the local path of this table."""
         return DATA_DIR.joinpath(self._name)
 
     @property
     def main_datafile(self):
-        """Get the multilingual datafile of this table.
-        """
+        """Get the multilingual datafile of this table."""
         main_filename = f"{self.name}.csv"
         delimiter = "," if self.name == "queries" else "\t"
         fp = self.path.joinpath(main_filename)
@@ -75,8 +69,7 @@ class Table:
 
     @property
     def language_detafiles(self):
-        """Get the monolingual datafiles of this table.
-        """
+        """Get the monolingual datafiles of this table."""
         language_datafiles = []
         for fn in self.language_filenames:
             fp = self.path.joinpath(fn)
@@ -87,8 +80,7 @@ class Table:
 
     @property
     def language_filenames(self):
-        """Get the names of the monolingual datafiles
-        """
+        """Get the names of the monolingual datafiles"""
         if self.name in (
             "sentences_detailed",
             "sentences_CC0",
@@ -113,6 +105,5 @@ class Table:
 
     @property
     def language_filestems(self):
-        """Get the stems of the monolingual datafiles
-        """
+        """Get the stems of the monolingual datafiles"""
         return [fn.rsplit(".")[0] for fn in self.language_filenames]

@@ -1,8 +1,6 @@
 import logging
 from datetime import datetime
 
-from tqdm import tqdm
-
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
@@ -58,59 +56,43 @@ class SentencesDetailed:
 
             logger.warning(msg)
 
-    def get(self, sentence_ids, verbose):
-        """Get chosen detailed sentences.
-        """
-        if verbose:
-            logging.info(f"loading {self.language} sentences")
-
+    def get(self, sentence_ids):
+        """Get chosen detailed sentences."""
         sentences = {}
-        pbar = tqdm(total=len(sentence_ids)) if verbose else None
         for s in self:
             if s.sentence_id in sentence_ids:
                 sentences[s.sentence_id] = s
-                if pbar:
-                    pbar.update()
-
-        if pbar:
-            pbar.close()
 
         return sentences
 
     @property
     def language(self):
-        """Get the language of the sentences.
-        """
+        """Get the language of the sentences."""
         return self._lg
 
     @property
     def stem(self):
-        """Get the stem of the file of these sentences.
-        """
+        """Get the stem of the file of these sentences."""
         return f"{self._lg}_{SentencesDetailed._table}"
 
     @property
     def filename(self):
-        """Get the name of the file of these sentences.
-        """
+        """Get the name of the file of these sentences."""
         return f"{self.stem}.tsv"
 
     @property
     def path(self):
-        """Get the path of the sentences' datafile.
-        """
+        """Get the path of the sentences' datafile."""
         return SentencesDetailed._dir.joinpath(self.filename)
 
     @lazy_property
     def version(self):
-        """Get the version of the downloaded data of these sentences.
-        """
+        """Get the version of the downloaded data of these sentences."""
         return version[self.stem]
 
 
 class SentenceDetailed:
-    """A sentence from the Tatoeba corpus.
-    """
+    """A sentence from the Tatoeba corpus."""
 
     def __init__(
         self,
@@ -131,32 +113,27 @@ class SentenceDetailed:
 
     @property
     def sentence_id(self):
-        """Get the id of the sentence.
-        """
+        """Get the id of the sentence."""
         return int(self._id)
 
     @property
     def lang(self):
-        """Get the language of the sentence.
-        """
+        """Get the language of the sentence."""
         return self._lg
 
     @property
     def text(self):
-        """Get the text of the sentence.
-        """
+        """Get the text of the sentence."""
         return self._txt
 
     @property
     def username(self):
-        """Get the name of the author of the sentence.
-        """
+        """Get the name of the author of the sentence."""
         return self._usr if self._usr != "\\N" else ""
 
     @property
     def date_added(self):
-        """Get the date of the addition of the sentence.
-        """
+        """Get the date of the addition of the sentence."""
         try:
             dt = datetime.strptime(self._dtad, "%Y-%m-%d %H:%M:%S")
         except ValueError:
@@ -166,8 +143,7 @@ class SentenceDetailed:
 
     @property
     def date_last_modified(self):
-        """Get the date of the last modification of the sentence.
-        """
+        """Get the date of the last modification of the sentence."""
         try:
             dt = datetime.strptime(self._dtlm, "%Y-%m-%d %H:%M:%S")
         except ValueError:

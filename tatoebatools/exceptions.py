@@ -3,7 +3,7 @@ class NoDataFile(Exception):
 
 
 class NotAvailableTable(Exception):
-    """Raised when a table passed as argument to the update is not 
+    """Raised when a table passed as argument to the update is not
     available"""
 
     def __init__(self, not_available_tables):
@@ -19,7 +19,7 @@ class NotAvailableTable(Exception):
 
 
 class NotAvailableLanguage(Exception):
-    """Raised when a language passed as argument to the update is not 
+    """Raised when a language passed as argument to the update is not
     available"""
 
     def __init__(self, not_available_langs):
@@ -35,7 +35,7 @@ class NotAvailableLanguage(Exception):
 
 
 class NotLanguagePair(Exception):
-    """Raised when oriented_pair is activated and the number of 
+    """Raised when oriented_pair is activated and the number of
     languages passed as argument to the update differs from two
     """
 

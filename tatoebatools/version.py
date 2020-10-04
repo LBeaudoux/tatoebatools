@@ -36,8 +36,7 @@ class Version:
         return len(self._dict)
 
     def _load(self):
-        """Load the data file.
-        """
+        """Load the data file."""
         try:
             with open(Version._path) as f:
                 data = json.load(f)
@@ -49,8 +48,7 @@ class Version:
         return data
 
     def _save(self):
-        """Save the data file.
-        """
+        """Save the data file."""
         with open(Version._path, "w") as f:
             json.dump(self._dict, f)
 

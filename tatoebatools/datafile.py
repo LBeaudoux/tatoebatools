@@ -14,8 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class DataFile:
-    """A file containing table data.
-    """
+    """A file containing table data."""
 
     def __init__(
         self, file_path, delimiter="\t", quoting=csv.QUOTE_NONE, text_col=-1
@@ -61,8 +60,7 @@ class DataFile:
             )
 
     def index(self, key_column, value_column):
-        """Maps values from two columns of this datafile.
-        """
+        """Maps values from two columns of this datafile."""
         try:
             ind = {
                 row[key_column]: row[value_column]
@@ -76,7 +74,7 @@ class DataFile:
 
     def split(self, columns=[], index=None):
         """Split the file according to the values mapped by the index
-        in a chosen set of columns. 
+        in a chosen set of columns.
         """
         logger.info(f"splitting {self.name}")
 
@@ -100,8 +98,7 @@ class DataFile:
         pbar.close()
 
     def _get_out_filename(self, mapped_fields):
-        """Get the name of the file that corespond to this mapped fields.
-        """
+        """Get the name of the file that corespond to this mapped fields."""
         mapped_fields_string = "-".join(mapped_fields)
         ext = "tsv" if self._dm == "\t" else "csv"
 
@@ -169,7 +166,9 @@ def _custom_reader(string_io, delimiter, text_col):
     - regroup unquoted multiline fields (i.e. containing newline characters)
     """
     reader = csv.reader(
-        string_io, delimiter=delimiter, quoting=csv.QUOTE_NONE,
+        string_io,
+        delimiter=delimiter,
+        quoting=csv.QUOTE_NONE,
     )
     # count the number of columns in a regular row
     nb_cols = len(next(reader))

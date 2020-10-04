@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 class ParallelCorpus:
     """A parallel corpus of bilingual sentences' pairs
 
-    A parallel corpus between two languages is a collection of the 
-    Tatoeba sentences in the source language placed alongside their 
+    A parallel corpus between two languages is a collection of the
+    Tatoeba sentences in the source language placed alongside their
     translations in the target language.
     """
 
@@ -30,7 +30,7 @@ class ParallelCorpus:
         target_language_code : str
              The ISO 639-3 code of the parallel corpus' target language
         update : bool, optional
-            Whether an update of the local data is forced or not, by 
+            Whether an update of the local data is forced or not, by
             default True
         verbose : bool, optional
             The verbosity of the logging, by default True
@@ -82,11 +82,15 @@ class ParallelCorpus:
         else:  # if necessary local data missing
             if not SentencesDetailed(self._src_lg).version:
                 tatoeba.update(
-                    ["sentences_detailed"], [self._src_lg], verbose=False,
+                    ["sentences_detailed"],
+                    [self._src_lg],
+                    verbose=False,
                 )
             if not SentencesDetailed(self._tgt_lg).version:
                 tatoeba.update(
-                    ["sentences_detailed"], [self._tgt_lg], verbose=False,
+                    ["sentences_detailed"],
+                    [self._tgt_lg],
+                    verbose=False,
                 )
             if not Links(self._src_lg, self._tgt_lg).version:
                 tatoeba.update(
@@ -119,5 +123,5 @@ class ParallelCorpus:
             )
         else:
             src_ids, tgt_ids = links.ids
-            self._sentences = src_corpus.get(src_ids, verbose=self._vb)
-            self._translations = tgt_corpus.get(tgt_ids, verbose=self._vb)
+            self._sentences = src_corpus.get(src_ids)
+            self._translations = tgt_corpus.get(tgt_ids)

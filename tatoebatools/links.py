@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class Links:
-    """The links between the Tatoeba sentences of a pair of languages.  
-    """
+    """The links between the Tatoeba sentences of a pair of languages."""
 
     _table = "links"
     _dir = DATA_DIR.joinpath(_table)
@@ -49,14 +48,12 @@ class Links:
 
     @property
     def source_language(self):
-        """Get the source language of these links.
-        """
+        """Get the source language of these links."""
         return self._src_lg
 
     @property
     def target_language(self):
-        """Get the target language of these links.
-        """
+        """Get the target language of these links."""
         return self._tgt_lg
 
     @property
@@ -75,14 +72,12 @@ class Links:
 
     @property
     def path(self):
-        """Get the path where the links are saved for this language pair.
-        """
+        """Get the path where the links are saved for this language pair."""
         return Links._dir.joinpath(self.filename)
 
     @lazy_property
     def ids(self):
-        """Get all sentences' and translations' ids.
-        """
+        """Get all sentences' and translations' ids."""
         source_ids = set()
         target_ids = set()
         for link in self:
@@ -93,14 +88,12 @@ class Links:
 
     @lazy_property
     def version(self):
-        """Get the version of the downloaded data of these links.
-        """
+        """Get the version of the downloaded data of these links."""
         return version[self.stem]
 
 
 class Link:
-    """A link between a Tatoeba's sentence and its translation.
-    """
+    """A link between a Tatoeba's sentence and its translation."""
 
     def __init__(self, sentence_id, translation_id):
 
@@ -109,12 +102,10 @@ class Link:
 
     @property
     def sentence_id(self):
-        """The id of the source sentence.
-        """
+        """The id of the source sentence."""
         return int(self._src_id)
 
     @property
     def translation_id(self):
-        """The id of the target sentence.
-        """
+        """The id of the target sentence."""
         return int(self._tgt_id)

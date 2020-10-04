@@ -11,8 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class UserLists:
-    """The lists of sentences that the users have built. 
-    """
+    """The lists of sentences that the users have built."""
 
     _table = "user_lists"
     _dir = DATA_DIR.joinpath(_table)
@@ -56,26 +55,22 @@ class UserLists:
 
     @property
     def filename(self):
-        """Get the name of the file of these tagged sentences.
-        """
+        """Get the name of the file of these tagged sentences."""
         return UserLists._filename
 
     @property
     def path(self):
-        """Get the path of the tagged sentences' datafile.
-        """
+        """Get the path of the tagged sentences' datafile."""
         return UserLists._path
 
     @lazy_property
     def version(self):
-        """Get the version of the downloaded data of these tagged sentences.
-        """
+        """Get the version of the downloaded data of these tagged sentences."""
         return version[UserLists._table]
 
 
 class UserList:
-    """A list of sentences built by a Tatoeba user.
-    """
+    """A list of sentences built by a Tatoeba user."""
 
     def __init__(
         self,
@@ -96,20 +91,17 @@ class UserList:
 
     @property
     def list_id(self):
-        """Get the id of this list.
-        """
+        """Get the id of this list."""
         return int(self._id)
 
     @property
     def username(self):
-        """Get the name of the user that built this list.
-        """
+        """Get the name of the user that built this list."""
         return self._usr
 
     @property
     def date_created(self):
-        """Get the date when this list has been created.
-        """
+        """Get the date when this list has been created."""
         try:
             dt = datetime.strptime(self._dcr, "%Y-%m-%d %H:%M:%S")
         except ValueError:
@@ -119,8 +111,7 @@ class UserList:
 
     @property
     def date_last_modified(self):
-        """Get the date when this list has been modified for the last time.
-        """
+        """Get the date when this list has been modified for the last time."""
         try:
             dt = datetime.strptime(self._dlm, "%Y-%m-%d %H:%M:%S")
         except ValueError:
@@ -130,12 +121,10 @@ class UserList:
 
     @property
     def list_name(self):
-        """Get the name of this list.
-        """
+        """Get the name of this list."""
         return self._nm
 
     @property
     def editable_by(self):
-        """Get the users that can edit this list.
-        """
+        """Get the users that can edit this list."""
         return self._edb

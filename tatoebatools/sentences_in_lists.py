@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class SentencesInLists:
-    """The Tatoeba sentences that are contained in a list.
-    """
+    """The Tatoeba sentences that are contained in a list."""
 
     _table = "sentences_in_lists"
     _dir = DATA_DIR.joinpath(_table)
@@ -52,8 +51,7 @@ class SentencesInLists:
 
     @property
     def language(self):
-        """Get the language of the sentences.
-        """
+        """Get the language of the sentences."""
         return self._lg
 
     @property
@@ -68,8 +66,7 @@ class SentencesInLists:
 
     @property
     def path(self):
-        """Get the path of the datafile.
-        """
+        """Get the path of the datafile."""
         return SentencesInLists._dir.joinpath(self.filename)
 
     @lazy_property
@@ -79,8 +76,7 @@ class SentencesInLists:
 
 
 class SentenceInList:
-    """A sentence from the Tatoeba corpus which is in a list.
-    """
+    """A sentence from the Tatoeba corpus which is in a list."""
 
     def __init__(self, list_id, sentence_id):
 
@@ -89,12 +85,10 @@ class SentenceInList:
 
     @property
     def list_id(self):
-        """Get the id of the list.
-        """
+        """Get the id of the list."""
         return int(self._lid)
 
     @property
     def sentence_id(self):
-        """Get the id of the sentence.
-        """
+        """Get the id of the sentence."""
         return int(self._sid)

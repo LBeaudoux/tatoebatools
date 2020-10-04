@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class SentencesWithAudio:
-    """The Tatoeba sentences with audio for a given language.
-    """
+    """The Tatoeba sentences with audio for a given language."""
 
     _table = "sentences_with_audio"
     _dir = DATA_DIR.joinpath(_table)
@@ -53,26 +52,24 @@ class SentencesWithAudio:
 
     @property
     def language(self):
-        """Get the language of these sentences with audio.
-        """
+        """Get the language of these sentences with audio."""
         return self._lg
 
     @property
     def path(self):
-        """Get the path where the sentences with audio are saved.
-        """
+        """Get the path where the sentences with audio are saved."""
         return SentencesWithAudio._dir.joinpath(self.filename)
 
     @property
     def stem(self):
-        """Get the stem of the name of the file where the sentences 
+        """Get the stem of the name of the file where the sentences
         with audio are saved
         """
         return f"{self._lg}_{SentencesWithAudio._table}"
 
     @property
     def filename(self):
-        """Get the name of the file where the sentences with audio 
+        """Get the name of the file where the sentences with audio
         are saved
         """
         return f"{self.stem}.tsv"
@@ -84,8 +81,7 @@ class SentencesWithAudio:
 
 
 class SentenceWithAudio:
-    """A Tatoeba sentence with audio.
-    """
+    """A Tatoeba sentence with audio."""
 
     def __init__(self, sentence_id, username, license, attribution_url):
 
@@ -96,24 +92,20 @@ class SentenceWithAudio:
 
     @property
     def sentence_id(self):
-        """The id of the sentence with audio.
-        """
+        """The id of the sentence with audio."""
         return int(self._id)
 
     @property
     def username(self):
-        """The username that added the sentence with audio.
-        """
+        """The username that added the sentence with audio."""
         return self._usr
 
     @property
     def license(self):
-        """The license of the sentence with audio.
-        """
+        """The license of the sentence with audio."""
         return self._lic if self._lic != "\\N" else ""
 
     @property
     def attribution_url(self):
-        """The url to the attrbution of the sentence with audio.
-        """
+        """The url to the attrbution of the sentence with audio."""
         return self._atr if self._atr != "\\N" else ""

@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class Transcriptions:
-    """The transcriptions in auxiliary or alternative scripts. 
-    """
+    """The transcriptions in auxiliary or alternative scripts."""
 
     _table = "transcriptions"
     _dir = DATA_DIR.joinpath(_table)
@@ -54,38 +53,32 @@ class Transcriptions:
 
     @property
     def language(self):
-        """Get the language of the datafile.
-        """
+        """Get the language of the datafile."""
         return self._lg
 
     @property
     def stem(self):
-        """Get the stem of the name of the datafile.
-        """
+        """Get the stem of the name of the datafile."""
         return f"{self._lg}_{Transcriptions._table}"
 
     @property
     def filename(self):
-        """Get the name of the datafile.
-        """
+        """Get the name of the datafile."""
         return f"{self.stem}.tsv"
 
     @property
     def path(self):
-        """Get the path of the datafile.
-        """
+        """Get the path of the datafile."""
         return Transcriptions._dir.joinpath(self.filename)
 
     @lazy_property
     def version(self):
-        """Get the version of the downloaded data.
-        """
+        """Get the version of the downloaded data."""
         return version[self.stem]
 
 
 class Transcription:
-    """A sentence transcription in an auxiliary or alternative script.
-    """
+    """A sentence transcription in an auxiliary or alternative script."""
 
     def __init__(
         self, sentence_id, lang, script_name, username, transcription
@@ -107,30 +100,25 @@ class Transcription:
 
     @property
     def sentence_id(self):
-        """Get the id of the sentence of this transcription.
-        """
+        """Get the id of the sentence of this transcription."""
         return int(self._sid)
 
     @property
     def lang(self):
-        """Get the language for this transcription. 
-        """
+        """Get the language for this transcription."""
         return self._lg
 
     @property
     def script_name(self):
-        """Get the name of the script in which this transcription is made. 
-        """
+        """Get the name of the script in which this transcription is made."""
         return self._scp
 
     @property
     def username(self):
-        """Get the name of the user who have this language skill. 
-        """
+        """Get the name of the user who have this language skill."""
         return self._usr
 
     @property
     def transcription(self):
-        """Get the text of this transcription.
-        """
+        """Get the text of this transcription."""
         return self._trs

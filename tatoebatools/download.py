@@ -4,8 +4,7 @@ from .version import version
 
 
 class Download:
-    """A file download.
-    """
+    """A file download."""
 
     def __init__(self, url, version):
         # the url from which the file is downloaded
@@ -25,14 +24,12 @@ class Download:
 
     @property
     def from_url(self):
-        """Get the url from which the file is fetched.
-        """
+        """Get the url from which the file is fetched."""
         return self._url
 
     @property
     def version(self):
-        """Get the version of the downloaded file.
-        """
+        """Get the version of the downloaded file."""
         return self._vs
 
     @property
@@ -44,8 +41,7 @@ class Download:
 
     @property
     def table(self):
-        """Get the name of the table from which this datafile is extracted.
-        """
+        """Get the name of the table from which this datafile is extracted."""
         for tbl in (
             "sentences_base",
             "sentences_detailed",

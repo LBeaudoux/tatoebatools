@@ -20,7 +20,7 @@ class Corpus:
         language_code : str
             The ISO 639-3 code of the corpus' language
         update : bool, optional
-            Whether an update of the local data is forced or not, by 
+            Whether an update of the local data is forced or not, by
             default True
         """
         self._lg = language_code

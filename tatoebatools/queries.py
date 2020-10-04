@@ -11,8 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class Queries:
-    """The content of the queries to tatoeba.org.
-    """
+    """The content of the queries to tatoeba.org."""
 
     _table = "queries"
     _dir = DATA_DIR.joinpath(_table)
@@ -63,32 +62,27 @@ class Queries:
 
     @property
     def language(self):
-        """Get the language of these queries.
-        """
+        """Get the language of these queries."""
         return self._lg
 
     @property
     def path(self):
-        """Get the path where the queries are saved.
-        """
+        """Get the path where the queries are saved."""
         return Queries._dir.joinpath(self.filename)
 
     @property
     def filename(self):
-        """Get the name of the file where the queries are saved.
-        """
+        """Get the name of the file where the queries are saved."""
         return f"{self._lg}_queries.csv"
 
     @lazy_property
     def version(self):
-        """Get the version of the downloaded data of these queries.
-        """
+        """Get the version of the downloaded data of these queries."""
         return version[Queries._table]
 
 
 class Query:
-    """A query made to tatoeba.org.
-    """
+    """A query made to tatoeba.org."""
 
     def __init__(self, date, language, content):
 
@@ -98,8 +92,7 @@ class Query:
 
     @property
     def date(self):
-        """The date when the query was made. e.g. '5 Apr 2019'
-        """
+        """The date when the query was made. e.g. '5 Apr 2019'"""
         try:
             date = datetime.strptime(self._dt, "%d %b %Y")
         except ValueError:
@@ -110,12 +103,10 @@ class Query:
 
     @property
     def language(self):
-        """The language in which the query has been made, e.g. 'fra'
-        """
+        """The language in which the query has been made, e.g. 'fra'"""
         return self._lg
 
     @property
     def content(self):
-        """The content of the query (i.e. the searched text).
-        """
+        """The content of the query (i.e. the searched text)."""
         return self._ct
