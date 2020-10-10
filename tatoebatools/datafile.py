@@ -30,13 +30,15 @@ class DataFile:
 
     def __iter__(self):
 
-        if not self.path.is_file():
-            logger.debug(f"{self.path} datafile not found")
-            raise NoDataFile
-        else:
+        try:
             with open(self.path, encoding="utf-8") as f:
                 for row in _custom_reader(f, self._dm, self._tc):
                     yield row
+        except FileNotFoundError:
+            logger.debug(f"{self.path} datafile not found")
+            raise NoDataFile
+        except RuntimeError:  # empty file
+            pass
 
     def find_changes(self, index_col_keys=None):
         """Compare this file with its older version if there is one"""
