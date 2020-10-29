@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from pkg_resources import resource_filename
+from .config import DATA_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class Version:
     its data derives from.
     """
 
-    _path = Path(resource_filename(__package__, "data/versions.json"))
+    _path = DATA_DIR.joinpath("versions.json")
 
     def __init__(self):
         # the dict from which versions' values are fetched
