@@ -3,8 +3,6 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from pkg_resources import resource_filename
-
 from .config import DATA_DIR
 
 logger = logging.getLogger(__name__)
