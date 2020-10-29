@@ -1,7 +1,6 @@
 import json
 import logging
 from datetime import datetime
-from pathlib import Path
 
 from .config import DATA_DIR
 
