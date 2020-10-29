@@ -107,14 +107,11 @@ class TestDataFile:
     ]
 
     @patch("builtins.open")
-    @patch("tatoebatools.datafile.Path.is_file")
-    def test_iter_with_file(self, m_isfile, m_open):
-        m_isfile.return_value = True
+    def test_iter_with_file(self, m_open):
         m_open.return_value = self.fake_string_io
         df = DataFile("any_file_path", delimiter=",", text_col=-1)
 
         assert [row for row in df] == self.fake_table
-        assert m_isfile.call_count == 1
         assert m_open.call_count == 1
 
     @patch("tatoebatools.datafile.DataFile.__iter__")

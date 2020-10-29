@@ -28,8 +28,9 @@ class TestTatoeba:
         Tatoeba().update(table_names, language_codes)
 
         m_check.assert_called_once_with(
-            table_names, language_codes, oriented_pair=False, verbose=True
+            table_names, language_codes, oriented_pair=False, verbose=False
         )
+        assert m_check.call_count == 1
         assert m_fetch.call_count == 1
         assert m_index.call_count == 0
         assert m_classify.call_count == 0
@@ -50,7 +51,7 @@ class TestTatoeba:
         Tatoeba().update(table_names, language_codes, oriented_pair=True)
 
         m_check.assert_called_once_with(
-            table_names, language_codes, oriented_pair=True, verbose=True
+            table_names, language_codes, oriented_pair=True, verbose=False
         )
         assert m_fetch.call_count == 1
         assert m_index.call_count == 0
@@ -72,7 +73,7 @@ class TestTatoeba:
         Tatoeba().update(table_names, language_codes)
 
         m_check.assert_called_once_with(
-            table_names, language_codes, oriented_pair=False, verbose=True
+            table_names, language_codes, oriented_pair=False, verbose=False
         )
         assert m_fetch.call_count == 1
         assert m_index.call_count == 0
@@ -86,7 +87,7 @@ class TestTatoeba:
 
         Tatoeba().update(table_names, language_codes)
         m_check_updates.assert_called_once_with(
-            table_names, language_codes, oriented_pair=False, verbose=True
+            table_names, language_codes, oriented_pair=False, verbose=False
         )
 
     def test_update_with_empty_args(self):
