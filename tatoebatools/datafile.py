@@ -42,8 +42,6 @@ class DataFile:
 
     def find_changes(self, index_col_keys=None):
         """Compare this file with its older version if there is one"""
-        logger.info(f"finding changes in {self.name}")
-
         path_old = self._get_side_path("old")
         diffs = compare_csv(
             path_old,

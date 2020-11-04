@@ -13,12 +13,16 @@ def compare_csv(
 ):
     """Get the differences between two CSV files"""
     left = _get_csv_dataframe(csv_left, delimiter=delimiter, quoting=quoting)
-    right = _get_csv_dataframe(csv_right, delimiter=delimiter, quoting=quoting)
-
-    if left is None or right is None:
+    if left is None:
         return {}
-    else:
-        return _compare_dataframes(left, right, index_col_keys)
+
+    right = _get_csv_dataframe(csv_right, delimiter=delimiter, quoting=quoting)
+    if right is None:
+        return {}
+
+    logger.info(f"comparing {csv_right.name} versions")
+
+    return _compare_dataframes(left, right, index_col_keys)
 
 
 def _get_csv_dataframe(csv_path, delimiter, quoting, header=False):
