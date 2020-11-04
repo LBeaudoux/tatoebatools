@@ -1,5 +1,7 @@
 import logging
+from pathlib import Path
 
+from .config import DATA_DIR
 from .links import Links
 from .sentences_detailed import SentencesDetailed
 from .tatoebatools import Tatoeba
@@ -19,6 +21,7 @@ class ParallelCorpus:
         self,
         source_language_code,
         target_language_code,
+        data_dir=None,
         update=True,
         verbose=True,
     ):
@@ -29,6 +32,9 @@ class ParallelCorpus:
             The ISO 639-3 code of the parallel corpus' source language
         target_language_code : str
              The ISO 639-3 code of the parallel corpus' target language
+        data_dir : str, optional
+            The path of the directory where the Tatoeba data is saved.
+            If None, the data is saved into the tatoebatools package
         update : bool, optional
             Whether an update of the local data is forced or not, by
             default True
@@ -38,6 +44,7 @@ class ParallelCorpus:
 
         self._src_lg = source_language_code
         self._tgt_lg = target_language_code
+        self._dir = Path(data_dir) if data_dir else DATA_DIR
         self._upd = update
         self._vb = verbose
 
@@ -59,7 +66,7 @@ class ParallelCorpus:
         """
 
         if self._sentences and self._translations:
-            for lk in Links(self._src_lg, self._tgt_lg):
+            for lk in Links(self._src_lg, self._tgt_lg, data_dir=self._dir):
                 if (
                     lk.sentence_id in self._sentences
                     and lk.translation_id in self._translations
@@ -71,7 +78,7 @@ class ParallelCorpus:
 
     def _update(self):
         """Updates local data required for this parallel corpus"""
-        tatoeba = Tatoeba()
+        tatoeba = Tatoeba(data_dir=self._dir)
         if self._upd:  # if update explicitly demanded
             tatoeba.update(
                 ["sentences_detailed", "links"],
@@ -80,19 +87,21 @@ class ParallelCorpus:
                 verbose=False,
             )
         else:  # if necessary local data missing
-            if not SentencesDetailed(self._src_lg).version:
+            if not SentencesDetailed(self._src_lg, data_dir=self._dir).version:
                 tatoeba.update(
                     ["sentences_detailed"],
                     [self._src_lg],
                     verbose=False,
                 )
-            if not SentencesDetailed(self._tgt_lg).version:
+            if not SentencesDetailed(self._tgt_lg, data_dir=self._dir).version:
                 tatoeba.update(
                     ["sentences_detailed"],
                     [self._tgt_lg],
                     verbose=False,
                 )
-            if not Links(self._src_lg, self._tgt_lg).version:
+            if not Links(
+                self._src_lg, self._tgt_lg, data_dir=self._dir
+            ).version:
                 tatoeba.update(
                     ["links"],
                     [self._src_lg, self._tgt_lg],
@@ -103,9 +112,9 @@ class ParallelCorpus:
     def _load(self):
         """Loads the sentences and links from their datafiles"""
 
-        links = Links(self._src_lg, self._tgt_lg)
-        src_corpus = SentencesDetailed(self._src_lg)
-        tgt_corpus = SentencesDetailed(self._tgt_lg)
+        links = Links(self._src_lg, self._tgt_lg, data_dir=self._dir)
+        src_corpus = SentencesDetailed(self._src_lg, data_dir=self._dir)
+        tgt_corpus = SentencesDetailed(self._tgt_lg, data_dir=self._dir)
 
         if any(not tbl.version for tbl in (links, src_corpus, tgt_corpus)):
             logger.error(

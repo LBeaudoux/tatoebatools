@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from .config import DATA_DIR
 from .datafile import DataFile
@@ -13,14 +14,16 @@ class Tags:
     """The tags associated with each sentence."""
 
     _table = "tags"
-    _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language, scope="all"):
+    def __init__(self, language, scope="all", data_dir=None):
 
         # the language code of the sentences (ISO-639 code most of the time)
         self._lg = language
         # rows that are iterated through
         self._sp = scope
+        # the directory where the tags files are saved
+        dp = Path(data_dir) if data_dir else DATA_DIR
+        self._dir = dp.joinpath(Tags._table)
 
     def __iter__(self):
 
@@ -28,7 +31,7 @@ class Tags:
             fpath = self.path
         else:
             fname = get_extended_name(self.path, self._sp)
-            fpath = Tags._dir.joinpath(fname)
+            fpath = self._dir.joinpath(fname)
 
         try:
             fieldnames = ["sentence_id", "tag_name"]
@@ -66,7 +69,7 @@ class Tags:
     @property
     def path(self):
         """Get the path of the tagged sentences' datafile."""
-        return Tags._dir.joinpath(self.filename)
+        return self._dir.joinpath(self.filename)
 
     @lazy_property
     def get_version(self):

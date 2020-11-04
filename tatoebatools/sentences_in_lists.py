@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from .config import DATA_DIR
 from .datafile import DataFile
@@ -13,14 +14,16 @@ class SentencesInLists:
     """The Tatoeba sentences that are contained in a list."""
 
     _table = "sentences_in_lists"
-    _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language, scope="all"):
+    def __init__(self, language, scope="all", data_dir=None):
 
         # the language code of the sentences (ISO-639 code most of the time)
         self._lg = language
         # rows that are iterated through
         self._sp = scope
+        # the directory where the sentences in lists are saved
+        dp = Path(data_dir) if data_dir else DATA_DIR
+        self._dir = dp.joinpath(SentencesInLists._table)
 
     def __iter__(self):
 
@@ -28,7 +31,7 @@ class SentencesInLists:
             fpath = self.path
         else:
             fname = get_extended_name(self.path, self._sp)
-            fpath = SentencesInLists._dir.joinpath(fname)
+            fpath = self._dir.joinpath(fname)
 
         fieldnames = [
             "list_id",
@@ -67,7 +70,7 @@ class SentencesInLists:
     @property
     def path(self):
         """Get the path of the datafile."""
-        return SentencesInLists._dir.joinpath(self.filename)
+        return self._dir.joinpath(self.filename)
 
     @lazy_property
     def version(self):

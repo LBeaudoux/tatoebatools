@@ -1,8 +1,8 @@
 import logging
 
 from .corpus import Corpus
-from .tatoebatools import Tatoeba
 from .parallel_corpus import ParallelCorpus
+from .tatoebatools import Tatoeba
 
 tatoeba = Tatoeba()
 Corpus = Corpus

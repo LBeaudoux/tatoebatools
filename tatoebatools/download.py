@@ -1,16 +1,20 @@
+from pathlib import Path
+
 from .config import DATA_DIR
 from .utils import fetch, get_filestem
 from .version import version
 
 
 class Download:
-    """A file download."""
+    """A file download"""
 
-    def __init__(self, url, version):
+    def __init__(self, url, version, data_dir=None):
         # the url from which the file is downloaded
         self._url = url
         # the datetime used as the version of the file
         self._vs = version
+        # the parent directory where files are downloaded
+        self._data_dir = Path(data_dir) if data_dir else DATA_DIR
 
     def fetch(self):
         """Download, decompress, extract, delete tamporary files, update
@@ -71,4 +75,4 @@ class Download:
         """Get the path of the directory into which the downloaded file is
         saved.
         """
-        return DATA_DIR.joinpath(self.table)
+        return self._data_dir.joinpath(self.table)

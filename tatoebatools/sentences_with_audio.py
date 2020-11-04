@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from .config import DATA_DIR
 from .datafile import DataFile
@@ -13,13 +14,15 @@ class SentencesWithAudio:
     """The Tatoeba sentences with audio for a given language."""
 
     _table = "sentences_with_audio"
-    _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language, scope="all"):
+    def __init__(self, language, scope="all", data_dir=None):
         # the language of the sentences with audio
         self._lg = language
         # rows that are iterated through
         self._sp = scope
+        # the directory where the sentences with audio are saved
+        dp = Path(data_dir) if data_dir else DATA_DIR
+        self._dir = dp.joinpath(SentencesWithAudio._table)
 
     def __iter__(self):
 
@@ -27,7 +30,7 @@ class SentencesWithAudio:
             fpath = self.path
         else:
             fname = get_extended_name(self.path, self._sp)
-            fpath = SentencesWithAudio._dir.joinpath(fname)
+            fpath = self._dir.joinpath(fname)
 
         try:
             fieldnames = [
@@ -58,7 +61,7 @@ class SentencesWithAudio:
     @property
     def path(self):
         """Get the path where the sentences with audio are saved."""
-        return SentencesWithAudio._dir.joinpath(self.filename)
+        return self._dir.joinpath(self.filename)
 
     @property
     def stem(self):

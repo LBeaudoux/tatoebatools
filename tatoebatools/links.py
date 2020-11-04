@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from .config import DATA_DIR
 from .datafile import DataFile
@@ -13,15 +14,19 @@ class Links:
     """The links between the Tatoeba sentences of a pair of languages."""
 
     _table = "links"
-    _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, source_language, target_language, scope="all"):
+    def __init__(
+        self, source_language, target_language, scope="all", data_dir=None
+    ):
         # the source language of the links
         self._src_lg = source_language
         # the target language of the links
         self._tgt_lg = target_language
         # rows that are iterated through
         self._sp = scope
+        # path of the parent directory of links files
+        dp = Path(data_dir) if data_dir else DATA_DIR
+        self._dir = dp.joinpath(Links._table)
 
     def __iter__(self):
 
@@ -29,7 +34,7 @@ class Links:
             fpath = self.path
         else:
             fname = get_extended_name(self.path, self._sp)
-            fpath = Links._dir.joinpath(fname)
+            fpath = self._dir.joinpath(fname)
 
         fieldnames = ["sentence_id", "translation_id"]
 
@@ -73,7 +78,7 @@ class Links:
     @property
     def path(self):
         """Get the path where the links are saved for this language pair."""
-        return Links._dir.joinpath(self.filename)
+        return self._dir.joinpath(self.filename)
 
     @lazy_property
     def ids(self):

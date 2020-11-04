@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
@@ -14,8 +15,13 @@ class DownloadPages:
     which export files' versions can be scraped
     """
 
-    dir = DATA_DIR.joinpath("export_pages")
-    dir.mkdir(parents=True, exist_ok=True)
+    _dir_name = "export_pages"
+
+    def __init__(self, data_dir=None):
+
+        dp = Path(data_dir) if data_dir else DATA_DIR
+        self._dir = dp.joinpath(DownloadPages._dir_name)
+        self._dir.mkdir(parents=True, exist_ok=True)
 
     def get_versions(self, url):
         """Scraps the versions of the files listed in the web page
@@ -28,7 +34,7 @@ class DownloadPages:
         html = self._get_html(url)
         versions = _extract_versions(html)
 
-        return {self.url + k: v for k, v in versions.items()}
+        return {self._url + k: v for k, v in versions.items()}
 
     def get_names(self, url):
         """Scraps the directory names listed in the web page
@@ -51,18 +57,18 @@ class DownloadPages:
             the time in minutes after which the local file of the web page
             is re-downloaded, by default 5
         """
-        self.url = url if url.endswith("/") else f"{url}/"
+        self._url = url if url.endswith("/") else f"{url}/"
 
         if not self.version or self.version < datetime.now() - timedelta(
             minutes=update_time
         ):
             # download a newer version
             try:
-                r = requests.get(self.url)
+                r = requests.get(self._url)
                 with open(self.path, "w") as f:
                     f.write(r.text)
             except requests.exceptions.RequestException:
-                logger.warning(f"error while requesting {self.url}")
+                logger.warning(f"error while requesting {self._url}")
                 return ""
             else:
                 return r.text
@@ -94,9 +100,9 @@ class DownloadPages:
         Path
             the local path of the file
         """
-        stem = self.url[:-1].rsplit("/", 1)[-1]
+        stem = self._url[:-1].rsplit("/", 1)[-1]
 
-        return self.dir.joinpath(f"{stem}.html")
+        return self._dir.joinpath(f"{stem}.html")
 
 
 def _extract_versions(html):
