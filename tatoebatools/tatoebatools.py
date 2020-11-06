@@ -484,7 +484,6 @@ class Tatoeba:
             language_codes,
             oriented_pair=oriented_pair,
             verbose=verbose,
-            data_dir=self._dir,
         )
 
         # download the files of the update
@@ -554,7 +553,7 @@ class Tatoeba:
             See https://tatoeba.org/eng/stats/sentences_by_language
             for more information.
         """
-        return check_languages(data_dir=self._dir)
+        return check_languages()
 
     @property
     def dir(self):
@@ -562,8 +561,8 @@ class Tatoeba:
         return self._dir
 
     @dir.setter
-    def dir(self, new_dir_path):
+    def dir(self, new_data_dir):
         """Sets the local directory where the Tatoeba data is saved"""
-        self._dir = Path(new_dir_path)
-        if version.dir != self._dir:
+        if self._dir != Path(new_data_dir):
+            self._dir = Path(new_data_dir) if new_data_dir else DATA_DIR
             version.dir = self._dir

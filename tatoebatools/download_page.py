@@ -1,11 +1,10 @@
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import requests
 from bs4 import BeautifulSoup
-
-from .config import DATA_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -15,13 +14,9 @@ class DownloadPages:
     which export files' versions can be scraped
     """
 
-    _dir_name = "export_pages"
+    def __init__(self):
 
-    def __init__(self, data_dir=None):
-
-        dp = Path(data_dir) if data_dir else DATA_DIR
-        self._dir = dp.joinpath(DownloadPages._dir_name)
-        self._dir.mkdir(parents=True, exist_ok=True)
+        self._dir = TemporaryDirectory()
 
     def get_versions(self, url):
         """Scraps the versions of the files listed in the web page
@@ -59,10 +54,10 @@ class DownloadPages:
         """
         self._url = url if url.endswith("/") else f"{url}/"
 
-        if not self.version or self.version < datetime.now() - timedelta(
+        if not self.mtime or self.mtime < datetime.now() - timedelta(
             minutes=update_time
         ):
-            # download a newer version
+            # update the local copy of the web page
             try:
                 r = requests.get(self._url)
                 with open(self.path, "w") as f:
@@ -78,8 +73,8 @@ class DownloadPages:
                 return f.read()
 
     @property
-    def version(self):
-        """Get the version of the local web page
+    def mtime(self):
+        """Gets the modification time of the local web page
 
         Returns
         -------
@@ -102,7 +97,7 @@ class DownloadPages:
         """
         stem = self._url[:-1].rsplit("/", 1)[-1]
 
-        return self._dir.joinpath(f"{stem}.html")
+        return Path(self._dir.name).joinpath(f"{stem}.html")
 
 
 def _extract_versions(html):
@@ -123,3 +118,6 @@ def _extract_names(html):
     links = [a.get("href") for a in soup.find_all("a") if soup]
 
     return [lk[:-1] for lk in links if lk[:-1].isalpha()]
+
+
+download_pages = DownloadPages()
