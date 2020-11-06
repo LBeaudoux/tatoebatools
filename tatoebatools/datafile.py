@@ -7,7 +7,7 @@ from tqdm import tqdm
 from .buffer import Buffer
 from .difference import compare_csv
 from .exceptions import NoDataFile
-from .utils import get_byte_size_of_row, lazy_property, get_extended_name
+from .utils import get_byte_size_of_row, get_extended_name
 from .version import version
 
 logger = logging.getLogger(__name__)
@@ -138,7 +138,7 @@ class DataFile:
         else:
             return 0
 
-    @lazy_property
+    @property
     def version(self):
         """Get the version datetime of this datafile"""
         return version[self.stem]

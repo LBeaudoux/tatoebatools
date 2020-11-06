@@ -4,8 +4,7 @@ from pathlib import Path
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import get_extended_name, lazy_property
-from .version import version
+from .utils import get_extended_name
 
 logger = logging.getLogger(__name__)
 
@@ -61,11 +60,6 @@ class JpnIndices:
     def path(self):
         """Get the path of the datafile."""
         return self._dir.joinpath(JpnIndices._filename)
-
-    @lazy_property
-    def version(self):
-        """Get the version of the downloaded data of these sentences."""
-        return version[JpnIndices._table]
 
 
 class JpnIndex:

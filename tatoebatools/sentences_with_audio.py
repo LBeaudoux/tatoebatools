@@ -4,8 +4,7 @@ from pathlib import Path
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import get_extended_name, lazy_property
-from .version import version
+from .utils import get_extended_name
 
 logger = logging.getLogger(__name__)
 
@@ -76,11 +75,6 @@ class SentencesWithAudio:
         are saved
         """
         return f"{self.stem}.tsv"
-
-    @lazy_property
-    def version(self):
-        """Get the version of these sentences with audio"""
-        return version[self.stem]
 
 
 class SentenceWithAudio:

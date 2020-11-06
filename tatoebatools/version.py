@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class Version:
-    """A JSON file where the versions of the files are saved.
-    The version of a file is the date time string of the downloaded file
-    its data derives from.
+    """A JSON file which stores the versions of the local Tatoeba datafiles
+    A version is the string of the date when a file was published at
+    https://downloads.tatoeba.org
     """
 
     def __init__(self, data_dir=None):

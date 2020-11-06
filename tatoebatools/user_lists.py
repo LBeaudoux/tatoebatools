@@ -5,8 +5,7 @@ from pathlib import Path
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import get_extended_name, lazy_property
-from .version import version
+from .utils import get_extended_name
 
 logger = logging.getLogger(__name__)
 
@@ -62,11 +61,6 @@ class UserLists:
     def path(self):
         """Get the path of the tagged sentences' datafile."""
         return self._dir.joinpath(self.filename)
-
-    @lazy_property
-    def version(self):
-        """Get the version of the downloaded data of these tagged sentences."""
-        return version[UserLists._table]
 
 
 class UserList:

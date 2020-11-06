@@ -4,8 +4,7 @@ from pathlib import Path
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import get_extended_name, lazy_property
-from .version import version
+from .utils import get_extended_name
 
 logger = logging.getLogger(__name__)
 
@@ -79,22 +78,6 @@ class Links:
     def path(self):
         """Get the path where the links are saved for this language pair."""
         return self._dir.joinpath(self.filename)
-
-    @lazy_property
-    def ids(self):
-        """Get all sentences' and translations' ids."""
-        source_ids = set()
-        target_ids = set()
-        for link in self:
-            source_ids.add(link.sentence_id)
-            target_ids.add(link.translation_id)
-
-        return source_ids, target_ids
-
-    @lazy_property
-    def version(self):
-        """Get the version of the downloaded data of these links."""
-        return version[self.stem]
 
 
 class Link:
