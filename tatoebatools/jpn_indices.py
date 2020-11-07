@@ -1,10 +1,10 @@
 import logging
+from pathlib import Path
 
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import get_extended_name, lazy_property
-from .version import version
+from .utils import get_extended_name
 
 logger = logging.getLogger(__name__)
 
@@ -18,20 +18,20 @@ class JpnIndices:
 
     _table = "jpn_indices"
     _filename = f"jpn_{_table}.tsv"
-    _dir = DATA_DIR.joinpath(_table)
-    _path = _dir.joinpath(_filename)
 
-    def __init__(self, scope="all"):
+    def __init__(self, scope="all", data_dir=None):
 
         self._sp = scope
+        dp = Path(data_dir) if data_dir else DATA_DIR
+        self._dir = dp.joinpath(JpnIndices._table)
 
     def __iter__(self):
 
         if self._sp == "all":
-            fpath = JpnIndices._path
+            fpath = self.path
         else:
-            fname = get_extended_name(JpnIndices._path, self._sp)
-            fpath = JpnIndices._dir.joinpath(fname)
+            fname = get_extended_name(self.path, self._sp)
+            fpath = self._dir.joinpath(fname)
 
         fieldnames = [
             "sentence_id",
@@ -59,12 +59,7 @@ class JpnIndices:
     @property
     def path(self):
         """Get the path of the datafile."""
-        return JpnIndices._path
-
-    @lazy_property
-    def version(self):
-        """Get the version of the downloaded data of these sentences."""
-        return version[JpnIndices._table]
+        return self._dir.joinpath(JpnIndices._filename)
 
 
 class JpnIndex:

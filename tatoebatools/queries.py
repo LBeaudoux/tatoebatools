@@ -1,11 +1,11 @@
 import logging
 from datetime import datetime
+from pathlib import Path
 
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import get_extended_name, lazy_property
-from .version import version
+from .utils import get_extended_name
 
 logger = logging.getLogger(__name__)
 
@@ -14,14 +14,16 @@ class Queries:
     """The content of the queries to tatoeba.org."""
 
     _table = "queries"
-    _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language, scope="all"):
+    def __init__(self, language, scope="all", data_dir=None):
 
         # the language code of the sentences (ISO-639 code most of the time)
         self._lg = language
         # rows that are iterated through
         self._sp = scope
+        # the directory where the queries' files are saved
+        dp = Path(data_dir) if data_dir else DATA_DIR
+        self._dir = dp.joinpath(Queries._table)
 
     def __iter__(self):
 
@@ -29,7 +31,7 @@ class Queries:
             fpath = self.path
         else:
             fname = get_extended_name(self.path, self._sp)
-            fpath = Queries._dir.joinpath(fname)
+            fpath = self._dir.joinpath(fname)
 
         try:
             fieldnames = ["date", "language", "content"]
@@ -55,7 +57,7 @@ class Queries:
         except NoDataFile:
             msg = (
                 f"no '{self._sp}' data locally available for the "
-                f"'{Queries._table}' table in '{self._lg}''"
+                f"'{Queries._table}' table in {self._lg}"
             )
 
             logger.warning(msg)
@@ -68,17 +70,12 @@ class Queries:
     @property
     def path(self):
         """Get the path where the queries are saved."""
-        return Queries._dir.joinpath(self.filename)
+        return self._dir.joinpath(self.filename)
 
     @property
     def filename(self):
         """Get the name of the file where the queries are saved."""
         return f"{self._lg}_queries.csv"
-
-    @lazy_property
-    def version(self):
-        """Get the version of the downloaded data of these queries."""
-        return version[Queries._table]
 
 
 class Query:

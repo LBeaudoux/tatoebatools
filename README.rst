@@ -39,6 +39,11 @@ The data files are handled by the *tatoeba* object.
 
     >>> from tatoebatools import tatoeba
 
+By default, the data files are stored inside the *tatoebatools* library. But you can download them to another location:
+
+.. code-block:: python
+
+    >>> tatoeba.dir = "/path/to/my/tatoeba/dir".
 
 Use the *all_tables* attribute to list the tables you can have access to:
 

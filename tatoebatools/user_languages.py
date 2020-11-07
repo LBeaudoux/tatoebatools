@@ -1,10 +1,10 @@
 import logging
+from pathlib import Path
 
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import get_extended_name, lazy_property
-from .version import version
+from .utils import get_extended_name
 
 logger = logging.getLogger(__name__)
 
@@ -13,13 +13,15 @@ class UserLanguages:
     """The self-reported skill levels of members in individual languages."""
 
     _table = "user_languages"
-    _dir = DATA_DIR.joinpath(_table)
 
-    def __init__(self, language, scope="all"):
+    def __init__(self, language, scope="all", data_dir=None):
 
         self._lg = language
         # rows that are iterated through
         self._sp = scope
+        # the directory where the user languages are saved
+        dp = Path(data_dir) if data_dir else DATA_DIR
+        self._dir = dp.joinpath(UserLanguages._table)
 
     def __iter__(self):
 
@@ -27,7 +29,7 @@ class UserLanguages:
             fpath = self.path
         else:
             fname = get_extended_name(self.path, self._sp)
-            fpath = UserLanguages._dir.joinpath(fname)
+            fpath = self._dir.joinpath(fname)
 
         try:
             fieldnames = [
@@ -68,12 +70,7 @@ class UserLanguages:
     @property
     def path(self):
         """Get the path of the datafile."""
-        return UserLanguages._dir.joinpath(self.filename)
-
-    @lazy_property
-    def version(self):
-        """Get the version of the downloaded data."""
-        return version[self.stem]
+        return self._dir.joinpath(self.filename)
 
 
 class UserLanguage:

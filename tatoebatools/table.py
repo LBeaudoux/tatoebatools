@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from .config import DATA_DIR
 from .datafile import DataFile
@@ -10,11 +11,13 @@ logger = logging.getLogger(__name__)
 class Table:
     """A Tatoeba table."""
 
-    def __init__(self, name, languages):
+    def __init__(self, name, languages, data_dir=None):
         # the name of this table
         self._name = name
         # the languages in which some data is required
         self._lgs = languages
+        # the directory where the Tatoeba data is saved
+        self._data_dir = Path(data_dir) if data_dir else DATA_DIR
 
     def index(self, key_column, value_column):
         """Get the index that maps 2 columns of this table."""
@@ -56,7 +59,7 @@ class Table:
     @property
     def path(self):
         """Get the local path of this table."""
-        return DATA_DIR.joinpath(self._name)
+        return self._data_dir.joinpath(self._name)
 
     @property
     def main_datafile(self):

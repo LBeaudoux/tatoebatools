@@ -3,7 +3,7 @@ import logging
 from tqdm import tqdm
 
 from .config import SUPPORTED_TABLES
-from .download_page import DownloadPages
+from .download_page import download_pages
 from .exceptions import NotLanguagePair
 from .utils import get_endpoint, get_filestem
 from .version import version
@@ -15,17 +15,19 @@ def check_languages():
     """Lists all available languages for Tatoeba downloads"""
     url = "https://downloads.tatoeba.org/exports/per_language"
 
-    return DownloadPages().get_names(url)
+    return download_pages.get_names(url)
 
 
 def check_tables():
     """Lists all available tables for Tatoeba downloads"""
-
     return sorted(list(SUPPORTED_TABLES))
 
 
 def check_updates(
-    table_names, language_codes, oriented_pair=False, verbose=True
+    table_names,
+    language_codes,
+    oriented_pair=False,
+    verbose=True,
 ):
     """Check for updates on for these tables and these languages"""
     if verbose:
@@ -45,11 +47,14 @@ def check_updates(
     # get the urls of the web pages from which file versions will be scraped
     urls_to_scrap = {get_endpoint(url) for url in urls_to_check}
 
+    if verbose and len(urls_to_scrap) >= 10:
+        pbar = tqdm(total=len(urls_to_scrap))
+    else:
+        pbar = None
+
     to_update = {}
-    nb_scraps = len(urls_to_scrap)
-    pbar = tqdm(total=nb_scraps) if verbose and nb_scraps >= 10 else None
     for url in urls_to_scrap:
-        online_versions = DownloadPages().get_versions(url)
+        online_versions = download_pages.get_versions(url)
         # compare versions
         for url, vs in online_versions.items():
             if url in urls_to_check:

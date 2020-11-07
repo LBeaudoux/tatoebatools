@@ -1,11 +1,11 @@
 import logging
 from datetime import datetime
+from pathlib import Path
 
 from .config import DATA_DIR
 from .datafile import DataFile
 from .exceptions import NoDataFile
-from .utils import get_extended_name, lazy_property
-from .version import version
+from .utils import get_extended_name
 
 logger = logging.getLogger(__name__)
 
@@ -14,13 +14,12 @@ class UserLists:
     """The lists of sentences that the users have built."""
 
     _table = "user_lists"
-    _dir = DATA_DIR.joinpath(_table)
-    _filename = f"{_table}.csv"
-    _path = _dir.joinpath(_filename)
 
-    def __init__(self, scope="all"):
+    def __init__(self, scope="all", data_dir=None):
 
         self._sp = scope
+        dp = Path(data_dir) if data_dir else DATA_DIR
+        self._dir = dp.joinpath(UserLists._table)
 
     def __iter__(self):
 
@@ -28,7 +27,7 @@ class UserLists:
             fpath = self.path
         else:
             fname = get_extended_name(self.path, self._sp)
-            fpath = UserLists._dir.joinpath(fname)
+            fpath = self._dir.joinpath(fname)
 
         try:
             fieldnames = [
@@ -56,17 +55,12 @@ class UserLists:
     @property
     def filename(self):
         """Get the name of the file of these tagged sentences."""
-        return UserLists._filename
+        return f"{UserLists._table}.csv"
 
     @property
     def path(self):
         """Get the path of the tagged sentences' datafile."""
-        return UserLists._path
-
-    @lazy_property
-    def version(self):
-        """Get the version of the downloaded data of these tagged sentences."""
-        return version[UserLists._table]
+        return self._dir.joinpath(self.filename)
 
 
 class UserList:
