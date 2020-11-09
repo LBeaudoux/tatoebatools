@@ -4,6 +4,7 @@ Tatoeba Tools
 By allowing you to easily download and parse monolingual data files, *tatoebatools* helps you to integrate `Tatoeba <https://tatoeba.org>`_ into your codebase more quickly.
 
 
+
 Installation
 ------------
 
@@ -12,6 +13,7 @@ This library requires Python 3.6
 .. code:: sh
 
     pip3 install tatoebatools
+
 
 
 Basic Usage
@@ -30,6 +32,7 @@ Use the high-level *ParallelCorpus* class to automatically download and iterate 
     ('我会在这里等着到他回来的。', 'Until he comes back, I will wait here.')
 
 
+
 Advanced Usage
 --------------
 
@@ -39,13 +42,13 @@ The data files are handled by the *tatoeba* object.
 
     >>> from tatoebatools import tatoeba
 
-By default, the data files are stored inside the *tatoebatools* library. But you can download them to another location:
+By default, the data files are stored inside the *tatoebatools* library. But you can download them to another location.
 
 .. code-block:: python
 
-    >>> tatoeba.dir = "/path/to/my/tatoeba/dir".
+    >>> tatoeba.dir = "/path/to/my/tatoeba/dir"
 
-Use the *all_tables* attribute to list the tables you can have access to:
+Use the *all_tables* attribute to list the tables you can have access to.
 
 .. code-block:: python
 
@@ -93,9 +96,7 @@ Each table has its own set of attributes:
 
 Find out more about the Tatoeba data files and their fields `here <https://tatoeba.org/eng/downloads>`_.
 
-
-
-You can call *all_languages* to list the languages supported by Tatoeba:
+Call the *all_languages* attribute to list the languages supported by Tatoeba.
 
 .. code-block:: python
 
@@ -109,6 +110,7 @@ Iterating over a table
 To read a table, just call its iterator. The downloading of data files will be automatically handled in the background.
 
 Set the *scope* argument to 'added' to only read rows that did not exist in the previous version of an updated file. Set it to 'removed' to iterate over the rows that don't exist anymore.
+
 
 Examples
 """"""""
