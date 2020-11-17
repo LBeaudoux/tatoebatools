@@ -9,7 +9,12 @@ logger = logging.getLogger(__name__)
 
 
 def compare_csv(
-    csv_left, csv_right, delimiter, quoting=csv.QUOTE_NONE, index_col_keys=None
+    csv_left,
+    csv_right,
+    delimiter,
+    quoting=csv.QUOTE_NONE,
+    index_col_keys=None,
+    verbose=True,
 ):
     """Get the differences between two CSV files"""
     left = _get_csv_dataframe(csv_left, delimiter=delimiter, quoting=quoting)
@@ -20,7 +25,8 @@ def compare_csv(
     if right is None:
         return {}
 
-    logger.info(f"comparing {csv_right.name} versions")
+    if verbose:
+        logger.info(f"comparing {csv_right.name} versions")
 
     return _compare_dataframes(left, right, index_col_keys)
 

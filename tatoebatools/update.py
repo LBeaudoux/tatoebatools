@@ -1,10 +1,7 @@
 import logging
 
-from tqdm import tqdm
-
 from .config import SUPPORTED_TABLES
 from .download_page import download_pages
-from .exceptions import NotLanguagePair
 from .utils import get_endpoint, get_filestem
 from .version import version
 
@@ -30,27 +27,12 @@ def check_updates(
     verbose=True,
 ):
     """Check for updates on for these tables and these languages"""
-    if verbose:
-        msgs = [
-            ", ".join([f"'{x}'" for x in a])
-            for a in (table_names, language_codes)
-        ]
-        msg = f"checking updates for {msgs[0]}"
-        if msgs[1]:
-            msg += f" in {msgs[1]}"
-        logger.info(msg)
-
     # get the urls where newer versions of datafiles could be found
     urls_to_check = _get_urls_to_check(
         table_names, language_codes, oriented_pair
     )
     # get the urls of the web pages from which file versions will be scraped
     urls_to_scrap = {get_endpoint(url) for url in urls_to_check}
-
-    if verbose and len(urls_to_scrap) >= 10:
-        pbar = tqdm(total=len(urls_to_scrap))
-    else:
-        pbar = None
 
     to_update = {}
     for url in urls_to_scrap:
@@ -61,18 +43,6 @@ def check_updates(
                 current_vs = version[get_filestem(url)]
                 if not current_vs or current_vs.date() < vs.date():
                     to_update[url] = vs
-
-        if pbar:
-            pbar.update()
-
-    if pbar:
-        pbar.close()
-
-    if verbose:
-        if to_update:
-            logger.info(f"{len(to_update)} files to download")
-        else:
-            logger.info("files already up to date")
 
     return to_update
 
@@ -95,12 +65,16 @@ def _get_urls_to_check(table_names, language_codes, oriented_pair):
             "transcriptions",
             "user_languages",
         ):
-            urls.update(
-                [
-                    f"{ROOT_URL}/exports/per_language/{lg}/{lg}_{tbl}.tsv.bz2"
-                    for lg in language_codes
-                ]
-            )
+            if language_codes == ["*"]:
+                urls.add(f"{ROOT_URL}/exports/{tbl}.tar.bz2")
+            else:
+                urls.update(
+                    [
+                        f"{ROOT_URL}/exports/per_language/{lg}/"
+                        f"{lg}_{tbl}.tsv.bz2"
+                        for lg in language_codes
+                    ]
+                )
         elif tbl in {
             "jpn_indices",
             "user_lists",
@@ -109,10 +83,9 @@ def _get_urls_to_check(table_names, language_codes, oriented_pair):
         elif tbl in {
             "links",
         }:
-            if oriented_pair:
-                if len(language_codes) != 2:
-                    raise NotLanguagePair(language_codes)
-
+            if language_codes == ["*"]:
+                urls.add(f"{ROOT_URL}/exports/{tbl}.tar.bz2")
+            elif oriented_pair:
                 lg1 = language_codes[0]
                 lg2 = language_codes[1]
                 urls.add(

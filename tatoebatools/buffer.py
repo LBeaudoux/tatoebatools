@@ -24,6 +24,8 @@ class Buffer:
         # the buffer data is classified in a dict. The dict keys are named
         # after the out filenames the data is directed to.
         self._data = {}
+        # the names of the out files
+        self._ofn = set()
 
     def __getitem__(self, out_fname):
 
@@ -43,7 +45,6 @@ class Buffer:
         'out_dir/out_fname'.
         """
         if out_fname not in self._data:
-            self._data[out_fname] = []
             # reinitialize the out file
             out_fp = Path(self._dir, out_fname)
             if out_fp in self._fps:
@@ -68,6 +69,7 @@ class Buffer:
         except FileNotFoundError:
             logger.debug(f"an error occured when opening {out_fp}")
         else:
+            self._ofn.add(out_fp.stem)
             self._data[out_fname].clear()
 
             if end:
@@ -91,4 +93,4 @@ class Buffer:
     @property
     def out_filenames(self):
         """List every out file name."""
-        return list(self._data.keys())
+        return list(self._ofn)

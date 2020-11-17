@@ -10,7 +10,7 @@ from tqdm import tqdm
 logger = logging.getLogger(__name__)
 
 
-def download(from_url, to_directory):
+def download(from_url, to_directory, verbose=True):
     """Download a file. Overwrite previous version."""
     # build out file path
     filename = from_url.rsplit("/", 1)[-1]
@@ -22,17 +22,24 @@ def download(from_url, to_directory):
         with requests.get(from_url, stream=True) as r:
             r.raise_for_status()
             # init progress bar
-            total_size = int(r.headers.get("content-length", 0))
-            tqdm_args = {
-                "total": total_size,
-                "unit": "iB",
-                "unit_scale": True,
-            }
-            with tqdm(**tqdm_args) as pbar:
-                with open(to_path, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=1024):
-                        f.write(chunk)
-                        pbar.update(len(chunk))  # update progress bar
+            if verbose:
+                total_size = int(r.headers.get("content-length", 0))
+                tqdm_args = {
+                    "total": total_size,
+                    "unit": "iB",
+                    "unit_scale": True,
+                }
+                pbar = tqdm(**tqdm_args)
+            else:
+                pbar = None
+            # write data in out file
+            with open(to_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=1024):
+                    f.write(chunk)
+                    if pbar:
+                        pbar.update(len(chunk))
+                if pbar:
+                    pbar.close()
     except requests.exceptions.RequestException:
         logger.error(f"downloading of {from_url} failed")
         return
@@ -93,20 +100,23 @@ def extract(archive_path):
         return out_paths
 
 
-def fetch(from_url, to_directory):
+def fetch(from_url, to_directory, verbose=True):
     """Download a file, decompress it, extract it and delete temporary files.
     Overwrite previous versions.
     """
-    logger.info(f"downloading {from_url}")
-    dl_path = download(from_url, to_directory)
+    if verbose:
+        logger.info(f"downloading {from_url}")
+    dl_path = download(from_url, to_directory, verbose=verbose)
 
     if not dl_path:
         return []
     elif str(dl_path).endswith(".bz2"):
-        logger.info(f"decompressing {dl_path.name}")
+        if verbose:
+            logger.info(f"decompressing {dl_path.name}")
         uz_path = decompress(dl_path)
         if str(uz_path).endswith(".tar"):
-            logger.info(f"extracting {uz_path.name}")
+            if verbose:
+                logger.info(f"extracting {uz_path.name}")
             out_paths = extract(uz_path)
             return out_paths
         else:

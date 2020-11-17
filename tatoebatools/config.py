@@ -19,10 +19,6 @@ SUPPORTED_TABLES = (
     "queries",
 )
 
-INDEX_SPLIT_TABLES = ()
-
-SIMPLE_SPLIT_TABLES = ("queries",)
-
 DIFFERENCE_TABLES = (
     "sentences_base",
     "sentences_detailed",

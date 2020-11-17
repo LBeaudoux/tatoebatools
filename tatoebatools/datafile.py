@@ -2,6 +2,7 @@ import csv
 import logging
 from pathlib import Path
 
+import pandas as pd
 from tqdm import tqdm
 
 from .buffer import Buffer
@@ -14,40 +15,94 @@ logger = logging.getLogger(__name__)
 
 
 class DataFile:
-    """A file containing table data."""
+    """A data file"""
 
     def __init__(
-        self, file_path, delimiter="\t", quoting=csv.QUOTE_NONE, text_col=-1
+        self, file_path, delimiter="\t", quoting=csv.QUOTE_NONE, text_col=None
     ):
-        # the local path of this data file
+        """
+        Parameters
+        ----------
+        file_path : str
+            the local path of the datafile
+        delimiter : str, optional
+            the field delimiter used by this data file,
+            by default "\t"
+        quoting : csv module constant, optional
+            the field quoting rule used by this data file,
+            by default csv.QUOTE_NONE
+        text_col : int, optional
+            the index of a not quoted text field that may contain
+            delimiter strings, by default None
+
+        Raises
+        ------
+        NoDataFile
+            raised when data file not found
+        """
         self._fp = Path(file_path)
-        # the delimiter that distinguishes table columns
         self._dm = delimiter
-        # wether the fields are quoted or not
         self._qt = quoting
-        # the column that must not be split by delimiters
         self._tc = text_col
+
+        try:
+            self._f = open(self._fp, encoding="utf-8")
+        except FileNotFoundError:
+            self._f = None
+            raise NoDataFile(self._fp)
+
+    def __del__(self):
+
+        if self._f:
+            self._f.close()
 
     def __iter__(self):
 
-        try:
-            with open(self.path, encoding="utf-8") as f:
-                for row in _custom_reader(f, self._dm, self._tc):
-                    yield row
-        except FileNotFoundError:
-            logger.debug(f"{self.path} datafile not found")
-            raise NoDataFile
-        except RuntimeError:  # empty file
-            pass
+        self._rd = self._get_reader()
+        self._nb_cols = None
 
-    def find_changes(self, index_col_keys=None):
+        return self
+
+    def __next__(self):
+
+        try:
+            row = next(self._rd)
+            if self._nb_cols is None:
+                self._nb_cols = len(row)
+
+            while len(row) != self._nb_cols:
+                row = next(self._rd)
+
+            return row
+        except StopIteration:
+            self._f.seek(0)  # enables multiple iterations over the file
+            raise StopIteration
+
+    def get_column_values(self, column_index):
+        """Get all values found in this column of this datafile"""
+        try:
+            col_df = pd.read_csv(
+                self._fp,
+                sep=self._dm,
+                header=None,
+                usecols=[column_index],
+                quoting=self._qt,
+            )
+        except pd.errors.EmptyDataError:
+            return set()
+        else:
+            return set(col_df.values.flat)
+
+    def find_changes(self, index_col_keys=None, verbose=True):
         """Compare this file with its older version if there is one"""
         path_old = self._get_side_path("old")
         diffs = compare_csv(
             path_old,
             self._fp,
             delimiter=self._dm,
+            quoting=self._qt,
             index_col_keys=index_col_keys,
+            verbose=verbose,
         )
         for tag, df in diffs.items():
             out_path = self._get_side_path(tag)
@@ -72,14 +127,16 @@ class DataFile:
 
         return ind
 
-    def split(self, columns=[], index=None):
+    def split(self, columns=[], index=None, verbose=True):
         """Split the file according to the values mapped by the index
-        in a chosen set of columns.
+        in a chosen set of columns
         """
-        logger.info(f"splitting {self.name}")
+        if verbose:
+            logger.info(f"splitting {self.name}")
+            pbar = tqdm(total=self.size, unit="iB", unit_scale=True)
+        else:
+            pbar = None
 
-        # init the progress bar
-        pbar = tqdm(total=self.size, unit="iB", unit_scale=True)
         # init buffer
         buffer = Buffer(self.path.parent, delimiter=self.delimiter)
         # classify the rows
@@ -91,11 +148,28 @@ class DataFile:
                 buffer.add(row, fname)
 
             # imcrement progress bar by the byte size of the row
-            pbar.update(get_byte_size_of_row(row, self.delimiter))
+            if pbar:
+                pbar.update(get_byte_size_of_row(row, self.delimiter))
 
         buffer.clear()
 
-        pbar.close()
+        if pbar:
+            pbar.close()
+
+        # lists split datafiles
+        split_paths = [
+            self._fp.parent.joinpath(fn) for fn in buffer.out_filenames
+        ]
+        splits = [
+            DataFile(
+                fp, delimiter=self._dm, quoting=self._qt, text_col=self._tc
+            )
+            for fp in split_paths
+        ]
+        for split in splits:
+            split.version = self.version
+
+        return splits
 
     def _get_out_filename(self, mapped_fields):
         """Get the name of the file that corespond to this mapped fields."""
@@ -109,6 +183,15 @@ class DataFile:
         extended_name = get_extended_name(self._fp, side_tag)
 
         return self._fp.parent.joinpath(extended_name)
+
+    def _get_reader(self):
+        """Get the right data reader for this datafile"""
+        if self._tc:
+            rd = _custom_reader(self._f, delimiter=self._dm, text_col=self._tc)
+        else:
+            rd = csv.reader(self._f, delimiter=self._dm, quoting=self._qt)
+
+        return rd
 
     @property
     def path(self):
@@ -142,6 +225,11 @@ class DataFile:
     def version(self):
         """Get the version datetime of this datafile"""
         return version[self.stem]
+
+    @version.setter
+    def version(self, new_version):
+        """Set the version of this datafile"""
+        version[self.stem] = new_version
 
 
 def _unsplit_field(row, nb_cols, delimiter, index_field):

@@ -9,18 +9,25 @@ class Download:
     """A file download"""
 
     def __init__(self, url, version, data_dir=None):
-        # the url from which the file is downloaded
+        """
+        Parameters
+        ----------
+        url : str
+            the url from which the file is downloaded
+        version : datetime
+            the version of the file
+        data_dir :  str, optional
+            the parent directory where files are downloaded, by default None
+        """
         self._url = url
-        # the datetime used as the version of the file
         self._vs = version
-        # the parent directory where files are downloaded
         self._data_dir = Path(data_dir) if data_dir else DATA_DIR
 
-    def fetch(self):
+    def fetch(self, verbose=True):
         """Download, decompress, extract, delete tamporary files, update
         local version value.
         """
-        fetched = fetch(self.from_url, self.out_dir)
+        fetched = fetch(self.from_url, self.out_dir, verbose=verbose)
         if fetched:
             version[self.stem] = self.version
 

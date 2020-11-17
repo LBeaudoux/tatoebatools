@@ -22,7 +22,7 @@ class ParallelCorpus:
         source_language_code,
         target_language_code,
         update=True,
-        verbose=False,
+        verbose=True,
     ):
         """
         Parameters
@@ -84,17 +84,26 @@ class ParallelCorpus:
             target_ids.add(lk.translation_id)
 
         # load necessary source and target sentences
+        src_upd = self._upd
+        tgt_upd = self._upd
+
+        # avoid multiple update checks
+        if self._src_lg != "*" and self._tgt_lg == "*":
+            src_upd = False
+        elif self._tgt_lg != "*" and self._src_lg == "*":
+            tgt_upd = False
+
         self._sentences = {
             s.sentence_id: s
             for s in tatoeba.sentences_detailed(
-                self._src_lg, update=self._upd, verbose=self._vb
+                self._src_lg, update=src_upd, verbose=self._vb
             )
             if s.sentence_id in source_ids
         }
         self._translations = {
             s.sentence_id: s
             for s in tatoeba.sentences_detailed(
-                self._tgt_lg, update=self._upd, verbose=self._vb
+                self._tgt_lg, update=tgt_upd, verbose=self._vb
             )
             if s.sentence_id in target_ids
         }
