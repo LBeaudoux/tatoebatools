@@ -1,11 +1,87 @@
 import logging
+from pathlib import Path
 
-from .config import SUPPORTED_TABLES
+from .config import DATA_DIR, DIFFERENCE_TABLES, SUPPORTED_TABLES, TABLE_PARAMS
+from .datafile import DataFile
+from .download import Download
 from .download_page import download_pages
+from .exceptions import NotLanguagePair
 from .utils import get_endpoint, get_filestem
 from .version import version
 
 logger = logging.getLogger(__name__)
+
+
+class Update:
+    """A handler for updating data files"""
+
+    def __init__(self, table_language_pairs, data_dir=None):
+        """
+        Parameters
+        ----------
+        table_language_pairs : list of tuples
+            table name / language codes pairs
+        data_dir : str, optional
+            the directory where the data is stored,
+            set to None to use the config default data directory
+        """
+        self._tlps = table_language_pairs
+        self._data_dir = Path(data_dir) if data_dir else DATA_DIR
+
+    def run(self, verbose=True):
+        """Run the update"""
+        self._vb = verbose
+        to_download = self._check()
+        downloads = self._download(to_download)
+        new_datafiles = self._split(downloads)
+        self._find_changes(new_datafiles)
+
+    def _check(self):
+        """Get the urls and versions of the datafiles for which a newer
+        version is available online
+        """
+        to_download = {}
+        for tbl, lgs in self._tlps:
+            langs = ["*"] if (not lgs or "*" in lgs) else lgs
+            d = check_updates(
+                [tbl], langs, oriented_pair=True, verbose=self._vb
+            )
+            to_download.setdefault(tbl, {}).update(d)
+
+        return to_download
+
+    def _download(self, to_download):
+        """Download the files to update"""
+        downloads = {}
+        for tbl, d in to_download.items():
+            for url, vs in d.items():
+                dl = Download(url, vs, data_dir=self._data_dir)
+                dl_paths = dl.fetch(verbose=self._vb)
+                downloads.setdefault(tbl, []).extend(dl_paths)
+
+        return downloads
+
+    def _split(self, downloads):
+        """Split datafiles not 'monolingually' available"""
+        new_datafiles = {}
+        for tbl, fps in downloads.items():
+            tbl_params = TABLE_PARAMS.get(tbl, {})
+            for fp in fps:
+                df = DataFile(fp, **tbl_params)
+                tbl_dfs = {df}
+                if df.path.stem == "queries":
+                    splits = df.split(columns=[1], verbose=self._vb)
+                    tbl_dfs |= set(splits)
+            new_datafiles[tbl] = tbl_dfs
+
+        return new_datafiles
+
+    def _find_changes(self, new_datafiles):
+        """Compare new datafiles with their older version"""
+        for tbl, dfs in new_datafiles.items():
+            for df in dfs:
+                if any(t in df.path.stem for t in DIFFERENCE_TABLES):
+                    df.find_changes(index_col_keys=None, verbose=self._vb)
 
 
 def check_languages():
@@ -86,12 +162,15 @@ def _get_urls_to_check(table_names, language_codes, oriented_pair):
             if language_codes == ["*"]:
                 urls.add(f"{ROOT_URL}/exports/{tbl}.tar.bz2")
             elif oriented_pair:
-                lg1 = language_codes[0]
-                lg2 = language_codes[1]
-                urls.add(
-                    f"{ROOT_URL}/exports/per_language/{lg1}/"
-                    f"{lg1}-{lg2}_{tbl}.tsv.bz2"
-                )
+                if len(language_codes) != 2:
+                    raise NotLanguagePair(language_codes)
+                else:
+                    lg1 = language_codes[0]
+                    lg2 = language_codes[1]
+                    urls.add(
+                        f"{ROOT_URL}/exports/per_language/{lg1}/"
+                        f"{lg1}-{lg2}_{tbl}.tsv.bz2"
+                    )
             else:
                 urls.update(
                     [

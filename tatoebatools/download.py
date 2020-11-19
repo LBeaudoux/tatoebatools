@@ -27,9 +27,9 @@ class Download:
         """Download, decompress, extract, delete tamporary files, update
         local version value.
         """
-        fetched = fetch(self.from_url, self.out_dir, verbose=verbose)
+        fetched = fetch(self._url, self.out_dir, verbose=verbose)
         if fetched:
-            version[self.stem] = self.version
+            version[self.name] = self._vs
 
         return fetched
 
@@ -44,15 +44,15 @@ class Download:
         return self._vs
 
     @property
-    def stem(self):
-        """Get the stem of the downloaded file
+    def name(self):
+        """Get the name of the download
         'https://foo.bar/foobar.txt' -> 'foobar'
         """
         return get_filestem(self.from_url)
 
     @property
     def table(self):
-        """Get the name of the table from which this datafile is extracted."""
+        """Get the name of the table from which this datafile is extracted"""
         for tbl in (
             "sentences_base",
             "sentences_detailed",
@@ -64,7 +64,7 @@ class Download:
             "sentences_with_audio",
             "user_languages",
         ):
-            if self.stem.endswith(tbl):
+            if self.name.endswith(tbl):
                 return tbl
 
         for tbl in (
@@ -72,7 +72,7 @@ class Download:
             "jpn_indices",
             "queries",
         ):
-            if self.stem == tbl:
+            if self.name == tbl:
                 return tbl
 
         return

@@ -1,15 +1,9 @@
 import logging
 from pathlib import Path
 
-from .config import DATA_DIR, DIFFERENCE_TABLES
+from .config import DATA_DIR, TABLE_PARAMS
 from .datafile import DataFile
-from .download import Download
-from .exceptions import (
-    NoDataFile,
-    NotAvailableTable,
-    NotLanguagePair,
-    NotLanguage,
-)
+from .exceptions import NotLanguage, NotLanguagePair, NotTable
 from .jpn_indices import JpnIndex
 from .links import Link
 from .queries import Query
@@ -20,7 +14,7 @@ from .sentences_in_lists import SentenceInList
 from .sentences_with_audio import SentenceWithAudio
 from .tags import Tag
 from .transcriptions import Transcription
-from .update import check_languages, check_tables, check_updates
+from .update import Update, check_languages, check_tables
 from .user_languages import UserLanguage
 from .user_lists import UserList
 
@@ -43,12 +37,6 @@ class Table:
         "sentences_with_audio": SentenceWithAudio,
         "user_languages": UserLanguage,
         "queries": Query,
-    }
-
-    _params = {
-        "queries": {"delimiter": ",", "text_col": -1},
-        "user_lists": {"text_col": 4},
-        "user_languages": {"text_col": -1},
     }
 
     def __init__(
@@ -83,7 +71,7 @@ class Table:
             raised when not valid pair of languages codes is passed
         NotLanguage
             raised when not valid language code is passed
-        NotAvailableTable
+        NotTable
             raised when the table name is not valid
         """
         self._name = name
@@ -95,7 +83,7 @@ class Table:
 
         # check availability of the table name
         if self._name not in set(check_tables()):
-            raise NotAvailableTable([self._name])
+            raise NotTable(self._name)
 
         # check validity of language codes
         all_languages = set(check_languages()) | {"*"}
@@ -117,17 +105,25 @@ class Table:
         else:
             self._flg = None
 
+        # update necessary data files
         if self._upd:
-            self._update(table_name=self._name, language_codes=self._lgs)
-
+            q = [(self._name, self._lgs)]
             if self._flg:
-                self._update(
-                    table_name="sentences_detailed", language_codes=[self._flg]
-                )
+                q.append(("sentences_detailed", [self._flg]))
+            Update(q, data_dir=self._data_dir).run(verbose=self._vb)
 
+        # get DataFile instance
         self._f = self._get_datafile(
             table_name=self._name, language_codes=self._lgs, scope=self._scp
         )
+        if not self._f.exists() and self._vb:
+            lg_string = "-".join(self._lgs)
+            loc_string = "locally " if not self._upd else ""
+            msg = (
+                f"no data {loc_string}available for table '{self._name}' "
+                f"in '{lg_string}' with scope '{self._scp}'"
+            )
+            logger.warning(msg)
 
     def __iter__(self):
 
@@ -156,37 +152,6 @@ class Table:
 
         return Table._classes[self._name](*row)
 
-    def _update(self, table_name, language_codes):
-        """Updates the data file of this table for this language(s)"""
-        # get the urls of the datafiles that need an update
-        to_download = check_updates(
-            [table_name],
-            ["*"]
-            if (not language_codes or "*" in language_codes)
-            else language_codes,
-            oriented_pair=True,
-            verbose=False,
-        )
-        if len(to_download) == 1:
-            url, vs = next(iter(to_download.items()))
-
-            # download the file of the update
-            dl = Download(url, vs, data_dir=self._data_dir)
-            dl_paths = dl.fetch(verbose=self._vb)
-
-            if len(dl_paths) == 1:
-                tbl_params = Table._params.get(table_name, {})
-                dl_datafile = DataFile(dl_paths[0], **tbl_params)
-                new_datafiles = {dl_datafile}
-                if dl_datafile.stem == "queries":
-                    splits = dl_datafile.split(columns=[1], verbose=self._vb)
-                    new_datafiles |= set(splits)
-
-                # compare new datafiles with their older version
-                for df in new_datafiles:
-                    if any(tbl in df.stem for tbl in DIFFERENCE_TABLES):
-                        df.find_changes(index_col_keys=None, verbose=self._vb)
-
     def _get_datafile(self, table_name, language_codes, scope):
         """Get the datafile instance of this table for this language(s)
         and scope
@@ -196,20 +161,9 @@ class Table:
             language_codes=language_codes,
             scope=scope,
         )
+        params = TABLE_PARAMS.get(table_name, {})
 
-        try:
-            params = Table._params.get(table_name, {})
-            datafile = DataFile(fp, **params)
-        except NoDataFile:
-            lg_string = "-".join(language_codes)
-            msg = (
-                f"no '{scope}' data locally available for the "
-                f"'{table_name}' table in {lg_string}."
-            )
-            logger.warning(msg)
-            return
-        else:
-            return datafile
+        return DataFile(fp, **params)
 
     def _get_datafile_path(self, table_name, language_codes, scope):
         """Get the path of the datafile of this table for this language(s)
