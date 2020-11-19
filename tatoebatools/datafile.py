@@ -1,5 +1,6 @@
 import csv
 import logging
+from io import StringIO
 from pathlib import Path
 
 import pandas as pd
@@ -7,7 +8,6 @@ from tqdm import tqdm
 
 from .buffer import Buffer
 from .difference import compare_csv
-from .exceptions import NoDataFile
 from .utils import get_byte_size_of_row, get_extended_name
 from .version import version
 
@@ -18,7 +18,12 @@ class DataFile:
     """A data file"""
 
     def __init__(
-        self, file_path, delimiter="\t", quoting=csv.QUOTE_NONE, text_col=None
+        self,
+        file_path,
+        delimiter="\t",
+        quoting=csv.QUOTE_NONE,
+        text_col=None,
+        nb_cols=None,
     ):
         """
         Parameters
@@ -34,22 +39,19 @@ class DataFile:
         text_col : int, optional
             the index of a not quoted text field that may contain
             delimiter strings, by default None
-
-        Raises
-        ------
-        NoDataFile
-            raised when data file not found
+        nb_cols : int, optional
+            the number of columns per row, by default None
         """
         self._fp = Path(file_path)
         self._dm = delimiter
         self._qt = quoting
         self._tc = text_col
+        self._nc = nb_cols
 
         try:
             self._f = open(self._fp, encoding="utf-8")
         except FileNotFoundError:
-            self._f = None
-            raise NoDataFile(self._fp)
+            self._f = StringIO()
 
     def __del__(self):
 
@@ -59,24 +61,24 @@ class DataFile:
     def __iter__(self):
 
         self._rd = self._get_reader()
-        self._nb_cols = None
 
         return self
 
     def __next__(self):
 
         try:
-            row = next(self._rd)
-            if self._nb_cols is None:
-                self._nb_cols = len(row)
-
-            while len(row) != self._nb_cols:
+            row = []
+            while not row or (self._nc is not None and len(row) != self._nc):
                 row = next(self._rd)
-
-            return row
         except StopIteration:
             self._f.seek(0)  # enables multiple iterations over the file
             raise StopIteration
+        else:
+            return row
+
+    def exists(self):
+        """Check if this data file exists locally"""
+        return self._fp.is_file()
 
     def get_column_values(self, column_index):
         """Get all values found in this column of this datafile"""
@@ -114,25 +116,12 @@ class DataFile:
                 quoting=self._qt,
             )
 
-    def index(self, key_column, value_column):
-        """Maps values from two columns of this datafile."""
-        try:
-            ind = {
-                row[key_column]: row[value_column]
-                for row in self
-                if len(row) > key_column and len(row) > value_column
-            }
-        except NoDataFile:
-            ind = {}
-
-        return ind
-
     def split(self, columns=[], index=None, verbose=True):
         """Split the file according to the values mapped by the index
         in a chosen set of columns
         """
         if verbose:
-            logger.info(f"splitting {self.name}")
+            logger.info(f"splitting {self._fp.name}")
             pbar = tqdm(total=self.size, unit="iB", unit_scale=True)
         else:
             pbar = None
@@ -172,11 +161,11 @@ class DataFile:
         return splits
 
     def _get_out_filename(self, mapped_fields):
-        """Get the name of the file that corespond to this mapped fields."""
+        """Get the name of the file that corespond to this mapped fields"""
         mapped_fields_string = "-".join(mapped_fields)
         ext = "tsv" if self._dm == "\t" else "csv"
 
-        return f"{mapped_fields_string}_{self.stem}.{ext}"
+        return f"{mapped_fields_string}_{self._fp.stem}.{ext}"
 
     def _get_side_path(self, side_tag):
         """Get the path of a side datafile"""
@@ -186,8 +175,13 @@ class DataFile:
 
     def _get_reader(self):
         """Get the right data reader for this datafile"""
-        if self._tc:
-            rd = _custom_reader(self._f, delimiter=self._dm, text_col=self._tc)
+        if self._tc and self._nc:
+            rd = _custom_reader(
+                self._f,
+                delimiter=self._dm,
+                text_col=self._tc,
+                nb_cols=self._nc,
+            )
         else:
             rd = csv.reader(self._f, delimiter=self._dm, quoting=self._qt)
 
@@ -204,19 +198,9 @@ class DataFile:
         return self._dm
 
     @property
-    def name(self):
-        """Get the name of this datafile"""
-        return self._fp.name
-
-    @property
-    def stem(self):
-        """Get the name of this datafile without its extension"""
-        return self._fp.stem
-
-    @property
     def size(self):
         """Get the byte size of this data file"""
-        if self._fp.is_file():
+        if self.exists():
             return self._fp.stat().st_size
         else:
             return 0
@@ -224,12 +208,12 @@ class DataFile:
     @property
     def version(self):
         """Get the version datetime of this datafile"""
-        return version[self.stem]
+        return version[self._fp.stem]
 
     @version.setter
     def version(self, new_version):
         """Set the version of this datafile"""
-        version[self.stem] = new_version
+        version[self._fp.stem] = new_version
 
 
 def _unsplit_field(row, nb_cols, delimiter, index_field):
@@ -248,7 +232,7 @@ def _unsplit_field(row, nb_cols, delimiter, index_field):
     return row
 
 
-def _custom_reader(string_io, delimiter, text_col):
+def _custom_reader(string_io, delimiter, text_col, nb_cols):
     """A customized version of csv.reader that:
     - unsplit unquoted field that contain delimiters
     - regroup unquoted multiline fields (i.e. containing newline characters)
@@ -258,10 +242,6 @@ def _custom_reader(string_io, delimiter, text_col):
         delimiter=delimiter,
         quoting=csv.QUOTE_NONE,
     )
-    # count the number of columns in a regular row
-    nb_cols = len(next(reader))
-    string_io.seek(0)
-
     real_row = []
     for row in reader:
         # regroup text field if split by delimiter
