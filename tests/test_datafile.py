@@ -7,7 +7,6 @@ from tatoebatools.datafile import (
     _get_mapped_fields,
     _unsplit_field,
 )
-from tatoebatools.exceptions import NoDataFile
 
 
 class TestUnsplitField:
@@ -32,32 +31,32 @@ class TestUnsplitField:
 class TestCustomReader:
     def test_with_commas(self):
         str_io = StringIO("a,b,c\n")
-        rows = [row for row in _custom_reader(str_io, ",", -1)]
+        rows = [row for row in _custom_reader(str_io, ",", -1, 3)]
         assert rows == [["a", "b", "c"]]
 
     def test_with_multiple_rows(self):
         str_io = StringIO("a,b,c\nd,e,f\n")
-        rows = [row for row in _custom_reader(str_io, ",", -1)]
+        rows = [row for row in _custom_reader(str_io, ",", -1, 3)]
         assert rows == [["a", "b", "c"], ["d", "e", "f"]]
 
     def test_with_tabs(self):
         str_io = StringIO("a\tb\tc\n")
-        rows = [row for row in _custom_reader(str_io, "\t", -1)]
+        rows = [row for row in _custom_reader(str_io, "\t", -1, 3)]
         assert rows == [["a", "b", "c"]]
 
     def test_with_null_field(self):
         str_io = StringIO("a,\\N,c\n")
-        rows = [row for row in _custom_reader(str_io, ",", -1)]
+        rows = [row for row in _custom_reader(str_io, ",", -1, 3)]
         assert rows == [["a", "\\N", "c"]]
 
     def test_with_split_end_column(self):
         str_io = StringIO("a,b,c\nd,e,f,f")
-        rows = [row for row in _custom_reader(str_io, ",", -1)]
+        rows = [row for row in _custom_reader(str_io, ",", -1, 3)]
         assert rows == [["a", "b", "c"], ["d", "e", "f,f"]]
 
     def test_with_split_middle_column(self):
         str_io = StringIO("a,b,c\nd,e,e,f")
-        rows = [row for row in _custom_reader(str_io, ",", 1)]
+        rows = [row for row in _custom_reader(str_io, ",", 1, 3)]
         assert rows == [["a", "b", "c"], ["d", "e,e", "f"]]
 
     def test_with_multiline_row(self):
@@ -68,7 +67,7 @@ class TestCustomReader:
             "\\\n"
             "\n"
         )
-        rows = [row for row in _custom_reader(str_io, "\t", -1)]
+        rows = [row for row in _custom_reader(str_io, "\t", -1, 4)]
         assert rows == [
             [
                 "abk",
@@ -114,29 +113,13 @@ class TestDataFile:
         assert [row for row in df] == self.fake_table
         assert m_open.call_count == 1
 
-    @patch("tatoebatools.datafile.DataFile.__iter__")
-    def test_index_with_ok_rows(self, m_iter):
-        m_iter.return_value = iter(self.fake_table)
+    @patch("builtins.open")
+    def test_without_file(self, m_open):
+        m_open.side_effect = FileNotFoundError
+
         df = DataFile("any_file_path", delimiter=",", text_col=-1)
 
-        assert df.index(0, 1) == {"42": "fra", "123": "eng"}
-        assert m_iter.call_count == 1
-
-    @patch("tatoebatools.datafile.DataFile.__iter__")
-    def test_index_with_bad_rows(self, m_iter):
-        m_iter.return_value = iter([["42", "fra", "foobar"], ["123"]])
-        df = DataFile("any_file_path", delimiter=",", text_col=-1)
-
-        assert df.index(0, 1) == {"42": "fra"}
-        assert m_iter.call_count == 1
-
-    @patch("tatoebatools.datafile.DataFile.__iter__")
-    def test_index_with_no_datafile(self, m_iter):
-        m_iter.side_effect = NoDataFile
-        df = DataFile("any_file_path", delimiter=",", text_col=-1)
-
-        assert df.index(0, 1) == {}
-        assert m_iter.call_count == 1
+        assert not df.exists()
 
     @patch("tatoebatools.datafile.Buffer")
     @patch("tatoebatools.datafile.tqdm")
@@ -146,7 +129,7 @@ class TestDataFile:
         m_iter.return_value = iter(self.fake_table)
         fp = "any_file_path"
         df = DataFile(fp, delimiter=",", text_col=-1)
-        df.split(columns=[1])
+        splits = df.split(columns=[1])
 
         add_args = m_buffer.return_value.add.call_args_list
         assert add_args[0][0][0] == self.fake_table[0]
@@ -157,6 +140,7 @@ class TestDataFile:
         assert m_logger.info.call_count == 1
         assert m_tqdm.return_value.update.call_count == 2
         assert m_tqdm.return_value.close.call_count == 1
+        assert all(isinstance(sp, DataFile) for sp in splits)
 
     @patch("tatoebatools.datafile.Buffer")
     @patch("tatoebatools.datafile.tqdm")
@@ -167,7 +151,7 @@ class TestDataFile:
         fp = "any_file_path"
         df = DataFile(fp, delimiter=",", text_col=-1)
         ind = {"42": "fra", "123": "eng"}
-        df.split(columns=[0], index=ind)
+        splits = df.split(columns=[0], index=ind)
 
         add_args = m_buffer.return_value.add.call_args_list
         assert add_args[0][0][0] == self.fake_table[0]
@@ -178,15 +162,4 @@ class TestDataFile:
         assert m_logger.info.call_count == 1
         assert m_tqdm.return_value.update.call_count == 2
         assert m_tqdm.return_value.close.call_count == 1
-
-    def test_get_out_filename_csv(self):
-        fp = "any_file_path"
-        df = DataFile(fp, delimiter=",", text_col=-1)
-
-        assert df._get_out_filename(["eng", "fra"]) == f"eng-fra_{fp}.csv"
-
-    def test_get_out_filename_tsv(self):
-        fp = "any_file_path"
-        df = DataFile(fp, delimiter="\t", text_col=-1)
-
-        assert df._get_out_filename(["eng", "fra"]) == f"eng-fra_{fp}.tsv"
+        assert all(isinstance(sp, DataFile) for sp in splits)
