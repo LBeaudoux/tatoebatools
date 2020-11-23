@@ -1,7 +1,12 @@
 import logging
 from pathlib import Path
 
-from .config import DATA_DIR, DIFFERENCE_TABLES, SUPPORTED_TABLES, TABLE_PARAMS
+from .config import (
+    DATA_DIR,
+    DIFFERENCE_TABLES,
+    SUPPORTED_TABLES,
+    TABLE_DATAFILE_PARAMS,
+)
 from .datafile import DataFile
 from .download import Download
 from .download_page import download_pages
@@ -65,7 +70,7 @@ class Update:
         """Split datafiles not 'monolingually' available"""
         new_datafiles = {}
         for tbl, fps in downloads.items():
-            tbl_params = TABLE_PARAMS.get(tbl, {})
+            tbl_params = TABLE_DATAFILE_PARAMS[tbl]
             for fp in fps:
                 df = DataFile(fp, **tbl_params)
                 tbl_dfs = {df}

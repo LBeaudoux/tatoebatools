@@ -3,7 +3,6 @@ import logging
 from io import StringIO
 from pathlib import Path
 
-import pandas as pd
 from tqdm import tqdm
 
 from .buffer import Buffer
@@ -79,21 +78,6 @@ class DataFile:
     def exists(self):
         """Check if this data file exists locally"""
         return self._fp.is_file()
-
-    def get_column_values(self, column_index):
-        """Get all values found in this column of this datafile"""
-        try:
-            col_df = pd.read_csv(
-                self._fp,
-                sep=self._dm,
-                header=None,
-                usecols=[column_index],
-                quoting=self._qt,
-            )
-        except pd.errors.EmptyDataError:
-            return set()
-        else:
-            return set(col_df.values.flat)
 
     def find_changes(self, index_col_keys=None, verbose=True):
         """Compare this file with its older version if there is one"""

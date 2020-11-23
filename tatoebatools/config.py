@@ -1,6 +1,21 @@
+import csv
 from pathlib import Path
 
 from pkg_resources import resource_filename
+
+from .jpn_indices import JpnIndex
+from .links import Link
+from .queries import Query
+from .sentences_base import SentenceBase
+from .sentences_cc0 import SentenceCC0
+from .sentences_detailed import SentenceDetailed
+from .sentences_in_lists import SentenceInList
+from .sentences_with_audio import SentenceWithAudio
+from .tags import Tag
+from .transcriptions import Transcription
+from .user_languages import UserLanguage
+from .user_lists import UserList
+from .utils import list_attributes
 
 DATA_DIR = Path(resource_filename(__package__, "data"))
 
@@ -33,17 +48,212 @@ DIFFERENCE_TABLES = (
     "user_languages",
 )
 
-TABLE_PARAMS = {
-    "sentences_base": {"nb_cols": 2},
-    "sentences_detailed": {"nb_cols": 6},
-    "sentences_CC0": {"nb_cols": 4},
-    "transcriptions": {"nb_cols": 5},
-    "links": {"nb_cols": 2},
-    "tags": {"nb_cols": 2},
-    "user_lists": {"text_col": 4, "nb_cols": 6},
-    "sentences_in_lists": {"nb_cols": 2},
-    "jpn_indices": {"nb_cols": 3},
-    "sentences_with_audio": {"nb_cols": 4},
-    "user_languages": {"text_col": -1, "nb_cols": 4},
-    "queries": {"delimiter": ",", "text_col": -1, "nb_cols": 3},
+TABLE_CLASSES = {
+    "sentences_base": SentenceBase,
+    "sentences_detailed": SentenceDetailed,
+    "sentences_CC0": SentenceCC0,
+    "transcriptions": Transcription,
+    "links": Link,
+    "tags": Tag,
+    "user_lists": UserList,
+    "sentences_in_lists": SentenceInList,
+    "jpn_indices": JpnIndex,
+    "sentences_with_audio": SentenceWithAudio,
+    "user_languages": UserLanguage,
+    "queries": Query,
+}
+
+TABLE_DATAFILE_PARAMS = {
+    "sentences_base": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "nb_cols": len(list_attributes(SentenceBase)),
+    },
+    "sentences_detailed": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "nb_cols": len(list_attributes(SentenceDetailed)),
+    },
+    "sentences_CC0": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "nb_cols": len(list_attributes(SentenceCC0)),
+    },
+    "transcriptions": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "nb_cols": len(list_attributes(Transcription)),
+    },
+    "links": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "nb_cols": len(list_attributes(Link)),
+    },
+    "tags": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "nb_cols": len(list_attributes(Tag)),
+    },
+    "user_lists": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "text_col": 4,
+        "nb_cols": len(list_attributes(UserList)),
+    },
+    "sentences_in_lists": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "nb_cols": len(list_attributes(SentenceInList)),
+    },
+    "jpn_indices": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "nb_cols": len(list_attributes(JpnIndex)),
+    },
+    "sentences_with_audio": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "nb_cols": len(list_attributes(SentenceWithAudio)),
+    },
+    "user_languages": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "text_col": -1,
+        "nb_cols": len(list_attributes(UserLanguage)),
+    },
+    "queries": {
+        "delimiter": ",",
+        "quoting": csv.QUOTE_NONE,
+        "text_col": -1,
+        "nb_cols": len(list_attributes(Query)),
+    },
+}
+
+
+TABLE_CSV_PARAMS = {
+    "sentences_base": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+    },
+    "sentences_detailed": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+    },
+    "sentences_CC0": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+    },
+    "transcriptions": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+    },
+    "links": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+    },
+    "tags": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+    },
+    "user_lists": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_MINIMAL,
+    },
+    "sentences_in_lists": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+    },
+    "jpn_indices": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+    },
+    "sentences_with_audio": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_NONE,
+    },
+    "user_languages": {
+        "delimiter": "\t",
+        "quoting": csv.QUOTE_MINIMAL,
+    },
+    "queries": {
+        "delimiter": ",",
+        "quoting": csv.QUOTE_MINIMAL,
+    },
+}
+
+TABLE_DATAFRAME_PARAMS = {
+    "sentences_base": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(SentenceBase),
+        "index_col": "sentence_id",
+        "na_values": ["\\N"],
+    },
+    "sentences_detailed": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(SentenceDetailed),
+        "index_col": "sentence_id",
+        "parse_dates": ["date_added", "date_last_modified"],
+        "na_values": ["\\N", "0000-00-00 00:00:00"],
+    },
+    "sentences_CC0": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(SentenceCC0),
+        "index_col": "sentence_id",
+        "parse_dates": ["date_last_modified"],
+        "na_values": ["\\N", "0000-00-00 00:00:00"],
+    },
+    "transcriptions": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(Transcription),
+    },
+    "links": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(Link),
+    },
+    "tags": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(Tag),
+    },
+    "user_lists": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(UserList),
+        "index_col": "sentence_id",
+        "parse_dates": ["date_created", "date_last_modified"],
+        "na_values": ["\\N", "0000-00-00 00:00:00"],
+    },
+    "sentences_in_lists": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(SentenceInList),
+    },
+    "jpn_indices": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(JpnIndex),
+    },
+    "sentences_with_audio": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(SentenceWithAudio),
+        "na_values": ["\\N"],
+    },
+    "user_languages": {
+        "sep": "\t",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(UserLanguage),
+        "na_values": ["\\N"],
+    },
+    "queries": {
+        "sep": ",",
+        "quoting": csv.QUOTE_NONE,
+        "names": list_attributes(SentenceWithAudio),
+        "na_values": ["\\N"],
+    },
 }

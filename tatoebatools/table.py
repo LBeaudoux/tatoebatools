@@ -1,43 +1,29 @@
+import csv
 import logging
+from io import StringIO
 from pathlib import Path
 
-from .config import DATA_DIR, TABLE_PARAMS
-from .datafile import DataFile
+import pandas as pd
+
+from .config import (
+    DATA_DIR,
+    TABLE_CLASSES,
+    TABLE_CSV_PARAMS,
+    TABLE_DATAFRAME_PARAMS,
+)
 from .exceptions import NotLanguage, NotLanguagePair, NotTable
-from .jpn_indices import JpnIndex
-from .links import Link
-from .queries import Query
-from .sentences_base import SentenceBase
-from .sentences_cc0 import SentenceCC0
-from .sentences_detailed import SentenceDetailed
-from .sentences_in_lists import SentenceInList
-from .sentences_with_audio import SentenceWithAudio
-from .tags import Tag
-from .transcriptions import Transcription
 from .update import Update, check_languages, check_tables
-from .user_languages import UserLanguage
-from .user_lists import UserList
 
 logger = logging.getLogger(__name__)
 
 
 class Table:
-    """A Tatoeba table"""
+    """A Tatoeba data file handler
 
-    _classes = {
-        "sentences_base": SentenceBase,
-        "sentences_detailed": SentenceDetailed,
-        "sentences_CC0": SentenceCC0,
-        "transcriptions": Transcription,
-        "links": Link,
-        "tags": Tag,
-        "user_lists": UserList,
-        "sentences_in_lists": SentenceInList,
-        "jpn_indices": JpnIndex,
-        "sentences_with_audio": SentenceWithAudio,
-        "user_languages": UserLanguage,
-        "queries": Query,
-    }
+    It manages the local update, the parsing and the conversion to dataframe
+    of monolingual and multilingual data files downloaded from:
+    https://downloads.tatoeba.org/exports/
+    """
 
     def __init__(
         self,
@@ -81,11 +67,103 @@ class Table:
         self._upd = update
         self._vb = verbose
 
-        # check availability of the table name
+        self._f = None  # init file-like object
+
+        # check validity of arguments
+        self._check_table_name_validity()
+        self._check_language_codes_validity()
+
+        # unlike other cases, the links from sentences in one language to
+        # sentences in every language are not loaded from a bilingual
+        # datafile but filtered from the large 'links.csv'file'
+        self._flt = self._get_filter_lang()
+
+        # run necessary updates
+        if self._upd:
+            self._update_required_files()
+
+        self._f = self._open()
+
+    def __del__(self):
+
+        self._f.close()
+
+    def __iter__(self):
+
+        csv_params = TABLE_CSV_PARAMS[self._name]
+        self._it = csv.reader(self._f, **csv_params)
+
+        return self
+
+    def __next__(self):
+
+        try:
+            row = next(self._it)
+        except StopIteration:
+            self._f.seek(0)  # enables multiple iterations over the file
+            raise StopIteration
+        else:
+            return TABLE_CLASSES[self._name](*row)
+
+    def as_dataframe(self, parse_dates=True):
+        """Get the pandas dataframe of this 'Table'
+
+        Parameters
+        ----------
+        parse_dates : bool, optional
+            whether CSV columns containing datetime strings are parsed as
+            datetime columns instead of string columns, by default True
+            The CSV reading is faster when 'parse_dates' is False.
+
+        Returns
+        -------
+        pandas.DataFrame
+            the dataframe version of this 'Table'
+        """
+        # the link rows containing the following sentence ids are filtered
+        if self._flt["lang"]:
+            filter_ids = self._get_filter_ids()
+        else:
+            filter_ids = None
+        # set up the parameters of the pandas CSV reader
+        params = TABLE_DATAFRAME_PARAMS[self._name].copy()
+        if not parse_dates:
+            params.pop("parse_dates", None)
+
+        if filter_ids is not None and filter_ids.index.empty:  # no link file
+            col_names = params.get("usecols", params["names"])
+            return pd.DataFrame(columns=col_names)
+        else:
+            df = self._read_csv_as_dataframe(self.path, **params)
+        # join main dataframe with index of filter ids
+        if not df.empty and filter_ids is not None:
+            return df.join(filter_ids, on=self._flt["col_name"], how="inner")
+
+        return df
+
+    @property
+    def path(self):
+        """Gzt the path of this 'Table' data file
+
+        Returns
+        -------
+        pathlib.Path
+            The local path of the file containing data for this 'Table'
+        """
+
+        return self._get_file_path(
+            table_name=self._name,
+            language_codes=self._lgs,
+            scope=self._scp,
+        )
+
+    def _check_table_name_validity(self):
+        """Checks if the name of this 'Table' is valid"""
         if self._name not in set(check_tables()):
             raise NotTable(self._name)
 
-        # check validity of language codes
+    def _check_language_codes_validity(self):
+        """Checks if the language code(s) of this 'Table' is/are valid"""
         all_languages = set(check_languages()) | {"*"}
         not_available_langs = set(self._lgs) - all_languages
         if self._name == "links":
@@ -94,78 +172,102 @@ class Table:
         elif len(self._lgs) > 1 or not_available_langs:
             raise NotLanguage(self._lgs)
 
-        # special case with datafile row filtering
-        filter_mode = (
+    def _get_filter_lang(self):
+        """Identifies the language for which link rows need to be filtered"""
+        is_filter = (
             self._name == "links"
             and "*" in self._lgs
             and set(self._lgs) != {"*"}
         )
-        if filter_mode:
-            self._flg = next(lg for lg in self._lgs if lg != "*")
-        else:
-            self._flg = None
+        if is_filter:
+            flg = next(lg for lg in self._lgs if lg != "*")
+            col_names = TABLE_DATAFRAME_PARAMS[self._name]["names"]
+            col_name = col_names[0] if self._lgs[0] == flg else col_names[1]
+            return {"lang": flg, "col_name": col_name}
 
-        # update necessary data files
-        if self._upd:
-            q = [(self._name, self._lgs)]
-            if self._flg:
-                q.append(("sentences_detailed", [self._flg]))
-            Update(q, data_dir=self._data_dir).run(verbose=self._vb)
+        return {"lang": None, "index": None}
 
-        # get DataFile instance
-        self._f = self._get_datafile(
-            table_name=self._name, language_codes=self._lgs, scope=self._scp
+    def _get_filter_ids(self):
+        """Gets the ids of the sentences for which link rows are filtered"""
+        fp = self._get_file_path(
+            "sentences_detailed",
+            language_codes=[self._flt["lang"]],
+            scope="all",
         )
-        if not self._f.exists() and self._vb:
-            lg_string = "-".join(self._lgs)
-            loc_string = "locally " if not self._upd else ""
-            msg = (
-                f"no data {loc_string}available for table '{self._name}' "
-                f"in '{lg_string}' with scope '{self._scp}'"
-            )
-            logger.warning(msg)
+        params = TABLE_DATAFRAME_PARAMS["sentences_detailed"].copy()
+        params.pop("parse_dates", None)  # for faster csv reading
+        params.update({"usecols": ["sentence_id"]})  # one col load is faster
 
-    def __iter__(self):
+        return self._read_csv_as_dataframe(fp, **params)
 
-        self._it = iter(self._f)
+    def _update_required_files(self):
+        """Triggers the update of required data files"""
+        q = [(self._name, self._lgs)]
+        if self._flt["lang"]:  # update filtered sentence ids
+            q.append(("sentences_detailed", [self._flt["lang"]]))
+        update = Update(q, data_dir=self._data_dir)
 
-        if self._flg:
-            filter_lang_sentences = self._get_datafile(
-                table_name="sentences_detailed",
-                language_codes=[self._flg],
-                scope="all",
-            )
-            self._fids = filter_lang_sentences.get_column_values(0)
-            self._ind_flg = 0 if self._lgs[0] == self._flg else 1
+        update.run(verbose=self._vb)
+
+    def _open(self):
+        """Gets the file-like object of this 'Table'"""
+        if not self._flt["lang"]:  # basic scenario with one file
+            f = self._get_file(self.path)
         else:
-            self._fids = None
-            self._ind_flg = None
+            # build a file-like object from this 'Table' dataframe
+            df_params = TABLE_DATAFRAME_PARAMS[self._name].copy()
+            params = {
+                k: v for k, v in df_params.items() if k in ("sep", "quoting")
+            }
+            params.update({"header": None, "index": False, "na_rep": "\\N"})
+            df = self.as_dataframe(parse_dates=False)
+            csv_string = df.to_csv(**params)
 
-        return self
+            f = StringIO()
+            f.write(csv_string)
+            f.seek(0)
 
-    def __next__(self):
+        return f
 
-        row = next(self._it)
-        if self._ind_flg is not None:
-            while int(row[self._ind_flg]) not in self._fids:
-                row = next(self._it)
+    def _read_csv_as_dataframe(self, file_path, **parameters):
+        """Gets the dataframe of a data file"""
+        index_col = parameters.pop("index_col", None)
+        try:
+            df = pd.read_csv(file_path, **parameters)
+        except FileNotFoundError:
+            if self._f is None:  # avoid duplicate logs
+                self._log_no_data()
+            col_names = parameters.get("usecols", parameters["names"])
+            df = pd.DataFrame(columns=col_names)
+        # separate index setting from reading to avoid FutureWarning:
+        # elementwise comparison failed; returning scalar instead,
+        # but in the future will perform elementwise comparison
+        # mask |= (ar1 == a)
+        if index_col:
+            df.set_index(index_col, inplace=True)
 
-        return Table._classes[self._name](*row)
+        return df
 
-    def _get_datafile(self, table_name, language_codes, scope):
-        """Get the datafile instance of this table for this language(s)
-        and scope
-        """
-        fp = self._get_datafile_path(
-            table_name=table_name,
-            language_codes=language_codes,
-            scope=scope,
+    def _get_file(self, file_path):
+        """Get the file object of the main data file of thos 'Table'"""
+        try:
+            f = open(file_path)
+        except FileNotFoundError:
+            self._log_no_data()
+            return StringIO()
+        else:
+            return f
+
+    def _log_no_data(self):
+        """Logs a warning message when no data file is found"""
+        loc_string = "locally " if not self._upd else ""
+        msg = (
+            f"no data {loc_string}available for table '{self._name}' "
+            f"in {self._lgs} with scope '{self._scp}'"
         )
-        params = TABLE_PARAMS.get(table_name, {})
+        logger.warning(msg)
 
-        return DataFile(fp, **params)
-
-    def _get_datafile_path(self, table_name, language_codes, scope):
+    def _get_file_path(self, table_name, language_codes, scope):
         """Get the path of the datafile of this table for this language(s)
         and scope
         """

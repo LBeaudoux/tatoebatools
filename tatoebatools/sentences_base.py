@@ -1,3 +1,6 @@
+from .utils import is_na
+
+
 class SentenceBase:
     """The base of a sentence from the Tatoeba corpus
 
@@ -27,4 +30,4 @@ class SentenceBase:
     @property
     def base_of_the_sentence(self):
         """Get the base of the sentence"""
-        return int(self._bs) if self._bs != "\\N" else None
+        return int(self._bs) if not is_na(self._bs) else None

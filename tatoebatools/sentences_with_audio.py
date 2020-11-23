@@ -1,3 +1,6 @@
+from .utils import is_na
+
+
 class SentenceWithAudio:
     """A Tatoeba sentence with audio"""
 
@@ -21,9 +24,9 @@ class SentenceWithAudio:
     @property
     def license(self):
         """The license of the sentence with audio"""
-        return self._lic if self._lic != "\\N" else ""
+        return self._lic if not is_na(self._lic) else None
 
     @property
     def attribution_url(self):
         """The url to the attrbution of the sentence with audio"""
-        return self._atr if self._atr != "\\N" else ""
+        return self._atr if not is_na(self._atr) else None

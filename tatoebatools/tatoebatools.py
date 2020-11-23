@@ -11,8 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class Tatoeba:
-    """A handler for interacting with the local Tatoeba's data
-    It enables users to download and parse Tatoeba export files
+    """A handler for interacting with Tatoeba data
+
+    Use it to download and parse Tatoeba export data files.
+
+    Find out more about Tatoeba export data files at:
+    https://tatoeba.org/eng/downloads
     """
 
     def __init__(self, data_dir=None):
@@ -36,15 +40,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
-            of all supported languages
+            of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -71,15 +77,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -106,15 +114,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -148,6 +158,7 @@ class Tatoeba:
         ----------
         source_language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         target_language : str
@@ -155,12 +166,13 @@ class Tatoeba:
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -186,15 +198,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -218,12 +232,13 @@ class Tatoeba:
         Parameters
         ----------
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -252,15 +267,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -285,12 +302,13 @@ class Tatoeba:
         Parameters
         ----------
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -318,15 +336,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -352,15 +372,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -386,15 +408,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -420,13 +444,13 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -444,6 +468,57 @@ class Tatoeba:
                 verbose=verbose,
             )
         )
+
+    def get(
+        self,
+        table_name,
+        language_codes,
+        scope="all",
+        parse_dates=True,
+        update=True,
+        verbose=True,
+    ):
+        """Get the DataFrame of a monolinguel or multilingual Tatoeba table
+
+        Parameters
+        ----------
+        table_name : str
+            A Tatoeba table name (e.g. 'sentences_detailed' or 'links')
+            Call the 'all_tables' attribute to get the list
+            of all supported tables.
+        language_codes : list
+            The IS0 639-3 code of a Tatoeba supported language or '*' to
+            designate all supported languages.
+            With the 'links' table, a pair of language codes is required.
+            Call the 'all_languages' attribute to get the list
+            of all supported languages.
+        scope : str, optional
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
+        parse_dates : bool, optional
+            Whether CSV columns containing datetime strings are parsed as
+            datetime columns instead of string columns, by default True
+        update : bool, optional
+            Whether a data file is updated before being read, by default True
+        verbose : bool, optional
+            Whether update steps are printed, by default True
+
+        Returns
+        -------
+        pandas.DataFrame
+            The dataframe object of a Tatoeba export datafile
+        """
+        table = Table(
+            table_name,
+            language_codes=language_codes,
+            data_dir=self._dir,
+            scope=scope,
+            update=update,
+            verbose=verbose,
+        )
+
+        return table.as_dataframe(parse_dates=parse_dates)
 
     @property
     def all_tables(self):

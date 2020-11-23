@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from .utils import is_na
+
 
 class SentenceDetailed:
     """A sentence from the Tatoeba corpus"""
@@ -39,14 +41,14 @@ class SentenceDetailed:
     @property
     def username(self):
         """Get the name of the author of the sentence."""
-        return self._usr if self._usr != "\\N" else ""
+        return self._usr if not is_na(self._usr) else None
 
     @property
     def date_added(self):
         """Get the date of the addition of the sentence."""
         try:
             dt = datetime.strptime(self._dtad, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
+        except (ValueError, TypeError):
             dt = None
         finally:
             return dt
@@ -56,7 +58,7 @@ class SentenceDetailed:
         """Get the date of the last modification of the sentence."""
         try:
             dt = datetime.strptime(self._dtlm, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
+        except (ValueError, TypeError):
             dt = None
         finally:
             return dt

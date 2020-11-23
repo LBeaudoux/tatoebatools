@@ -37,7 +37,10 @@ class TestTatoeba:
         assert all(s.lang == lg for s in sentences)
         assert all(isinstance(s.sentence_id, int) for s in sentences)
         assert all(isinstance(s.text, str) for s in sentences)
-        assert all(isinstance(s.username, str) for s in sentences)
+        assert all(
+            s.username is None or isinstance(s.username, str)
+            for s in sentences
+        )
         assert all(
             s.date_added is None or isinstance(s.date_added, datetime)
             for s in sentences
@@ -120,7 +123,9 @@ class TestTatoeba:
 
         assert all(isinstance(s.sentence_id, int) for s in sentences)
         assert all(isinstance(s.username, str) for s in sentences)
-        assert all(isinstance(s.license, str) for s in sentences)
+        assert all(
+            s.license is None or isinstance(s.license, str) for s in sentences
+        )
         assert all(isinstance(s.attribution_url, str) for s in sentences)
 
     def test_user_languages(self, tables, languages):

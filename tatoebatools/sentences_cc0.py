@@ -37,7 +37,7 @@ class SentenceCC0:
         """Get the date of the last modification of the sentence."""
         try:
             dt = datetime.strptime(self._dtlm, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
+        except (ValueError, TypeError):
             dt = None
         finally:
             return dt

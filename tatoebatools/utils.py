@@ -1,6 +1,7 @@
 import bz2
 import csv
 import logging
+import math
 import tarfile
 from pathlib import Path
 
@@ -186,3 +187,19 @@ def count_csv_columns(csv_path, delimiter):
         logger.exception("csv file not found")
     finally:
         return nb_cols
+
+
+def list_attributes(any_class):
+    """List all public methods and attributes of a class sorted by
+    definition order
+    """
+    return [x for x in any_class.__dict__.keys() if not x.startswith("_")]
+
+
+def is_na(element):
+    """Check if an element is 'not available'"""
+    if isinstance(element, str):
+        return element == "\\N"
+    elif isinstance(element, float):
+        return math.isnan(element)
+    return False

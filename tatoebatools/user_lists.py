@@ -36,7 +36,7 @@ class UserList:
         """Get the date when this list has been created"""
         try:
             dt = datetime.strptime(self._dcr, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
+        except (ValueError, TypeError):
             dt = None
         finally:
             return dt
@@ -46,7 +46,7 @@ class UserList:
         """Get the date when this list has been modified for the last time"""
         try:
             dt = datetime.strptime(self._dlm, "%Y-%m-%d %H:%M:%S")
-        except ValueError:
+        except (ValueError, TypeError):
             dt = None
         finally:
             return dt
