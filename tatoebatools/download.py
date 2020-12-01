@@ -9,20 +9,27 @@ class Download:
     """A file download"""
 
     def __init__(self, url, version, data_dir=None):
-        # the url from which the file is downloaded
+        """
+        Parameters
+        ----------
+        url : str
+            the url from which the file is downloaded
+        version : datetime
+            the version of the file
+        data_dir :  str, optional
+            the parent directory where files are downloaded, by default None
+        """
         self._url = url
-        # the datetime used as the version of the file
         self._vs = version
-        # the parent directory where files are downloaded
         self._data_dir = Path(data_dir) if data_dir else DATA_DIR
 
-    def fetch(self):
+    def fetch(self, verbose=True):
         """Download, decompress, extract, delete tamporary files, update
         local version value.
         """
-        fetched = fetch(self.from_url, self.out_dir)
+        fetched = fetch(self._url, self.out_dir, verbose=verbose)
         if fetched:
-            version[self.stem] = self.version
+            version[self.name] = self._vs
 
         return fetched
 
@@ -37,15 +44,15 @@ class Download:
         return self._vs
 
     @property
-    def stem(self):
-        """Get the stem of the downloaded file
+    def name(self):
+        """Get the name of the download
         'https://foo.bar/foobar.txt' -> 'foobar'
         """
         return get_filestem(self.from_url)
 
     @property
     def table(self):
-        """Get the name of the table from which this datafile is extracted."""
+        """Get the name of the table from which this datafile is extracted"""
         for tbl in (
             "sentences_base",
             "sentences_detailed",
@@ -57,7 +64,7 @@ class Download:
             "sentences_with_audio",
             "user_languages",
         ):
-            if self.stem.endswith(tbl):
+            if self.name.endswith(tbl):
                 return tbl
 
         for tbl in (
@@ -65,7 +72,7 @@ class Download:
             "jpn_indices",
             "queries",
         ):
-            if self.stem == tbl:
+            if self.name == tbl:
                 return tbl
 
         return

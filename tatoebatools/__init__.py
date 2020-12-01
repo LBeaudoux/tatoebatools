@@ -1,5 +1,6 @@
 import logging
 
+from .sentences_detailed import SentenceDetailed
 from .tatoebatools import Tatoeba
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -14,7 +15,7 @@ class ParallelCorpus:
 
     A parallel corpus between two languages is a collection of the
     Tatoeba sentences in the source language placed alongside their
-    translations in the target language.
+    translations in the target language
     """
 
     def __init__(
@@ -22,7 +23,7 @@ class ParallelCorpus:
         source_language_code,
         target_language_code,
         update=True,
-        verbose=False,
+        verbose=True,
     ):
         """
         Parameters
@@ -30,71 +31,121 @@ class ParallelCorpus:
         source_language_code : str
             The ISO 639-3 code of the parallel corpus' source language
         target_language_code : str
-             The ISO 639-3 code of the parallel corpus' target language
+            The ISO 639-3 code of the parallel corpus' target language
         update : bool, optional
-            Whether an update of the local data is forced or not, by
-            default True
+            Whether a data file is updated before being read, by default True
         verbose : bool, optional
-            The verbosity of the logging, by default True
+            Whether update steps are printed, by default True
         """
-
         self._src_lg = source_language_code
         self._tgt_lg = target_language_code
         self._upd = update
         self._vb = verbose
 
-        # the source sentences
-        self._sentences = {}
-        # the target sentences
-        self._translations = {}
-
-        self._load()  # load the sentences' data in memory
+        self._df = self._get_join_dataframe()
+        self._rd = self._df.itertuples(index=False)
 
     def __iter__(self):
+
+        self._rd = self._df.itertuples(index=False)
+
+        return self
+
+    def __next__(self):
+
+        row = next(self._rd)
+        sentence = SentenceDetailed(
+            row.sentence_id,
+            row.lang_sentence,
+            row.text_sentence,
+            row.username_sentence,
+            row.date_added_sentence,
+            row.date_last_modified_sentence,
+        )
+        translation = SentenceDetailed(
+            row.translation_id,
+            row.lang_translation,
+            row.text_translation,
+            row.username_translation,
+            row.date_added_translation,
+            row.date_last_modified_translation,
+        )
+
+        return (sentence, translation)
+
+    def _get_join_dataframe(self):
+        """Join source sentence, target sentence, and link dataframes"""
+        lk_dframe = self._get_link_dataframe()
+        src_row_filters = [
+            {
+                "col_index": 0,
+                "ok_values": set(lk_dframe["sentence_id"]),
+                "converter": int,
+            }
+        ]
+        tgt_row_filters = [
+            {
+                "col_index": 0,
+                "ok_values": set(lk_dframe["translation_id"]),
+                "converter": int,
+            }
+        ]
+        src_dframe, tgt_dframe = self._get_sentence_dataframes(
+            src_row_filters, tgt_row_filters
+        )
+
+        return lk_dframe.join(src_dframe, on="sentence_id", how="inner").join(
+            tgt_dframe,
+            on="translation_id",
+            how="inner",
+            lsuffix="_sentence",
+            rsuffix="_translation",
+        )
+
+    def _get_link_dataframe(self):
+        """Get the dataframe of all direct translation links from
+        the source to the target language
         """
-        Yields
-        -------
-        tuple
-            the SentenceDetailed instances of both the source sentence
-            and its translation
-        """
-
-        if self._sentences and self._translations:
-            for lk in tatoeba.links(
-                self._src_lg, self._tgt_lg, update=False, verbose=False
-            ):
-                if (
-                    lk.sentence_id in self._sentences
-                    and lk.translation_id in self._translations
-                ):
-                    yield (
-                        self._sentences[lk.sentence_id],
-                        self._translations[lk.translation_id],
-                    )
-
-    def _load(self):
-        """Loads necessary sentences and links data"""
-        # get ids of source sentences and target sentences
-        source_ids = set()
-        target_ids = set()
-        for lk in tatoeba.links(
-            self._src_lg, self._tgt_lg, update=self._upd, verbose=self._vb
-        ):
-            source_ids.add(lk.sentence_id)
-            target_ids.add(lk.translation_id)
-
-        # load necessary source and target sentences
-        self._sentences = {
-            s.sentence_id: s
-            for s in tatoeba.sentences_detailed(
-                self._src_lg, update=self._upd, verbose=self._vb
-            )
-            if s.sentence_id in source_ids
+        params = {
+            "language_codes": [self._src_lg, self._tgt_lg],
+            "scope": "all",
+            "update": self._upd,
+            "verbose": self._vb,
         }
-        self._translations = {
-            s.sentence_id: s
-            for s in tatoeba.sentences_detailed(
-                self._tgt_lg, update=self._upd, verbose=self._vb
-            )
-            if s.sentence_id in target_ids
+
+        return tatoeba.get("links", **params)
+
+    def _get_sentence_dataframes(self, source_row_filters, target_row_filters):
+        """Get the dataframes of the source and target sentence tables"""
+        params = {
+            "scope": "all",
+            "update": self._upd,
+            "verbose": self._vb,
+            "parse_dates": False,  # accelerates CSV file reading
         }
+
+        if "*" in (self._src_lg, self._tgt_lg):
+            params["language_codes"] = ["*"]
+            src_ok_vals = source_row_filters[0]["ok_values"]
+            tgt_ok_vals = target_row_filters[0]["ok_values"]
+            params["row_filters"] = [
+                {
+                    "col_index": 0,
+                    "ok_values": src_ok_vals | tgt_ok_vals,
+                    "converter": int,
+                }
+            ]
+            src_dframe = tatoeba.get("sentences_detailed", **params)
+            tgt_dframe = src_dframe
+        else:
+            params["language_codes"] = [self._src_lg]
+            params["row_filters"] = source_row_filters
+            src_dframe = tatoeba.get("sentences_detailed", **params)
+            if self._tgt_lg == self._src_lg:
+                tgt_dframe = src_dframe
+            else:
+                params["language_codes"] = [self._tgt_lg]
+                params["row_filters"] = target_row_filters
+                tgt_dframe = tatoeba.get("sentences_detailed", **params)
+
+        return src_dframe, tgt_dframe

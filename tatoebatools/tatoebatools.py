@@ -1,29 +1,9 @@
 import logging
 from pathlib import Path
 
-from .config import (
-    DATA_DIR,
-    DIFFERENCE_TABLES,
-    INDEX_SPLIT_TABLES,
-    SIMPLE_SPLIT_TABLES,
-)
-from .datafile import DataFile
-from .download import Download
-from .exceptions import NotAvailableLanguage, NotAvailableTable
-from .jpn_indices import JpnIndices
-from .links import Links
-from .queries import Queries
-from .sentences_base import SentencesBase
-from .sentences_cc0 import SentencesCC0
-from .sentences_detailed import SentencesDetailed
-from .sentences_in_lists import SentencesInLists
-from .sentences_with_audio import SentencesWithAudio
+from .config import DATA_DIR
 from .table import Table
-from .tags import Tags
-from .transcriptions import Transcriptions
-from .update import check_languages, check_tables, check_updates
-from .user_languages import UserLanguages
-from .user_lists import UserLists
+from .update import check_languages, check_tables
 from .utils import lazy_property
 from .version import version
 
@@ -31,8 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class Tatoeba:
-    """A handler for interacting with the local Tatoeba's data
-    It enables users to download and parse Tatoeba export files
+    """A handler for interacting with Tatoeba data
+
+    Use it to download and parse Tatoeba export data files.
+
+    Find out more about Tatoeba export data files at:
+    https://tatoeba.org/eng/downloads
     """
 
     def __init__(self, data_dir=None):
@@ -40,7 +24,7 @@ class Tatoeba:
         Parameters
         ----------
         data_dir : str, optional
-            The path of the directory where the Tatoeba data is saved.
+            The path of the directory where the Tatoeba data is saved
             If None, the data is saved into the tatoebatools package
         """
         self._dir = Path(data_dir) if data_dir else DATA_DIR
@@ -48,7 +32,7 @@ class Tatoeba:
             version.dir = self._dir
 
     def sentences_detailed(
-        self, language, scope="all", update=True, verbose=False
+        self, language, scope="all", update=True, verbose=True
     ):
         """Iterates through all sentences in this language.
 
@@ -56,15 +40,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
-            of all supported languages
+            of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -73,31 +59,35 @@ class Tatoeba:
             text, username, date_added and date_last_modified
             attributes.
         """
-        if update:
-            self.update(["sentences_detailed"], [language], verbose=verbose)
+        return iter(
+            Table(
+                "sentences_detailed",
+                language_codes=[language],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
-        return SentencesDetailed(
-            language=language, scope=scope, data_dir=self._dir
-        ).__iter__()
-
-    def sentences_base(
-        self, language, scope="all", update=True, verbose=False
-    ):
+    def sentences_base(self, language, scope="all", update=True, verbose=True):
         """Iterates through all sentences' bases in this language.
 
         Parameters
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -105,14 +95,18 @@ class Tatoeba:
             SentenceBase instances with sentence_id and
             base_of_the_sentence attributes
         """
-        if update:
-            self.update(["sentences_base"], [language], verbose=verbose)
+        return iter(
+            Table(
+                "sentences_base",
+                language_codes=[language],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
-        return SentencesBase(
-            language=language, scope=scope, data_dir=self._dir
-        ).__iter__()
-
-    def sentences_CC0(self, language, scope="all", update=True, verbose=False):
+    def sentences_CC0(self, language, scope="all", update=True, verbose=True):
         """Iterate through all sentences in this language with a CC0
         license
 
@@ -120,15 +114,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -136,12 +132,16 @@ class Tatoeba:
             SentenceCC0 instances with sentence_id, lang, text and
             date_last_modified attributes.
         """
-        if update:
-            self.update(["sentences_CC0"], [language], verbose=verbose)
-
-        return SentencesCC0(
-            language=language, scope=scope, data_dir=self._dir
-        ).__iter__()
+        return iter(
+            Table(
+                "sentences_CC0",
+                language_codes=[language],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
     def links(
         self,
@@ -149,7 +149,7 @@ class Tatoeba:
         target_language,
         scope="all",
         update=True,
-        verbose=False,
+        verbose=True,
     ):
         """Iterates through all links between sentences in this source
         language and sentences in this target language
@@ -158,6 +158,7 @@ class Tatoeba:
         ----------
         source_language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         target_language : str
@@ -165,12 +166,13 @@ class Tatoeba:
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -178,62 +180,65 @@ class Tatoeba:
             Link instances with sentence_id and translation_id
             attributes
         """
-        if update:
-            self.update(
-                ["links"],
-                [source_language, target_language],
-                oriented_pair=True,
+        return iter(
+            Table(
+                "links",
+                language_codes=[source_language, target_language],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
                 verbose=verbose,
             )
+        )
 
-        return Links(
-            source_language=source_language,
-            target_language=target_language,
-            scope=scope,
-            data_dir=self._dir,
-        ).__iter__()
-
-    def tags(self, language, scope="all", update=True, verbose=False):
+    def tags(self, language, scope="all", update=True, verbose=True):
         """Iterates through all tagged sentences in this language.
 
         Parameters
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
         iterator
             Tag instances with sentence_id and tag_name attributes
         """
-        if update:
-            self.update(["tags"], [language], verbose=verbose)
+        return iter(
+            Table(
+                "tags",
+                language_codes=[language],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
-        return Tags(
-            language=language, scope=scope, data_dir=self._dir
-        ).__iter__()
-
-    def user_lists(self, scope="all", update=True, verbose=False):
+    def user_lists(self, scope="all", update=True, verbose=True):
         """Iterate trough all sentences' lists
 
         Parameters
         ----------
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -241,13 +246,19 @@ class Tatoeba:
             UserList instances with list_id, username, date_created,
             date_last_modified, list_name and editable_by attributes
         """
-        if update:
-            self.update(["user_lists"], [], verbose=verbose)
-
-        return UserLists(scope=scope, data_dir=self._dir).__iter__()
+        return iter(
+            Table(
+                "user_lists",
+                language_codes=[],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
     def sentences_in_lists(
-        self, language, scope="all", update=True, verbose=False
+        self, language, scope="all", update=True, verbose=True
     ):
         """Iterates through all sentences in this language which
         are in a list
@@ -256,15 +267,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages.
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -272,25 +285,30 @@ class Tatoeba:
             SentenceInList instances with list_id and sentence_id
             attributes
         """
-        if update:
-            self.update(["sentences_in_lists"], [language], verbose=verbose)
+        return iter(
+            Table(
+                "sentences_in_lists",
+                language_codes=[language],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
-        return SentencesInLists(
-            language=language, scope=scope, data_dir=self._dir
-        ).__iter__()
-
-    def jpn_indices(self, scope="all", update=True, verbose=False):
+    def jpn_indices(self, scope="all", update=True, verbose=True):
         """Iterates through all Japanese indices
 
         Parameters
         ----------
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -298,13 +316,19 @@ class Tatoeba:
             JpnIndex instances with sentence_id, meaning_id and text
             attributes
         """
-        if update:
-            self.update(["jpn_indices"], [], verbose=verbose)
-
-        return JpnIndices(scope=scope, data_dir=self._dir).__iter__()
+        return iter(
+            Table(
+                "jpn_indices",
+                language_codes=[],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
     def sentences_with_audio(
-        self, language, scope="all", update=True, verbose=False
+        self, language, scope="all", update=True, verbose=True
     ):
         """Iterates through sentences with audio file
 
@@ -312,15 +336,17 @@ class Tatoeba:
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -328,31 +354,35 @@ class Tatoeba:
             SentenceWithAudio instances with sentence_id, username,
             license and attribution_url attributes
         """
-        if update:
-            self.update(["sentences_with_audio"], [language], verbose=verbose)
+        return iter(
+            Table(
+                "sentences_with_audio",
+                language_codes=[language],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
-        return SentencesWithAudio(
-            language=language, scope=scope, data_dir=self._dir
-        ).__iter__()
-
-    def user_languages(
-        self, language, scope="all", update=True, verbose=False
-    ):
+    def user_languages(self, language, scope="all", update=True, verbose=True):
         """Iterates through all users' skills in this language
 
         Parameters
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -360,31 +390,35 @@ class Tatoeba:
             UserLanguage instances with lang, skill_level,
             username and details attributes
         """
-        if update:
-            self.update(["user_languages"], [language], verbose=verbose)
+        return iter(
+            Table(
+                "user_languages",
+                language_codes=[language],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
-        return UserLanguages(
-            language=language, scope=scope, data_dir=self._dir
-        ).__iter__()
-
-    def transcriptions(
-        self, language, scope="all", update=True, verbose=False
-    ):
+    def transcriptions(self, language, scope="all", update=True, verbose=True):
         """Iterate through all transcriptions for this language
 
         Parameters
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         scope : str
-            The scope of the iteration is "all", "added" or "removed"
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -392,27 +426,31 @@ class Tatoeba:
             Transcription instances with sentence_id, lang,
             script_name, username and transcription attributes
         """
-        if update:
-            self.update(["transcriptions"], [language], verbose=verbose)
+        return iter(
+            Table(
+                "transcriptions",
+                language_codes=[language],
+                data_dir=self._dir,
+                scope=scope,
+                update=update,
+                verbose=verbose,
+            )
+        )
 
-        return Transcriptions(
-            language=language, scope=scope, data_dir=self._dir
-        ).__iter__()
-
-    def queries(self, language, update=True, verbose=False):
+    def queries(self, language, update=True, verbose=True):
         """Iterate through all queries for this language
 
         Parameters
         ----------
         language : str
             The IS0 639-3 code of a Tatoeba supported language.
+            Use '*' to designate all supported languages.
             Call the 'all_languages' attribute to get the list
             of all supported languages
         update : bool
-            The data file is updated before being read when update is
-            activated
+            Whether a data file is updated before being read, by default True
         verbose : bool
-            Update steps are printed when verbose is set to True
+            Whether update steps are printed, by default True
 
         Returns
         -------
@@ -420,117 +458,76 @@ class Tatoeba:
             Queries instances with date, language and content
             attributes
         """
-        if update:
-            self.update(["queries"], [language], verbose=verbose)
+        return iter(
+            Table(
+                "queries",
+                language_codes=[language],
+                data_dir=self._dir,
+                scope="all",
+                update=update,
+                verbose=verbose,
+            )
+        )
 
-        return Queries(language=language, data_dir=self._dir).__iter__()
-
-    def update(
-        self, table_names, language_codes, oriented_pair=False, verbose=False
+    def get(
+        self,
+        table_name,
+        language_codes,
+        scope="all",
+        row_filters=[],
+        update=True,
+        verbose=True,
+        **read_csv_parameters
     ):
-        """Updates the local Tatoeba datafiles:
-        - download newest versions of the datafiles
-        - split them by language (when nomonolingual versions not avialable)
-        - identify the differences with the previously downloaded versions
+        """Get the DataFrame of a monolinguel or multilingual Tatoeba table
 
         Parameters
         ----------
-        table_names : list
-            The names of the tables to update. Call the 'all_tables'
-            attribute to get a list of all available tables
+        table_name : str
+            A Tatoeba table name (e.g. 'sentences_detailed' or 'links')
+            Call the 'all_tables' attribute to get the list
+            of all supported tables.
         language_codes : list
-            ISO 639-3 codes of the languages for which local data is
-            updated. Call the 'all_languages' attribute to get the list
+            The IS0 639-3 code of a Tatoeba supported language or '*' to
+            designate all supported languages.
+            With the 'links' table, a pair of language codes is required.
+            Call the 'all_languages' attribute to get the list
             of all supported languages.
-        oriented_pair : bool, optional
-            Requires a pair of language codes where the first language
-            is considered as source and the second as target,
-            by default False
+        scope : str, optional
+            The scope of the data.
+            Use default 'all' to get all latest data. Use 'added' or 'removed'
+            to get only differences with the former local data.
+        row_filters : list, optional
+            Row filters can be passed to load only useful rows into memory.
+            A row filter is a dict instance containing:
+            'col_index': the column for which the rows are filtered by value
+            'ok_values': the allowed values in the filter column
+            'converter' (optional): a converter applied to the filter column
+        update : bool, optional
+            Whether a data file is updated before being read, by default True
         verbose : bool, optional
-            Verbosity of the logging, by default True
+            Whether update steps are printed, by default True
+        read_csv_parameters : dict, optional
+            The tatoebatools default configuration can be overwritten by
+            providing these parameters to 'pandas.read_csv'.
+            See 'config.py' for more information about the default parameters.
 
-        Raises
-        ------
-        NotAvailableTable
-            Indicates that at least one of the table naames pased as
-            argument is not a valid Tatoeba table name.
-        NotAvailableLanguage
-            Indicates that at least one of the language code pased as
-            argument is not supported by Tatoeba.
+        Returns
+        -------
+        pandas.DataFrame
+            The dataframe object of a Tatoeba export datafile
         """
-        if not table_names and not language_codes:
-            return
-
-        # check if the tables are available
-        not_available_tables = set(table_names) - set(self.all_tables)
-        if not_available_tables:
-            raise NotAvailableTable(not_available_tables)
-
-        # check if the language codes are available
-        not_available_langs = set(language_codes) - set(self.all_languages)
-        if not_available_langs:
-            raise NotAvailableLanguage(not_available_langs)
-
-        # sentences table added when required for splitting other files
-        if (
-            any(tn in INDEX_SPLIT_TABLES for tn in table_names)
-            and "sentences_detailed" not in table_names
-        ):
-            table_names.append("sentences_detailed")
-
-        # get the urls of the datafiles that need an update
-        to_download = check_updates(
-            table_names,
-            language_codes,
-            oriented_pair=oriented_pair,
+        table = Table(
+            table_name,
+            language_codes=language_codes,
+            data_dir=self._dir,
+            scope=scope,
+            row_filters=row_filters,
+            update=update,
             verbose=verbose,
         )
 
-        # download the files of the update
-        download_paths = []
-        for url, vs in to_download.items():
-            dl = Download(url, vs, data_dir=self._dir)
-            download_paths.extend(dl.fetch())
-
-        language_index = {}
-        monolang_datafiles = []
-        for fp in download_paths:
-            # split the multilingual datafiles by language
-            if fp.stem in table_names:
-                table = Table(fp.stem, language_codes, data_dir=self._dir)
-
-                if table.name in INDEX_SPLIT_TABLES:
-                    if not language_index:
-                        logger.info("mapping sentence ids to languages")
-
-                        sentence_table = Table(
-                            "sentences_detailed",
-                            language_codes,
-                            data_dir=self._dir,
-                        )
-                        language_index = sentence_table.index(0, 1)
-
-                    monolang_datafiles.extend(table.classify(language_index))
-
-                elif table.name in SIMPLE_SPLIT_TABLES:
-                    monolang_datafiles.extend(table.classify())
-
-            else:
-                delimiter = "\t" if fp.suffix == ".tsv" else ","
-                monolang_datafiles.append(DataFile(fp, delimiter=delimiter))
-
-        # compare monolingual datafiles with their older version
-        for df in monolang_datafiles:
-            if any(tbl in df.stem for tbl in DIFFERENCE_TABLES):
-                df.find_changes(index_col_keys=None)
-
-        if verbose:
-            updated = {fp.stem for fp in download_paths}
-            updated |= {df.stem for df in monolang_datafiles}
-            updated = sorted(list(updated))
-            if updated:
-                msg = "updated files: {}".format(", ".join(updated))
-                logger.info(msg)
+        return table.as_dataframe(**read_csv_parameters)
 
     @property
     def all_tables(self):

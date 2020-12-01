@@ -1,5 +1,4 @@
 from pytest import raises
-
 from tatoebatools.exceptions import NotLanguagePair
 from tatoebatools.update import _get_urls_to_check
 
