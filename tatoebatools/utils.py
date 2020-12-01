@@ -155,9 +155,9 @@ def get_endpoint(url):
     return url.rsplit("/", 1)[0]
 
 
-def get_byte_size_of_row(row, delimiter):
+def get_byte_size(row, delimiter, line_terminator):
     """Get the byte size of this row split by this delimiter."""
-    line = delimiter.join(row) + "\n"
+    line = delimiter.join(row) + line_terminator
 
     return len(line.encode("utf-8"))
 
@@ -180,7 +180,7 @@ def count_csv_columns(csv_path, delimiter):
     """Count the columns in a CSV file"""
     nb_cols = None
     try:
-        with open(csv_path) as f:
+        with open(csv_path, encoding="utf-8") as f:
             rd = csv.reader(f, delimiter=delimiter)
             nb_cols = len(next(rd))
     except FileNotFoundError:

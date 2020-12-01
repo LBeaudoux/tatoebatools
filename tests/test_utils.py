@@ -3,7 +3,6 @@ from tarfile import ReadError
 from unittest.mock import patch
 
 from requests.exceptions import RequestException
-
 from tatoebatools.utils import decompress, download, extract, fetch
 
 

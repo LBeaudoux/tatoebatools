@@ -60,7 +60,7 @@ class DownloadPages:
             # update the local copy of the web page
             try:
                 r = requests.get(self._url)
-                with open(self.path, "w") as f:
+                with open(self.path, "w", encoding="utf-8") as f:
                     f.write(r.text)
             except requests.exceptions.RequestException:
                 logger.warning(f"error while requesting {self._url}")
@@ -69,7 +69,7 @@ class DownloadPages:
                 return r.text
         else:
             # load up to date local file
-            with open(self.path) as f:
+            with open(self.path, encoding="utf-8") as f:
                 return f.read()
 
     @property

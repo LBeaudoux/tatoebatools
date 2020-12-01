@@ -63,197 +63,145 @@ TABLE_CLASSES = {
     "queries": Query,
 }
 
-TABLE_DATAFILE_PARAMS = {
+TABLE_CSV_PARAMS = {
     "sentences_base": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "nb_cols": len(list_attributes(SentenceBase)),
     },
     "sentences_detailed": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "nb_cols": len(list_attributes(SentenceDetailed)),
     },
     "sentences_CC0": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "nb_cols": len(list_attributes(SentenceCC0)),
     },
     "transcriptions": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "nb_cols": len(list_attributes(Transcription)),
     },
     "links": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "nb_cols": len(list_attributes(Link)),
     },
     "tags": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "nb_cols": len(list_attributes(Tag)),
     },
     "user_lists": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "text_col": 4,
         "nb_cols": len(list_attributes(UserList)),
     },
     "sentences_in_lists": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "nb_cols": len(list_attributes(SentenceInList)),
     },
     "jpn_indices": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "nb_cols": len(list_attributes(JpnIndex)),
     },
     "sentences_with_audio": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
+        "quotechar": "",
+        "lineterminator": "\n",
         "nb_cols": len(list_attributes(SentenceWithAudio)),
     },
     "user_languages": {
         "delimiter": "\t",
         "quoting": csv.QUOTE_NONE,
-        "text_col": -1,
+        "quotechar": "",
+        "lineterminator": "\n",
+        "text_col": 3,
         "nb_cols": len(list_attributes(UserLanguage)),
     },
     "queries": {
         "delimiter": ",",
         "quoting": csv.QUOTE_NONE,
-        "text_col": -1,
+        "quotechar": "",
+        "lineterminator": "\n",
+        "text_col": 2,
         "nb_cols": len(list_attributes(Query)),
-    },
-}
-
-
-TABLE_CSV_PARAMS = {
-    "sentences_base": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_NONE,
-    },
-    "sentences_detailed": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_NONE,
-    },
-    "sentences_CC0": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_NONE,
-    },
-    "transcriptions": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_NONE,
-    },
-    "links": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_NONE,
-    },
-    "tags": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_NONE,
-    },
-    "user_lists": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_MINIMAL,
-    },
-    "sentences_in_lists": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_NONE,
-    },
-    "jpn_indices": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_NONE,
-    },
-    "sentences_with_audio": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_NONE,
-    },
-    "user_languages": {
-        "delimiter": "\t",
-        "quoting": csv.QUOTE_MINIMAL,
-    },
-    "queries": {
-        "delimiter": ",",
-        "quoting": csv.QUOTE_MINIMAL,
     },
 }
 
 TABLE_DATAFRAME_PARAMS = {
     "sentences_base": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(SentenceBase),
         "index_col": "sentence_id",
         "na_values": ["\\N"],
     },
     "sentences_detailed": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(SentenceDetailed),
         "index_col": "sentence_id",
         "parse_dates": ["date_added", "date_last_modified"],
         "na_values": ["\\N", "0000-00-00 00:00:00"],
     },
     "sentences_CC0": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(SentenceCC0),
         "index_col": "sentence_id",
         "parse_dates": ["date_last_modified"],
         "na_values": ["\\N", "0000-00-00 00:00:00"],
     },
     "transcriptions": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(Transcription),
     },
     "links": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(Link),
     },
     "tags": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(Tag),
     },
     "user_lists": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(UserList),
-        "index_col": "sentence_id",
+        "index_col": "list_id",
         "parse_dates": ["date_created", "date_last_modified"],
         "na_values": ["\\N", "0000-00-00 00:00:00"],
     },
     "sentences_in_lists": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(SentenceInList),
     },
     "jpn_indices": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(JpnIndex),
     },
     "sentences_with_audio": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(SentenceWithAudio),
         "na_values": ["\\N"],
     },
     "user_languages": {
-        "sep": "\t",
-        "quoting": csv.QUOTE_NONE,
         "names": list_attributes(UserLanguage),
         "na_values": ["\\N"],
     },
     "queries": {
-        "sep": ",",
-        "quoting": csv.QUOTE_NONE,
-        "names": list_attributes(SentenceWithAudio),
+        "names": list_attributes(Query),
         "na_values": ["\\N"],
     },
 }

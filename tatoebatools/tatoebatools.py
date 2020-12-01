@@ -474,9 +474,10 @@ class Tatoeba:
         table_name,
         language_codes,
         scope="all",
-        parse_dates=True,
+        row_filters=[],
         update=True,
         verbose=True,
+        **read_csv_parameters
     ):
         """Get the DataFrame of a monolinguel or multilingual Tatoeba table
 
@@ -496,13 +497,20 @@ class Tatoeba:
             The scope of the data.
             Use default 'all' to get all latest data. Use 'added' or 'removed'
             to get only differences with the former local data.
-        parse_dates : bool, optional
-            Whether CSV columns containing datetime strings are parsed as
-            datetime columns instead of string columns, by default True
+        row_filters : list, optional
+            Row filters can be passed to load only useful rows into memory.
+            A row filter is a dict instance containing:
+            'col_index': the column for which the rows are filtered by value
+            'ok_values': the allowed values in the filter column
+            'converter' (optional): a converter applied to the filter column
         update : bool, optional
             Whether a data file is updated before being read, by default True
         verbose : bool, optional
             Whether update steps are printed, by default True
+        read_csv_parameters : dict, optional
+            The tatoebatools default configuration can be overwritten by
+            providing these parameters to 'pandas.read_csv'.
+            See 'config.py' for more information about the default parameters.
 
         Returns
         -------
@@ -514,11 +522,12 @@ class Tatoeba:
             language_codes=language_codes,
             data_dir=self._dir,
             scope=scope,
+            row_filters=row_filters,
             update=update,
             verbose=verbose,
         )
 
-        return table.as_dataframe(parse_dates=parse_dates)
+        return table.as_dataframe(**read_csv_parameters)
 
     @property
     def all_tables(self):

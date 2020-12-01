@@ -1,165 +1,189 @@
+import csv
 from io import StringIO
+from pathlib import Path
 from unittest.mock import patch
 
-from tatoebatools.datafile import (
-    DataFile,
-    _custom_reader,
-    _get_mapped_fields,
-    _unsplit_field,
-)
+import pandas as pd
+from tatoebatools.datafile import DataFile
 
 
-class TestUnsplitField:
-    def test_without_split_field(self):
-        row = ["foobar", "text not split by delimiters"]
-        new_row = _unsplit_field(row, nb_cols=2, delimiter=",", index_field=-1)
-        assert new_row == row
+class TestDataFileInit:
 
-    def test_with_end_split_field(self):
-        row = ["foobar", "text", " split", " by", " delimiters"]
-        ok_row = ["foobar", "text, split, by, delimiters"]
-        new_row = _unsplit_field(row, nb_cols=2, delimiter=",", index_field=-1)
-        assert new_row == ok_row
+    data = "a,b,c\nd,e,f\n"
+    params = {"delimiter": ","}
 
-    def test_with_midlle_split_field(self):
-        row = ["foobar", "text", " split", " by", " delimiters", "foo"]
-        ok_row = ["foobar", "text, split, by, delimiters", "foo"]
-        new_row = _unsplit_field(row, nb_cols=3, delimiter=",", index_field=1)
-        assert new_row == ok_row
+    def test_string_arg(self):
+        dfile = DataFile(self.data)
+        assert str(dfile) == self.data
+
+    @patch("builtins.open")
+    def test_path_arg(self, m_open):
+        m_open.return_value = StringIO(self.data)
+        fp = Path("any/path")
+        dfile = DataFile(fp, **self.params)
+        assert str(dfile) == self.data
+
+    @patch("builtins.open", side_effect=FileNotFoundError)
+    def test_file_not_found(self, m_open):
+        fp = Path("any/path")
+        dfile = DataFile(fp, **self.params)
+        assert str(dfile) == ""
+
+    def test_dataframe_arg(self):
+        dframe = pd.DataFrame([["a", "b", "c"], ["d", "e", "f"]])
+        dfile = DataFile(dframe, **self.params)
+        assert str(dfile) == self.data
+
+    def test_file_lik_object_arg(self):
+        dfile = DataFile(StringIO(self.data), **self.params)
+        assert str(dfile) == self.data
 
 
-class TestCustomReader:
-    def test_with_commas(self):
-        str_io = StringIO("a,b,c\n")
-        rows = [row for row in _custom_reader(str_io, ",", -1, 3)]
-        assert rows == [["a", "b", "c"]]
+class TestDataFileIterator:
+
+    delimiters = ("\t", ",")
+
+    def test_empty(self):
+        for dm in self.delimiters:
+            dfile = DataFile("", delimiter=dm)
+            assert [row for row in dfile] == []
+
+    def test_one_row(self):
+        in_rows = [["aaa", "bbb", "ccc"]]
+        for dm in self.delimiters:
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm)
+            out_rows = [row for row in dfile]
+            assert out_rows == in_rows
 
     def test_with_multiple_rows(self):
-        str_io = StringIO("a,b,c\nd,e,f\n")
-        rows = [row for row in _custom_reader(str_io, ",", -1, 3)]
-        assert rows == [["a", "b", "c"], ["d", "e", "f"]]
-
-    def test_with_tabs(self):
-        str_io = StringIO("a\tb\tc\n")
-        rows = [row for row in _custom_reader(str_io, "\t", -1, 3)]
-        assert rows == [["a", "b", "c"]]
+        in_rows = [["a", "b", "c"], ["d", "e", "f"], ["g", "h", "i"]]
+        for dm in self.delimiters:
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm)
+            out_rows = [row for row in dfile]
+            assert out_rows == in_rows
 
     def test_with_null_field(self):
-        str_io = StringIO("a,\\N,c\n")
-        rows = [row for row in _custom_reader(str_io, ",", -1, 3)]
-        assert rows == [["a", "\\N", "c"]]
+        in_rows = [["a", "\\N", "c"]]
+        for dm in self.delimiters:
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm)
+            out_rows = [row for row in dfile]
+            assert out_rows == in_rows
 
-    def test_with_split_end_column(self):
-        str_io = StringIO("a,b,c\nd,e,f,f")
-        rows = [row for row in _custom_reader(str_io, ",", -1, 3)]
-        assert rows == [["a", "b", "c"], ["d", "e", "f,f"]]
+    def test_delimiter_split_end_column(self):
+        for dm in self.delimiters:
+            in_rows = [["a", "b", "c", "c"]]
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm, nb_cols=3, text_col=2)
+            out_rows = [row for row in dfile]
+            assert out_rows == [["a", "b", "c c"]]
 
-    def test_with_split_middle_column(self):
-        str_io = StringIO("a,b,c\nd,e,e,f")
-        rows = [row for row in _custom_reader(str_io, ",", 1, 3)]
-        assert rows == [["a", "b", "c"], ["d", "e,e", "f"]]
+    def test_delimiter_split_middle_column(self):
+        for dm in self.delimiters:
+            in_rows = [["a", "b", "c"], ["d", "e", "e", "f"]]
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm, nb_cols=3, text_col=1)
+            out_rows = [row for row in dfile]
+            assert out_rows == [["a", "b", "c"], ["d", "e e", "f"]]
 
-    def test_with_multiline_row(self):
-        str_io = StringIO(
-            "abk\t4\tbackstreetboys\tunited states\n"
-            "\\\n"
-            "American flag\n"
-            "\\\n"
-            "\n"
-        )
-        rows = [row for row in _custom_reader(str_io, "\t", -1, 4)]
-        assert rows == [
-            [
-                "abk",
-                "4",
-                "backstreetboys",
-                "united states \\ American flag \\ ",
-            ]
-        ]
+    def test_endline_split_end_column(self):
+        for dm in self.delimiters:
+            in_rows = [["a", "b", "c"], ["c"], ["d", "e", "f"]]
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm, nb_cols=3, text_col=2)
+            out_rows = [row for row in dfile]
+            assert out_rows == [["a", "b", "c c"], ["d", "e", "f"]]
 
+    def test_endline_split_middle_column(self):
+        for dm in self.delimiters:
+            in_rows = [["a", "b", "c"], ["d", "e"], ["e", "f"]]
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm, nb_cols=3, text_col=1)
+            out_rows = [row for row in dfile]
+            assert out_rows == [["a", "b", "c"], ["d", "e e", "f"]]
 
-class TestGetMappedFields:
-    def test_without_index(self):
-        row = ["foo", "bar"]
-        columns = [1]
-        index = {}
-        assert _get_mapped_fields(row, columns, index) == ["bar"]
-
-    def test_with_too_short_row(self):
-        row = ["foo", "bar"]
-        columns = [2]
-        index = {}
-        assert _get_mapped_fields(row, columns, index) == [""]
-
-    def test_with_index(self):
-        row = ["23", "42"]
-        index = {"23": "foo", "42": "bar"}
-        columns = [0, 1]
-        assert _get_mapped_fields(row, columns, index) == ["foo", "bar"]
+    def test_quoted_text(self):
+        for dm in self.delimiters:
+            in_rows = [["foo", 'foo "bar" baz', "bar"]]
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(
+                s, delimiter=dm, quotechar="", quoting=csv.QUOTE_NONE
+            )
+            out_rows = [row for row in dfile]
+            assert out_rows == in_rows
 
 
-class TestDataFile:
-    fake_string_io = StringIO("42,fra,foo\n123,eng,bar\n")
-    fake_table = [
-        ["42", "fra", "foo"],
-        ["123", "eng", "bar"],
-    ]
+class TestDataFileAsDataFrame:
 
-    @patch("builtins.open")
-    def test_iter_with_file(self, m_open):
-        m_open.return_value = self.fake_string_io
-        df = DataFile("any_file_path", delimiter=",", text_col=-1)
+    delimiters = ("\t", ",")
 
-        assert [row for row in df] == self.fake_table
-        assert m_open.call_count == 1
+    def test_empty(self):
+        for dm in self.delimiters:
+            dfile = DataFile("", delimiter=dm)
+            dframe = dfile.as_dataframe()
+            assert dframe.equals(pd.DataFrame())
 
-    @patch("builtins.open")
-    def test_without_file(self, m_open):
-        m_open.side_effect = FileNotFoundError
+    def test_ok_row(self):
+        in_rows = [["aaa", "bbb", "ccc"], ["ddd", "eee", "fff"]]
+        for dm in self.delimiters:
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm)
+            dframe = dfile.as_dataframe()
+            assert dframe.equals(pd.DataFrame(in_rows))
 
-        df = DataFile("any_file_path", delimiter=",", text_col=-1)
+    def test_multiline_row(self):
+        in_rows = [["aaa", "bb"], ["b", "ccc"], ["ddd", "eee", "fff"]]
+        for dm in self.delimiters:
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm, nb_cols=3, text_col=1)
+            dframe = dfile.as_dataframe()
+            out_rows = [["aaa", "bb b", "ccc"], ["ddd", "eee", "fff"]]
+            assert dframe.equals(pd.DataFrame(out_rows))
 
-        assert not df.exists()
+    def test_with_index_col(self):
+        in_rows = [["aaa", "bbb", "ccc"], ["ddd", "eee", "fff"]]
+        for dm in self.delimiters:
+            s = "\n".join([dm.join(r) for r in in_rows])
+            dfile = DataFile(s, delimiter=dm)
+            dframe1 = dfile.as_dataframe(index_col=[0])
+            dframe2 = pd.DataFrame(in_rows).set_index([0])
+            assert dframe1.equals(dframe2)
 
-    @patch("tatoebatools.datafile.Buffer")
-    @patch("tatoebatools.datafile.tqdm")
-    @patch("tatoebatools.datafile.logger")
-    @patch("tatoebatools.datafile.DataFile.__iter__")
-    def test_split_without_index(self, m_iter, m_logger, m_tqdm, m_buffer):
-        m_iter.return_value = iter(self.fake_table)
-        fp = "any_file_path"
-        df = DataFile(fp, delimiter=",", text_col=-1)
-        splits = df.split(columns=[1])
 
-        add_args = m_buffer.return_value.add.call_args_list
-        assert add_args[0][0][0] == self.fake_table[0]
-        assert add_args[1][0][0] == self.fake_table[1]
-        assert add_args[0][0][1] != add_args[1][0][1]
-        assert m_iter.call_count == 1
-        assert m_buffer.return_value.clear.call_count == 1
-        assert m_logger.info.call_count == 1
-        assert m_tqdm.return_value.update.call_count == 2
-        assert m_tqdm.return_value.close.call_count == 1
-        assert all(isinstance(sp, DataFile) for sp in splits)
+class TestDataFileExtract:
 
-    @patch("tatoebatools.datafile.Buffer")
-    @patch("tatoebatools.datafile.tqdm")
-    @patch("tatoebatools.datafile.logger")
-    @patch("tatoebatools.datafile.DataFile.__iter__")
-    def test_split_with_index(self, m_iter, m_logger, m_tqdm, m_buffer):
-        m_iter.return_value = iter(self.fake_table)
-        fp = "any_file_path"
-        df = DataFile(fp, delimiter=",", text_col=-1)
-        ind = {"42": "fra", "123": "eng"}
-        splits = df.split(columns=[0], index=ind)
+    delimiters = ("\t", ",")
+    data = "a,b,c\nd,e,f\n"
+    params = {"delimiter": ","}
 
-        add_args = m_buffer.return_value.add.call_args_list
-        assert add_args[0][0][0] == self.fake_table[0]
-        assert add_args[1][0][0] == self.fake_table[1]
-        assert add_args[0][0][1] != add_args[1][0][1]
-        assert m_iter.call_count == 1
-        assert m_buffer.return_value.clear.call_count == 1
-        assert m_logger.info.call_count == 1
-        assert m_tqdm.return_value.update.call_count == 2
-        assert m_tqdm.return_value.close.call_count == 1
-        assert all(isinstance(sp, DataFile) for sp in splits)
+    def test_extract_columns(self):
+        dfile = DataFile(self.data, **self.params)
+        dfile_cols = dfile.extract_columns(usecols=[0, 1])
+        assert str(dfile_cols) == str(DataFile("a,b\nd,e\n", **self.params))
+
+    def test_extract_rows(self):
+        dfile = DataFile(self.data, **self.params)
+        row_filters = [{"col_index": 0, "ok_values": {"d"}}]
+        dfile_rows = dfile.extract_rows(row_filters=row_filters)
+        assert str(dfile_rows) == str(DataFile("d,e,f\n", **self.params))
+
+
+class TestDataFileJoin:
+
+    delimiters = ("\t", ",")
+    data = "a,b,c\nd,e,f\n"
+    params = {"delimiter": ","}
+
+    def test_join_dataframe(self):
+        dfile = DataFile(self.data, **self.params)
+        other_dframe = pd.DataFrame([["a", "b"], ["c", "d"], ["e", "f"]])
+        join_dfile = dfile.join(other_dframe, index_col=[0], on_col=[0])
+        assert str(join_dfile) == "a,b,c,b\n"
+
+    def test_join_datafile(self):
+        dfile = DataFile(self.data, **self.params)
+        other_dfile = DataFile("a,b\nc,d\ne,f", **self.params)
+        join_dfile = dfile.join(other_dfile, index_col=[0], on_col=[0])
+        assert str(join_dfile) == "a,b,c,b\n"

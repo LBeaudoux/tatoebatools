@@ -5,7 +5,7 @@ from .config import (
     DATA_DIR,
     DIFFERENCE_TABLES,
     SUPPORTED_TABLES,
-    TABLE_DATAFILE_PARAMS,
+    TABLE_CSV_PARAMS,
 )
 from .datafile import DataFile
 from .download import Download
@@ -68,25 +68,27 @@ class Update:
 
     def _split(self, downloads):
         """Split datafiles not 'monolingually' available"""
-        new_datafiles = {}
+        new_dfiles = {}
         for tbl, fps in downloads.items():
-            tbl_params = TABLE_DATAFILE_PARAMS[tbl]
+            tbl_params = TABLE_CSV_PARAMS[tbl]
             for fp in fps:
-                df = DataFile(fp, **tbl_params)
-                tbl_dfs = {df}
-                if df.path.stem == "queries":
-                    splits = df.split(columns=[1], verbose=self._vb)
-                    tbl_dfs |= set(splits)
-            new_datafiles[tbl] = tbl_dfs
+                dfile = DataFile(fp, **tbl_params)
+                tbl_dfiles = {dfile}
+                if dfile.path.stem == "queries":
+                    splits = dfile.split(
+                        columns=[1], verbose=self._vb, save=True
+                    )
+                    tbl_dfiles |= set(splits)
+            new_dfiles[tbl] = tbl_dfiles
 
-        return new_datafiles
+        return new_dfiles
 
     def _find_changes(self, new_datafiles):
         """Compare new datafiles with their older version"""
-        for tbl, dfs in new_datafiles.items():
-            for df in dfs:
-                if any(t in df.path.stem for t in DIFFERENCE_TABLES):
-                    df.find_changes(index_col_keys=None, verbose=self._vb)
+        for tbl, dfiles in new_datafiles.items():
+            for dfile in dfiles:
+                if any(t in dfile.path.stem for t in DIFFERENCE_TABLES):
+                    dfile.find_changes(save=True, verbose=self._vb)
 
 
 def check_languages():

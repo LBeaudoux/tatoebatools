@@ -1,5 +1,6 @@
-from tatoebatools.download_page import _extract_versions
 from datetime import datetime
+
+from tatoebatools.download_page import _extract_versions
 
 
 def test_extract_versions():

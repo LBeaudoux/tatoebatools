@@ -2,9 +2,10 @@ import random
 from datetime import date, datetime
 from tempfile import TemporaryDirectory
 
+import pandas as pd
 from pytest import fixture, raises
 
-from tatoebatools import tatoeba
+from tatoebatools import ParallelCorpus, tatoeba
 from tatoebatools.exceptions import NotLanguage, NotLanguagePair
 
 data_dir = TemporaryDirectory()
@@ -126,7 +127,10 @@ class TestTatoeba:
         assert all(
             s.license is None or isinstance(s.license, str) for s in sentences
         )
-        assert all(isinstance(s.attribution_url, str) for s in sentences)
+        assert all(
+            s.attribution_url is None or isinstance(s.attribution_url, str)
+            for s in sentences
+        )
 
     def test_user_languages(self, tables, languages):
         user_languages = []
@@ -214,3 +218,20 @@ class TestTatoeba:
     def test_wrong_language_pair(self):
         with raises(NotLanguagePair):
             [s for s in tatoeba.links("foo", "bar")]
+
+    def test_tatoeba_get_dataframe(self, tables, languages):
+        for tbl in tables:
+            if tbl == "links":
+                lg1 = random.choice(languages)
+                lg2 = random.choice(languages)
+                dframe = tatoeba.get(tbl, [lg1, lg2])
+            else:
+                lg = random.choice(languages)
+                dframe = tatoeba.get(tbl, [lg])
+
+            assert isinstance(dframe, pd.DataFrame)
+
+    def test_parallel_corpus(self, tables, languages):
+        for lg1 in ("eng", "swe", "*"):
+            for lg2 in random.sample(languages, 3):
+                [(s1.text, s2.text) for s1, s2 in ParallelCorpus(lg1, lg2)]

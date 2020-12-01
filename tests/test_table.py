@@ -38,10 +38,12 @@ class TestTable:
     def test_init_links(self, m_check_lg, m_check_tbl, m_update):
         Table("links", ["fra", "eng"])
 
+    @patch("tatoebatools.datafile.DataFile.join")
     @patch("tatoebatools.update.Update.run")
     @patch("tatoebatools.table.check_languages", return_value=ok_languages)
-    def test_init_links_with_one_asterisk(self, m_check_lg, m_update):
+    def test_init_links_with_one_asterisk(self, m_check_lg, m_update, m_join):
         Table("links", ["*", "eng"])
+        assert m_join.call_count == 1
 
     @patch("tatoebatools.update.Update.run")
     @patch("tatoebatools.table.check_languages", return_value=ok_languages)
