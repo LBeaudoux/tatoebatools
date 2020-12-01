@@ -1,7 +1,7 @@
 Tatoeba Tools
 =============
 
-By allowing you to easily download and parse monolingual data files, *tatoebatools* helps you to integrate `Tatoeba <https://tatoeba.org>`_ into your codebase more quickly.
+By allowing you to easily download and parse data files, *tatoebatools* helps you to integrate `Tatoeba <https://tatoeba.org>`_ into your codebase more quickly.
 
 
 Installation
@@ -95,7 +95,7 @@ Find out more about the Tatoeba data files and their fields `here <https://tatoe
 
 
 
-You can call *all_languages* to list the languages supported by Tatoeba:
+Languages are identified by their IS0 639-3 codes. The asterisk character '*' designates all languages supported by Tatoeba. Call *all_languages* to list the languages supported by Tatoeba:
 
 .. code-block:: python
 
@@ -135,3 +135,54 @@ List all French native speakers:
 .. code-block:: python
 
     >>> native_french = [x.username for x in tatoeba.user_languages("fra") if x.skill_level == 5]
+    
+    
+Get the dataframe of a table
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Since *tatoebatools* relies heavily on pandas, it is also possible to directly get the dataframe of any supported table.
+
+Examples
+""""""""
+Get the dataframe of the English sentences table:
+
+.. code-block:: python
+
+    >>> tatoeba.get("sentences_detailed", ["eng"])
+    
+                lang                                               text   username          date_added  date_last_modified
+    sentence_id                                                                                                           
+    1276         eng                               Let's try something.         CK                 NaT 2012-02-05 11:38:18
+    1277         eng                             I have to go to sleep.     vinhan                 NaT 2009-11-25 23:20:59
+    1280         eng   Today is June 18th and it is Muiriel's birthday!     wuiwie                 NaT 2019-03-24 11:45:41
+    1282         eng                                 Muiriel is 20 now.   LeeSooHa                 NaT 2015-09-24 18:12:33
+    1283         eng                         The password is "Muiriel".     wuiwie                 NaT 2019-03-24 11:45:36
+    ...          ...                                                ...        ...                 ...                 ...
+    9393217      eng  First, we stuff ham and cheese into the chicke...  DJ_Saidez 2020-11-28 05:53:59 2020-11-28 05:53:59
+    9393221      eng               I've never seen a yellow cow before.  DJ_Saidez 2020-11-28 05:56:18 2020-11-28 05:56:18
+    9393223      eng                Why are the eggs and the ham green?  DJ_Saidez 2020-11-28 05:56:37 2020-11-28 05:56:37
+    9393229      eng                     My grandma made oatmeal atole.  DJ_Saidez 2020-11-28 05:58:31 2020-11-28 05:59:29
+    9393234      eng                     How did these eggs get broken?         CK 2020-11-28 06:00:47 2020-11-28 06:00:47
+
+    [1395738 rows x 5 columns]
+
+    
+Get the dataframe of all links for which French is the source language:
+
+.. code-block:: python
+
+    >>> tatoeba.get("links", ["fra", "*"])
+    
+             sentence_id  translation_id
+    0               1115          136883
+    1               1115          276353
+    2               1115          334301
+    3               1115          367406
+    4               1115          472589
+    ...              ...             ...
+    1400415      9392546          267503
+    1400416      9392546          540479
+    1400417      9392546          565951
+    1400418      9392546         2635684
+    1400419      9392983         9232041
+
+    [1400420 rows x 2 columns]
