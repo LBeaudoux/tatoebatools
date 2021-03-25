@@ -365,8 +365,8 @@ class DataFile:
             else:
                 tags = {"added": "right_only", "removed": "left_only"}
                 for k, v in tags.items():
-                    diff_df = merger.loc[merger["_merge"] == v]
-                    diff_df.drop(labels="_merge", axis=1, inplace=True)
+                    mask = merger["_merge"] == v
+                    diff_df = merger.loc[mask].drop(columns="_merge")
                     diffs[k] = DataFile(
                         diff_df,
                         delimiter=self._dm,
