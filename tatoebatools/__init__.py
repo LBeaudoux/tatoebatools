@@ -37,8 +37,7 @@ class ParallelCorpus:
         verbose : bool, optional
             Whether update steps are printed, by default True
         """
-        self._src_lg = source_language_code
-        self._tgt_lg = target_language_code
+        self._lgs = {"src": source_language_code, "tgt": target_language_code}
         self._upd = update
         self._vb = verbose
 
@@ -75,27 +74,27 @@ class ParallelCorpus:
 
     def _get_join_dataframe(self):
         """Join source sentence, target sentence, and link dataframes"""
-        lk_dframe = self._get_link_dataframe()
-        src_row_filters = [
-            {
-                "col_index": 0,
-                "ok_values": set(lk_dframe["sentence_id"]),
-                "converter": int,
-            }
-        ]
-        tgt_row_filters = [
-            {
-                "col_index": 0,
-                "ok_values": set(lk_dframe["translation_id"]),
-                "converter": int,
-            }
-        ]
-        src_dframe, tgt_dframe = self._get_sentence_dataframes(
-            src_row_filters, tgt_row_filters
-        )
+        links = self._get_link_dataframe()
+        row_filters = {
+            k: [
+                {
+                    "col_index": 0,
+                    "ok_values": set(
+                        links[
+                            "sentence_id" if k == "src" else "translation_id"
+                        ]
+                    ),
+                    "converter": int,
+                }
+            ]
+            for k in ("src", "tgt")
+        }
+        sentences = self._get_sentence_dataframes(row_filters)
 
-        return lk_dframe.join(src_dframe, on="sentence_id", how="inner").join(
-            tgt_dframe,
+        return links.join(
+            sentences["src"], on="sentence_id", how="inner"
+        ).join(
+            sentences["tgt"],
             on="translation_id",
             how="inner",
             lsuffix="_sentence",
@@ -107,7 +106,7 @@ class ParallelCorpus:
         the source to the target language
         """
         params = {
-            "language_codes": [self._src_lg, self._tgt_lg],
+            "language_codes": [self._lgs[k] for k in ("src", "tgt")],
             "scope": "all",
             "update": self._upd,
             "verbose": self._vb,
@@ -115,7 +114,7 @@ class ParallelCorpus:
 
         return tatoeba.get("links", **params)
 
-    def _get_sentence_dataframes(self, source_row_filters, target_row_filters):
+    def _get_sentence_dataframes(self, row_filters):
         """Get the dataframes of the source and target sentence tables"""
         params = {
             "scope": "all",
@@ -124,28 +123,29 @@ class ParallelCorpus:
             "parse_dates": False,  # accelerates CSV file reading
         }
 
-        if "*" in (self._src_lg, self._tgt_lg):
+        if "*" in self._lgs:
+            # optimize memory footprint by loading only one dataframe
             params["language_codes"] = ["*"]
-            src_ok_vals = source_row_filters[0]["ok_values"]
-            tgt_ok_vals = target_row_filters[0]["ok_values"]
             params["row_filters"] = [
                 {
                     "col_index": 0,
-                    "ok_values": src_ok_vals | tgt_ok_vals,
+                    "ok_values": set().union(
+                        rf[0]["ok_values"] for rf in row_filters.values()
+                    ),
                     "converter": int,
                 }
             ]
-            src_dframe = tatoeba.get("sentences_detailed", **params)
-            tgt_dframe = src_dframe
+            df = tatoeba.get("sentences_detailed", **params)
+            sentences = {k: df for k in ("src", "tgt")}
         else:
-            params["language_codes"] = [self._src_lg]
-            params["row_filters"] = source_row_filters
-            src_dframe = tatoeba.get("sentences_detailed", **params)
-            if self._tgt_lg == self._src_lg:
-                tgt_dframe = src_dframe
-            else:
-                params["language_codes"] = [self._tgt_lg]
-                params["row_filters"] = target_row_filters
-                tgt_dframe = tatoeba.get("sentences_detailed", **params)
+            sentences = {}
+            for k, lg in self._lgs.items():
+                params["language_codes"] = [lg]
+                params["row_filters"] = row_filters[k]
+                sentences[k] = tatoeba.get("sentences_detailed", **params)
+                # avoid multiple loads of same dataframe
+                if self._lgs["src"] == self._lgs["tgt"]:
+                    sentences["tgt" if k == "src" else "src"] = sentences[k]
+                    break
 
-        return src_dframe, tgt_dframe
+        return sentences
