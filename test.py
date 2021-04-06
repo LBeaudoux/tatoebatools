@@ -231,7 +231,14 @@ class TestTatoeba:
 
             assert isinstance(dframe, pd.DataFrame)
 
-    def test_parallel_corpus(self, tables, languages):
+    def test_parallel_corpus(self, languages):
         for lg1 in ("eng", "swe", "*"):
             for lg2 in random.sample(languages, 3):
                 [(s1.text, s2.text) for s1, s2 in ParallelCorpus(lg1, lg2)]
+
+    def test_parallel_corpus_indirect_links(self, languages):
+        src_lg, tgt_lg = random.sample(languages, 2)
+        [
+            (s1.text, s2.text)
+            for s1, s2 in ParallelCorpus(src_lg, tgt_lg, distance=2)
+        ]

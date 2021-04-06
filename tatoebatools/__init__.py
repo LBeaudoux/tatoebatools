@@ -22,6 +22,7 @@ class ParallelCorpus:
         self,
         source_language_code,
         target_language_code,
+        distance=1,
         update=True,
         verbose=True,
     ):
@@ -32,12 +33,16 @@ class ParallelCorpus:
             The ISO 639-3 code of the parallel corpus' source language
         target_language_code : str
             The ISO 639-3 code of the parallel corpus' target language
+        distance : int
+            Minimum number of edges required to go from a sentence to its
+            translation in the Tatoeba graph, by default 1 (direct link)
         update : bool, optional
             Whether a data file is updated before being read, by default True
         verbose : bool, optional
             Whether update steps are printed, by default True
         """
         self._lgs = {"src": source_language_code, "tgt": target_language_code}
+        self._td = distance
         self._upd = update
         self._vb = verbose
 
@@ -105,14 +110,46 @@ class ParallelCorpus:
         """Get the dataframe of all direct translation links from
         the source to the target language
         """
-        params = {
-            "language_codes": [self._lgs[k] for k in ("src", "tgt")],
+        pms = {
             "scope": "all",
             "update": self._upd,
             "verbose": self._vb,
         }
 
-        return tatoeba.get("links", **params)
+        src_tgt = tatoeba.get(
+            "links", [self._lgs["src"], self._lgs["tgt"]], **pms
+        )
+        if self._td == 1:
+            return src_tgt
+        elif self._td == 2:
+            # get 'source to any' and 'any to target' one edge links
+            src_any = tatoeba.get("links", [self._lgs["src"], "*"], **pms)
+            any_tgt = tatoeba.get("links", ["*", self._lgs["tgt"]], **pms)
+            # get 'source to target' one and to two edges links
+            src_tgt_2 = (
+                src_any.merge(
+                    any_tgt,
+                    left_on="translation_id",
+                    right_on="sentence_id",
+                )
+                .loc[:, ["sentence_id_x", "translation_id_y"]]
+                .drop_duplicates()
+            )
+            src_tgt_2.rename(
+                {
+                    "sentence_id_x": "sentence_id",
+                    "translation_id_y": "translation_id",
+                },
+                axis=1,
+                inplace=True,
+            )
+            # identify links with minimum path length of 2 edges
+            links = src_tgt_2.merge(src_tgt, how="outer", indicator=True)
+            mask = (links["_merge"] == "left_only") & (
+                links["sentence_id"] != links["translation_id"]
+            )
+
+            return links.loc[mask, ["sentence_id", "translation_id"]]
 
     def _get_sentence_dataframes(self, row_filters):
         """Get the dataframes of the source and target sentence tables"""
