@@ -1,6 +1,10 @@
 Tatoeba Tools
 =============
 
+.. image:: https://github.com/LBeaudoux/tatoebatools/workflows/CI/badge.svg
+   :target: https://github.com/LBeaudoux/tatoebatools/actions?query=workflow%3ACI
+
+
 By allowing you to easily download and parse data files, *tatoebatools* helps you to integrate `Tatoeba <https://tatoeba.org>`_ into your codebase more quickly.
 
 
