@@ -88,7 +88,7 @@ class DataFile:
         elif isinstance(file_path_or_data, str):
             try:
                 self._f = open(file_path_or_data, encoding="utf-8")
-            except FileNotFoundError:  # data string scenario
+            except OSError:  # data string scenario
                 self._f = StringIO(file_path_or_data)
                 self._fp = None
             else:
