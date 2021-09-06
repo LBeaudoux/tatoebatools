@@ -72,6 +72,19 @@ class ParallelCorpus:
 
         return (sentence, translation)
 
+    @property
+    def dataframe(self):
+        """Get the dataframe of this parallel corpus
+
+        Returns
+        -------
+        pandas.DataFrame
+            Current parallel corpus loaded into memory as dataframe
+        """
+        index_cols = ["sentence_id", "translation_id"]
+
+        return self._df.set_index(index_cols).sort_values(by=index_cols)
+
     def _get_join_dataframe(self):
         """Join source sentence, target sentence, and link dataframes"""
         links = self._get_link_dataframe()
