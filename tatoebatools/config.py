@@ -156,18 +156,15 @@ TABLE_CSV_PARAMS = {
 TABLE_DATAFRAME_PARAMS = {
     "sentences_base": {
         "names": list_attributes(SentenceBase),
-        "index_col": "sentence_id",
         "na_values": ["\\N"],
     },
     "sentences_detailed": {
         "names": list_attributes(SentenceDetailed),
-        "index_col": "sentence_id",
         "parse_dates": ["date_added", "date_last_modified"],
         "na_values": ["\\N", "0000-00-00 00:00:00"],
     },
     "sentences_CC0": {
         "names": list_attributes(SentenceCC0),
-        "index_col": "sentence_id",
         "parse_dates": ["date_last_modified"],
         "na_values": ["\\N", "0000-00-00 00:00:00"],
     },
@@ -182,7 +179,6 @@ TABLE_DATAFRAME_PARAMS = {
     },
     "user_lists": {
         "names": list_attributes(UserList),
-        "index_col": "list_id",
         "parse_dates": ["date_created", "date_last_modified"],
         "na_values": ["\\N", "0000-00-00 00:00:00"],
     },

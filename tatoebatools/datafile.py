@@ -213,7 +213,6 @@ class DataFile:
             "names": None,
         }
         params.update(**parameters)
-        index_col = params.pop("index_col", None)
 
         if self._tc:  # fix file buffer when risk of multiline rows
             self._f = self._get_fixed_file_buffer()
@@ -224,13 +223,6 @@ class DataFile:
             col_names = params.get("usecols", params["names"])
             return pd.DataFrame(columns=col_names)
         else:
-            # separate index setting from reading to avoid FutureWarning:
-            # elementwise comparison failed; returning scalar instead,
-            # but in the future will perform elementwise comparison
-            # mask |= (ar1 == a)
-            if index_col:
-                df.set_index(index_col, inplace=True)
-
             return df
 
     def exists(self):

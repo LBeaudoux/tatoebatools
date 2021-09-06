@@ -149,6 +149,7 @@ class ParallelCorpus:
                 }
             ]
             df = tatoeba.get("sentences_detailed", **params)
+            df.set_index("sentence_id", inplace=True)
             sentences = {k: df for k in ("src", "tgt")}
         else:
             sentences = {}
@@ -156,6 +157,7 @@ class ParallelCorpus:
                 params["language_codes"] = [lg]
                 params["row_filters"] = row_filters[k]
                 sentences[k] = tatoeba.get("sentences_detailed", **params)
+                sentences[k].set_index("sentence_id", inplace=True)
                 # avoid multiple loads of same dataframe
                 if self._lgs["src"] == self._lgs["tgt"]:
                     sentences["tgt" if k == "src" else "src"] = sentences[k]
