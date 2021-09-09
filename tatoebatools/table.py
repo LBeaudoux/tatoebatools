@@ -3,6 +3,7 @@ from pathlib import Path
 
 from .config import (
     DATA_DIR,
+    DIFFERENCE_TABLES,
     TABLE_CLASSES,
     TABLE_CSV_PARAMS,
     TABLE_DATAFRAME_PARAMS,
@@ -109,7 +110,7 @@ class Table:
         pandas.DataFrame
             the dataframe version of this 'Table'
         """
-        params = self._get_dataframe_params(self._name, self._lgs, self._scp)
+        params = self._get_dataframe_params(self._name)
         params.update(parameters)
 
         return self._dfile.as_dataframe(**params)
@@ -196,8 +197,18 @@ class Table:
     def _get_datafile(self, table_name, language_codes, scope):
 
         fp = self._get_file_path(table_name, language_codes, scope)
-        params = self._get_file_csv_params(table_name, language_codes, scope)
+        params = self._get_file_csv_params(table_name)
         dfile = DataFile(fp, **params)
+
+        # generate diff files only when necessary
+        if scope != "all" and any(
+            t in dfile.path.stem for t in DIFFERENCE_TABLES
+        ):
+            path_all = self._get_file_path(table_name, language_codes, "all")
+            dfile_all = DataFile(path_all, **params)
+            if not dfile.version or dfile.version < dfile_all.version:
+                diffs = dfile_all.find_changes(save=True, verbose=self._vb)
+                return diffs.get(scope)
 
         if not dfile.exists():
             self._log_no_data(table_name, language_codes, scope)
@@ -213,16 +224,14 @@ class Table:
         )
         logger.warning(msg)
 
-    def _get_dataframe_params(self, table_name, language_codes, scope):
-        """Gets the 'pandas.read_csv' parameters for this table name,
-        language(s) and scope
-        """
+    @staticmethod
+    def _get_dataframe_params(table_name):
+        """Gets the 'pandas.read_csv' parameters for this table name"""
         return TABLE_DATAFRAME_PARAMS[table_name].copy()
 
-    def _get_file_csv_params(self, table_name, language_codes, scope):
-        """Gets the DataFile constructor parameters for this table name,
-        language(s) and scope
-        """
+    @staticmethod
+    def _get_file_csv_params(table_name):
+        """Gets the DataFile constructor parameters for this table name"""
         return TABLE_CSV_PARAMS[table_name].copy()
 
     def _get_file_path(self, table_name, language_codes, scope):

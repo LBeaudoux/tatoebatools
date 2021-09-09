@@ -1,12 +1,7 @@
 import logging
 from pathlib import Path
 
-from .config import (
-    DATA_DIR,
-    DIFFERENCE_TABLES,
-    SUPPORTED_TABLES,
-    TABLE_CSV_PARAMS,
-)
+from .config import DATA_DIR, SUPPORTED_TABLES, TABLE_CSV_PARAMS
 from .datafile import DataFile
 from .download import Download
 from .download_page import download_pages
@@ -38,8 +33,7 @@ class Update:
         self._vb = verbose
         to_download = self._check()
         downloads = self._download(to_download)
-        new_datafiles = self._split(downloads)
-        self._find_changes(new_datafiles)
+        self._split(downloads)
 
     def _check(self):
         """Get the urls and versions of the datafiles for which a newer
@@ -82,13 +76,6 @@ class Update:
             new_dfiles[tbl] = tbl_dfiles
 
         return new_dfiles
-
-    def _find_changes(self, new_datafiles):
-        """Compare new datafiles with their older version"""
-        for tbl, dfiles in new_datafiles.items():
-            for dfile in dfiles:
-                if any(t in dfile.path.stem for t in DIFFERENCE_TABLES):
-                    dfile.find_changes(save=True, verbose=self._vb)
 
 
 def check_languages():

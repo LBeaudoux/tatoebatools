@@ -306,7 +306,8 @@ class DataFile:
         if isinstance(other_data, pd.DataFrame):
             other_dframe = other_data.set_index(index_col)
         elif isinstance(other_data, DataFile):
-            other_dframe = other_data.as_dataframe(index_col=index_col)
+            other_dframe = other_data.as_dataframe()
+            other_dframe.set_index(index_col, inplace=True)
         join_dframe = dframe.join(
             other_dframe,
             on=on_col,
@@ -372,7 +373,7 @@ class DataFile:
                     for tag, dfile in diffs.items():
                         fname = get_extended_name(self.path, tag)
                         fpath = self.path.parent.joinpath(fname)
-                        dfile.save(to_path=fpath)
+                        dfile.save(to_path=fpath, version=self.version)
 
         return diffs
 
