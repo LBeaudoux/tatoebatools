@@ -72,6 +72,19 @@ class ParallelCorpus:
 
         return (sentence, translation)
 
+    @property
+    def dataframe(self):
+        """Get the dataframe of this parallel corpus
+
+        Returns
+        -------
+        pandas.DataFrame
+            Current parallel corpus loaded into memory as dataframe
+        """
+        index_cols = ["sentence_id", "translation_id"]
+
+        return self._df.set_index(index_cols).sort_values(by=index_cols)
+
     def _get_join_dataframe(self):
         """Join source sentence, target sentence, and link dataframes"""
         links = self._get_link_dataframe()
@@ -136,6 +149,7 @@ class ParallelCorpus:
                 }
             ]
             df = tatoeba.get("sentences_detailed", **params)
+            df.set_index("sentence_id", inplace=True)
             sentences = {k: df for k in ("src", "tgt")}
         else:
             sentences = {}
@@ -143,6 +157,7 @@ class ParallelCorpus:
                 params["language_codes"] = [lg]
                 params["row_filters"] = row_filters[k]
                 sentences[k] = tatoeba.get("sentences_detailed", **params)
+                sentences[k].set_index("sentence_id", inplace=True)
                 # avoid multiple loads of same dataframe
                 if self._lgs["src"] == self._lgs["tgt"]:
                     sentences["tgt" if k == "src" else "src"] = sentences[k]

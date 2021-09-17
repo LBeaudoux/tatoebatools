@@ -517,7 +517,7 @@ class Tatoeba:
         pandas.DataFrame
             The dataframe object of a Tatoeba export datafile
         """
-        table = Table(
+        self._curtable = Table(
             table_name,
             language_codes=language_codes,
             data_dir=self._dir,
@@ -527,7 +527,7 @@ class Tatoeba:
             verbose=verbose,
         )
 
-        return table.as_dataframe(**read_csv_parameters)
+        return self._curtable.as_dataframe(**read_csv_parameters)
 
     @property
     def all_tables(self):

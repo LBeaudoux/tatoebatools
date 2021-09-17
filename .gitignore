@@ -1,6 +1,8 @@
-.flake8
-env_tatoebatools/
+.tox/
 __pycache__/
+build/
+dist/
+env_tatoebatools/
 *.tsv
 *.json
 *.csv
@@ -10,6 +12,3 @@ __pycache__/
 *.ipynb
 *.html
 run.py
-build/
-dist/
-tatoebatools.egg-info/

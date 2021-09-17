@@ -39,6 +39,7 @@ class DataFile:
         na_values=None,
         text_col=None,
         nb_cols=None,
+        encoding_errors=None,
     ):
         """
         Parameters
@@ -70,6 +71,10 @@ class DataFile:
             delimiter or line terminator characters, by default None
         nb_cols : int, optional
             The expected number of columns per row, by default None
+        encoding_errors: str, optional
+            set 'ignore' to ignore the malformed data and continue
+            without further notice. Note that ignoring encoding
+            errors can lead to data loss.
         """
         self._dm = delimiter
         self._qt = quoting
@@ -81,14 +86,18 @@ class DataFile:
 
         if isinstance(file_path_or_data, Path):
             try:
-                self._f = open(file_path_or_data, encoding="utf-8")
+                self._f = open(
+                    file_path_or_data, encoding="utf-8", errors=encoding_errors
+                )
             except FileNotFoundError:  # path with not file scenario
                 self._f = StringIO()
             self._fp = file_path_or_data
         elif isinstance(file_path_or_data, str):
             try:
-                self._f = open(file_path_or_data, encoding="utf-8")
-            except OSError:  # data string scenario
+                self._f = open(
+                    file_path_or_data, encoding="utf-8", errors=encoding_errors
+                )
+            except FileNotFoundError:  # data string scenario
                 self._f = StringIO(file_path_or_data)
                 self._fp = None
             else:
@@ -213,7 +222,6 @@ class DataFile:
             "names": None,
         }
         params.update(**parameters)
-        index_col = params.pop("index_col", None)
 
         if self._tc:  # fix file buffer when risk of multiline rows
             self._f = self._get_fixed_file_buffer()
@@ -224,13 +232,6 @@ class DataFile:
             col_names = params.get("usecols", params["names"])
             return pd.DataFrame(columns=col_names)
         else:
-            # separate index setting from reading to avoid FutureWarning:
-            # elementwise comparison failed; returning scalar instead,
-            # but in the future will perform elementwise comparison
-            # mask |= (ar1 == a)
-            if index_col:
-                df.set_index(index_col, inplace=True)
-
             return df
 
     def exists(self):
@@ -314,7 +315,8 @@ class DataFile:
         if isinstance(other_data, pd.DataFrame):
             other_dframe = other_data.set_index(index_col)
         elif isinstance(other_data, DataFile):
-            other_dframe = other_data.as_dataframe(index_col=index_col)
+            other_dframe = other_data.as_dataframe()
+            other_dframe.set_index(index_col, inplace=True)
         join_dframe = dframe.join(
             other_dframe,
             on=on_col,
@@ -380,7 +382,7 @@ class DataFile:
                     for tag, dfile in diffs.items():
                         fname = get_extended_name(self.path, tag)
                         fpath = self.path.parent.joinpath(fname)
-                        dfile.save(to_path=fpath)
+                        dfile.save(to_path=fpath, version=self.version)
 
         return diffs
 
