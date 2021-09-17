@@ -39,6 +39,7 @@ class DataFile:
         na_values=None,
         text_col=None,
         nb_cols=None,
+        encoding_errors=None,
     ):
         """
         Parameters
@@ -70,6 +71,10 @@ class DataFile:
             delimiter or line terminator characters, by default None
         nb_cols : int, optional
             The expected number of columns per row, by default None
+        encoding_errors: str, optional
+            set 'ignore' to ignore the malformed data and continue
+            without further notice. Note that ignoring encoding
+            errors can lead to data loss.
         """
         self._dm = delimiter
         self._qt = quoting
@@ -81,13 +86,17 @@ class DataFile:
 
         if isinstance(file_path_or_data, Path):
             try:
-                self._f = open(file_path_or_data, encoding="utf-8")
+                self._f = open(
+                    file_path_or_data, encoding="utf-8", errors=encoding_errors
+                )
             except FileNotFoundError:  # path with not file scenario
                 self._f = StringIO()
             self._fp = file_path_or_data
         elif isinstance(file_path_or_data, str):
             try:
-                self._f = open(file_path_or_data, encoding="utf-8")
+                self._f = open(
+                    file_path_or_data, encoding="utf-8", errors=encoding_errors
+                )
             except FileNotFoundError:  # data string scenario
                 self._f = StringIO(file_path_or_data)
                 self._fp = None

@@ -150,6 +150,7 @@ TABLE_CSV_PARAMS = {
         "lineterminator": "\n",
         "text_col": 2,
         "nb_cols": len(list_attributes(Query)),
+        "encoding_errors": "ignore",
     },
 }
 
@@ -204,5 +205,6 @@ TABLE_DATAFRAME_PARAMS = {
         "na_values": ["\\N"],
         "parse_dates": ["date"],
         "date_parser": parse_search_log_date,
+        "encoding_errors": "ignore",
     },
 }
