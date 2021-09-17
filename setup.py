@@ -1,6 +1,6 @@
 import setuptools
 
-with open("README.rst", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -9,7 +9,7 @@ setuptools.setup(
     author="L.Beaudoux",
     description="A library for downloading and reading data from Tatoeba",
     long_description=long_description,
-    long_description_content_type="text/x-rst",
+    long_description_content_type="text/markdown",
     url="https://github.com/LBeaudoux/tatoebatools",
     packages=setuptools.find_packages(),
     classifiers=[
