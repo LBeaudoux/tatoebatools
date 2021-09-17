@@ -3,7 +3,7 @@
 [![Actions Status](https://github.com/LBeaudoux/tatoebatools/workflows/CI/badge.svg)](https://github.com/LBeaudoux/tatoebatools/actions?query=workflow%3ACI)
 
 
-`tatoebatools` helps you to integrate [Tatoeba](https://tatoeba.org) into your app more quickly by allowing you to easily download and parse [Tatoeba weekly exports](https://downloads.tatoeba.org/exports/).
+**tatoebatools** helps you to integrate [Tatoeba](https://tatoeba.org) into your app more quickly by allowing you to easily download and parse [Tatoeba weekly exports](https://downloads.tatoeba.org/exports/).
 
 ## Installation
 
@@ -35,7 +35,7 @@ The Tatoeba data files are handled by the `tatoeba` object.
 from tatoebatools import tatoeba
 ```
 
-By default, the fetched Tatoeba data files are stored inside the `tatoebatools` package. But you can download them to another location.
+By default, the fetched Tatoeba data files are stored inside the **tatoebatools** package. But you can download them to another location.
 
 ```python
 tatoeba.dir = "/path/to/my/tatoeba/dir"
@@ -96,7 +96,7 @@ native_french = [x.username for x in tatoeba.user_languages("fra") if x.skill_le
 
 ### Extracting Tatoeba data as dataframe
 
-Since `tatoebatools` relies heavily on the [pandas](https://github.com/pandas-dev/pandas) library, it is possible to load any supported table into memory as a dataframe.
+Since **tatoebatools** relies heavily on the [pandas](https://github.com/pandas-dev/pandas) library, it is possible to load any supported table into memory as a dataframe.
 
 ```python
 # get the dataframe of the English sentences table
@@ -108,7 +108,7 @@ french_links_dataframe = tatoeba.get("links", ["fra", "*"])
 
 ### Ingesting Tatoeba data into a database
 
-The `tatoebatools` library includes [SQLAlchemy](https://github.com/sqlalchemy/sqlalchemy) models that help you to ingest Tatoeba data in the database of you choice. 
+The **tatoebatools** library includes [SQLAlchemy](https://github.com/sqlalchemy/sqlalchemy) models that help you to ingest Tatoeba data in the database of you choice. 
 
 In the example below, all sentence and user data is loaded into a local SQLite database, and then an index is added to speed up database queries.
 
