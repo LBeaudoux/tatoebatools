@@ -97,7 +97,7 @@ class DataFile:
                 self._f = open(
                     file_path_or_data, encoding="utf-8", errors=encoding_errors
                 )
-            except FileNotFoundError:  # data string scenario
+            except OSError:  # data string scenario
                 self._f = StringIO(file_path_or_data)
                 self._fp = None
             else:
