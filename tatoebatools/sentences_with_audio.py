@@ -4,9 +4,12 @@ from .utils import is_na
 class SentenceWithAudio:
     """A Tatoeba sentence with audio"""
 
-    def __init__(self, sentence_id, username, license, attribution_url):
+    def __init__(
+        self, sentence_id, audio_id, username, license, attribution_url
+    ):
 
         self._id = sentence_id
+        self._aid = audio_id
         self._usr = username
         self._lic = license
         self._atr = attribution_url
@@ -15,6 +18,11 @@ class SentenceWithAudio:
     def sentence_id(self):
         """The id of the sentence with audio"""
         return int(self._id)
+
+    @property
+    def audio_id(self):
+        """The audio id of the sentence with audio"""
+        return int(self._aid)
 
     @property
     def username(self):

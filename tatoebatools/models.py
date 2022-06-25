@@ -66,6 +66,7 @@ class SentenceWithAudio(Base):
 
     id = Column(Integer, autoincrement=True, primary_key=True)
     sentence_id = Column(Integer)
+    audio_id = Column(Integer)
     username = Column(String(20), nullable=True)
     license = Column(String(50), nullable=True)
     attribution_url = Column(String(255), nullable=True)

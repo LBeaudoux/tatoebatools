@@ -116,6 +116,7 @@ class TestIterators:
 
         assert sentences
         assert all(isinstance(s.sentence_id, int) for s in sentences)
+        assert all(isinstance(s.audio_id, int) for s in sentences)
         assert all(isinstance(s.username, str) for s in sentences)
         assert all(
             s.license is None or isinstance(s.license, str) for s in sentences

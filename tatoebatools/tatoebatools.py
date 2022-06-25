@@ -351,7 +351,7 @@ class Tatoeba:
         Returns
         -------
         iterator
-            SentenceWithAudio instances with sentence_id, username,
+            SentenceWithAudio instances with sentence_id, audio_id, username,
             license and attribution_url attributes
         """
         return iter(

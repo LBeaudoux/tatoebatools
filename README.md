@@ -60,7 +60,7 @@ Each table has its own set of attributes:
 |tags                |sentence_id, tag_name                                                      |
 |sentences_in_lists  |list_id, sentence_id                                                       |
 |jpn_indices         |sentence_id, meaning_id, text                                              |
-|sentences_with_audio|sentence_id, username, license, attribution_url                            |
+|sentences_with_audio|sentence_id, audio_id, username, license, attribution_url                            |
 |user_languages      |lang, skill_level, username, details                                       |
 |transcriptions      |sentence_id, lang, script_name, username, transcription                    |
 |user_lists          |list_id, username, date_created, date_last_modified, list_name, editable_by|
