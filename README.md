@@ -92,6 +92,11 @@ french_italian_links = [(lk.sentence_id, lk.translation_id) for lk in tatoeba.li
 
 # list all French native speakers
 native_french = [x.username for x in tatoeba.user_languages("fra") if x.skill_level == 5]
+
+# map German sentences to their audios
+german_audios = {}
+for audio in tatoeba.sentences_with_audio("deu"):
+    german_audios.setdefault(audio.sentence_id, []).append(audio.audio_id)
 ```
 
 ### Extracting Tatoeba data as dataframe
