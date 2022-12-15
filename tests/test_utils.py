@@ -92,7 +92,9 @@ class TestExtract:
         out_filepaths = extract(self.archive_path)
 
         m_tar_open.assert_called_once_with(Path(self.archive_path))
-        m_tar.extractall.assert_called_once_with(Path(self.out_dir))
+        m_tar.extractall.assert_called_once_with(
+            Path(self.out_dir), None, numeric_owner=False
+        )
         assert m_tar.getnames.call_count == 1
         assert m_unlink.call_count == 1
         assert out_filepaths == [Path(fp) for fp in self.out_filepaths]
@@ -105,7 +107,9 @@ class TestExtract:
         out_filepaths = extract(self.archive_path)
 
         m_tar_open.assert_called_once_with(Path(self.archive_path))
-        m_tar.extractall.assert_called_once_with(Path(self.out_dir))
+        m_tar.extractall.assert_called_once_with(
+            Path(self.out_dir), None, numeric_owner=False
+        )
         assert out_filepaths == []
 
     @patch("tatoebatools.utils.tarfile.open", side_effect=FileNotFoundError)
