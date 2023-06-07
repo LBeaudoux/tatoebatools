@@ -34,7 +34,7 @@ class DataFile:
         file_path_or_data=StringIO(),
         delimiter="\t",
         quoting=csv.QUOTE_NONE,
-        quotechar="",
+        quotechar="'",
         lineterminator="\n",
         na_values=None,
         text_col=None,
