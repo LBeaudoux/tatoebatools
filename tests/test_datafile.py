@@ -109,7 +109,7 @@ class TestDataFileIterator:
             in_rows = [["foo", 'foo "bar" baz', "bar"]]
             s = "\n".join([dm.join(r) for r in in_rows])
             dfile = DataFile(
-                s, delimiter=dm, quotechar="", quoting=csv.QUOTE_NONE
+                s, delimiter=dm, quotechar="'", quoting=csv.QUOTE_NONE
             )
             out_rows = [row for row in dfile]
             assert out_rows == in_rows

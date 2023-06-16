@@ -34,12 +34,13 @@ class DataFile:
         file_path_or_data=StringIO(),
         delimiter="\t",
         quoting=csv.QUOTE_NONE,
-        quotechar="",
+        quotechar="'",
         lineterminator="\n",
         na_values=None,
         text_col=None,
         nb_cols=None,
         encoding_errors=None,
+        escapechar=None
     ):
         """
         Parameters
@@ -56,7 +57,7 @@ class DataFile:
         quotechar : str, optional
             A one-character string used to quote fields containing
             special characters, such as the delimiter or quotechar,
-            or which contain new-line characters, by default ""
+            or which contain new-line characters, by default "'"
         lineterminator : str, optional
             The string used to terminate lines produced by the csv
             writers, by default "\n"
@@ -75,6 +76,11 @@ class DataFile:
             set 'ignore' to ignore the malformed data and continue
             without further notice. Note that ignoring encoding
             errors can lead to data loss.
+        escapechar: str, optional
+            A one-character string used by the writer to escape
+            the delimiter if quoting is set to QUOTE_NONE and the
+            quotechar if doublequote is False. On reading, the escapechar
+            removes any special meaning from the following character.
         """
         self._dm = delimiter
         self._qt = quoting
@@ -83,6 +89,8 @@ class DataFile:
         self._na = na_values
         self._tc = text_col
         self._nc = nb_cols
+        self._ec = escapechar
+        print(f'qc = {self._qc}')
 
         if isinstance(file_path_or_data, Path):
             try:
@@ -109,7 +117,7 @@ class DataFile:
                 sep=self._dm,
                 quoting=self._qt,
                 quotechar=self._qc,
-                line_terminator=self._lt,
+                lineterminator=self._lt,
                 na_rep=self._na[0] if self._na else "",
                 header=None,
                 index=False,
@@ -131,6 +139,7 @@ class DataFile:
             quoting=self._qt,
             quotechar=self._qc,
             lineterminator=self._lt,
+            escapechar=self._ec
         )
         # init 'working row' value buffer
         self._wr = []
@@ -283,6 +292,7 @@ class DataFile:
                 quoting=self._qt,
                 quotechar=self._qc,
                 lineterminator=self._lt,
+                escapechar=self._ec
             )
             for row in self:
                 try:
@@ -412,6 +422,7 @@ class DataFile:
                         quoting=self._qt,
                         quotechar=self._qc,
                         lineterminator=self._lt,
+                        escapechar=self._ec
                     )
                     wt.writerow(row)
 
@@ -454,6 +465,7 @@ class DataFile:
             quoting=self._qt,
             quotechar=self._qc,
             lineterminator=self._lt,
+            escapechar=self._ec
         )
         wt.writerows(iter(self))
         fb.seek(0)
