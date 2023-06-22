@@ -7,7 +7,7 @@
 
 ## Installation
 
-This library supports Python 3.7.1+.
+This library supports Python 3.8+.
 
 ```sh
 pip install tatoebatools
