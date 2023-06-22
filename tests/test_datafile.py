@@ -8,7 +8,6 @@ from tatoebatools.datafile import DataFile
 
 
 class TestDataFileInit:
-
     data = "a,b,c\nd,e,f\n"
     params = {"delimiter": ","}
 
@@ -40,7 +39,6 @@ class TestDataFileInit:
 
 
 class TestDataFileIterator:
-
     delimiters = ("\t", ",")
 
     def test_empty(self):
@@ -70,7 +68,7 @@ class TestDataFileIterator:
             s = "\n".join([dm.join(r) for r in in_rows])
             dfile = DataFile(s, delimiter=dm)
             out_rows = [row for row in dfile]
-            assert out_rows == in_rows
+            assert out_rows == [["a", "N", "c"]]
 
     def test_delimiter_split_end_column(self):
         for dm in self.delimiters:
@@ -116,7 +114,6 @@ class TestDataFileIterator:
 
 
 class TestDataFileAsDataFrame:
-
     delimiters = ("\t", ",")
 
     def test_empty(self):
@@ -153,7 +150,6 @@ class TestDataFileAsDataFrame:
 
 
 class TestDataFileExtract:
-
     delimiters = ("\t", ",")
     data = "a,b,c\nd,e,f\n"
     params = {"delimiter": ","}
@@ -171,7 +167,6 @@ class TestDataFileExtract:
 
 
 class TestDataFileJoin:
-
     delimiters = ("\t", ",")
     data = "a,b,c\nd,e,f\n"
     params = {"delimiter": ","}

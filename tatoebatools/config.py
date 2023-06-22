@@ -66,6 +66,8 @@ TABLE_CLASSES = {
 TABLE_CSV_PARAMS = {
     "sentences_base": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -73,6 +75,8 @@ TABLE_CSV_PARAMS = {
     },
     "sentences_detailed": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -80,6 +84,8 @@ TABLE_CSV_PARAMS = {
     },
     "sentences_CC0": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -87,6 +93,8 @@ TABLE_CSV_PARAMS = {
     },
     "transcriptions": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -94,6 +102,8 @@ TABLE_CSV_PARAMS = {
     },
     "links": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -101,6 +111,8 @@ TABLE_CSV_PARAMS = {
     },
     "tags": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -108,6 +120,8 @@ TABLE_CSV_PARAMS = {
     },
     "user_lists": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -116,6 +130,8 @@ TABLE_CSV_PARAMS = {
     },
     "sentences_in_lists": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -123,6 +139,8 @@ TABLE_CSV_PARAMS = {
     },
     "jpn_indices": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -130,6 +148,8 @@ TABLE_CSV_PARAMS = {
     },
     "sentences_with_audio": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -137,6 +157,8 @@ TABLE_CSV_PARAMS = {
     },
     "user_languages": {
         "delimiter": "\t",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -145,6 +167,8 @@ TABLE_CSV_PARAMS = {
     },
     "queries": {
         "delimiter": ",",
+        "doublequote": True,
+        "escapechar": "\\",
         "quoting": csv.QUOTE_NONE,
         "quotechar": '"',
         "lineterminator": "\n",
@@ -157,19 +181,19 @@ TABLE_CSV_PARAMS = {
 TABLE_DATAFRAME_PARAMS = {
     "sentences_base": {
         "names": list_attributes(SentenceBase),
-        "na_values": ["\\N"],
+        "na_values": ["N"],
     },
     "sentences_detailed": {
         "names": list_attributes(SentenceDetailed),
         "parse_dates": ["date_added", "date_last_modified"],
         "date_parser": parse_export_date,
-        "na_values": ["\\N", "0000-00-00 00:00:00"],
+        "na_values": ["N", "0000-00-00 00:00:00"],
     },
     "sentences_CC0": {
         "names": list_attributes(SentenceCC0),
         "parse_dates": ["date_last_modified"],
         "date_parser": parse_export_date,
-        "na_values": ["\\N", "0000-00-00 00:00:00"],
+        "na_values": ["N", "0000-00-00 00:00:00"],
     },
     "transcriptions": {
         "names": list_attributes(Transcription),
@@ -184,7 +208,7 @@ TABLE_DATAFRAME_PARAMS = {
         "names": list_attributes(UserList),
         "parse_dates": ["date_created", "date_last_modified"],
         "date_parser": parse_export_date,
-        "na_values": ["\\N", "0000-00-00 00:00:00"],
+        "na_values": ["N", "0000-00-00 00:00:00"],
     },
     "sentences_in_lists": {
         "names": list_attributes(SentenceInList),
@@ -194,15 +218,15 @@ TABLE_DATAFRAME_PARAMS = {
     },
     "sentences_with_audio": {
         "names": list_attributes(SentenceWithAudio),
-        "na_values": ["\\N"],
+        "na_values": ["N"],
     },
     "user_languages": {
         "names": list_attributes(UserLanguage),
-        "na_values": ["\\N"],
+        "na_values": ["N"],
     },
     "queries": {
         "names": list_attributes(Query),
-        "na_values": ["\\N"],
+        "na_values": ["N"],
         "parse_dates": ["date"],
         "date_parser": parse_search_log_date,
         "encoding_errors": "ignore",

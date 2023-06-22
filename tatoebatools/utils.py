@@ -91,7 +91,6 @@ def extract(archive_path):
                 indicate_as_old(fp)
 
             def is_within_directory(directory, target):
-
                 abs_directory = os.path.abspath(directory)
                 abs_target = os.path.abspath(target)
 
@@ -102,7 +101,6 @@ def extract(archive_path):
             def safe_extract(
                 tar, path=".", members=None, *, numeric_owner=False
             ):
-
                 for member in tar.getmembers():
                     member_path = os.path.join(path, member.name)
                     if not is_within_directory(path, member_path):
@@ -221,7 +219,7 @@ def list_attributes(any_class):
 def is_na(element):
     """Check if an element is 'not available'"""
     if isinstance(element, str):
-        return element == "\\N"
+        return element == "N"
     elif isinstance(element, float):
         return math.isnan(element)
     return False
