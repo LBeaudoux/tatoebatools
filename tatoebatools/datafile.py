@@ -34,7 +34,7 @@ class DataFile:
         file_path_or_data=StringIO(),
         delimiter="\t",
         quoting=csv.QUOTE_NONE,
-        quotechar="'",
+        quotechar='"',
         lineterminator="\n",
         na_values=None,
         text_col=None,
@@ -57,7 +57,7 @@ class DataFile:
         quotechar : str, optional
             A one-character string used to quote fields containing
             special characters, such as the delimiter or quotechar,
-            or which contain new-line characters, by default "'"
+            or which contain new-line characters, by default '"'
         lineterminator : str, optional
             The string used to terminate lines produced by the csv
             writers, by default "\n"
