@@ -1,5 +1,6 @@
 import csv
 import logging
+import re
 from io import StringIO, TextIOBase
 from pathlib import Path
 
@@ -42,7 +43,6 @@ class DataFile:
         text_col=None,
         nb_cols=None,
         encoding_errors=None,
-        escapechar=None
     ):
         """
         Parameters
@@ -142,6 +142,10 @@ class DataFile:
         else:
             data_type = type(file_path_or_data)
             raise TypeError(f"{data_type} is not a valid 'file_path_or_data'")
+
+        # clean file buffer from known problematic characters
+        if self._tc:
+            self._f = self._get_cleaned_file_buffer()
 
         # init 'raw row' iterator
         self._rd = csv.reader(
@@ -479,6 +483,20 @@ class DataFile:
             pbar.close()
 
         return splits
+
+    def _get_cleaned_file_buffer(self):
+        """Clean known problematic characters from the file objext"""
+        file_content = self._f.read()
+        # multiline 'details' fields in 'user_languages' table have escaped
+        # new lines that can be removed
+        file_content = re.sub(r"\n\\\n", "  ", file_content)
+        # the 'list_name' field of the 'user_lists' table may have escaped
+        # tab delimiter that can be removed
+        file_content = re.sub(r"\\" + self._dm + r"+", " ", file_content)
+        fb = StringIO()
+        fb.write(file_content)
+        fb.seek(0)
+        return fb
 
     def _get_fixed_file_buffer(self):
         """Try to fix multiline rows found into the file objext"""
