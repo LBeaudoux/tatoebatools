@@ -1,6 +1,6 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
@@ -27,7 +27,7 @@ setuptools.setup(
         "beautifulsoup4>=4.9.0",
         "pandas>=1.5.0",
         "requests>=2.23.0",
-        "SQLAlchemy==1.4.23",
+        "SQLAlchemy>=1.4.23",
         "tqdm>=4.46.0",
     ],
 )
