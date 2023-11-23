@@ -2,7 +2,6 @@ class Link:
     """A link between a Tatoeba's sentence and its translation"""
 
     def __init__(self, sentence_id, translation_id):
-
         self._src_id = sentence_id
         self._tgt_id = translation_id
 

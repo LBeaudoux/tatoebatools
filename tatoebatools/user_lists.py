@@ -13,7 +13,6 @@ class UserList:
         list_name,
         editable_by,
     ):
-
         self._id = list_id
         self._usr = username
         self._dcr = date_created

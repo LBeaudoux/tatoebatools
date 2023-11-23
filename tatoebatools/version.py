@@ -27,18 +27,15 @@ class Version:
         self._dict = self._load()
 
     def __getitem__(self, filename):
-
         vs = self._dict.get(filename)
 
         return datetime.strptime(vs, "%Y-%m-%d %H:%M:%S") if vs else None
 
     def __setitem__(self, filename, new_version):
-
         self._dict[filename] = new_version.strftime("%Y-%m-%d %H:%M:%S")
         self._save()
 
     def __len__(self):
-
         return len(self._dict)
 
     def _load(self):

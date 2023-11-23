@@ -18,7 +18,6 @@ class SentenceBase:
         sentence_id,
         base_of_the_sentence,
     ):
-
         self._id = sentence_id
         self._bs = base_of_the_sentence
 

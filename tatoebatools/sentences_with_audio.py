@@ -7,7 +7,6 @@ class SentenceWithAudio:
     def __init__(
         self, sentence_id, audio_id, username, license, attribution_url
     ):
-
         self._id = sentence_id
         self._aid = audio_id
         self._usr = username

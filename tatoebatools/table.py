@@ -90,13 +90,11 @@ class Table:
         self._it = iter(self._dfile)
 
     def __iter__(self):
-
         self._it = iter(self._dfile)
 
         return self
 
     def __next__(self):
-
         row = next(self._it)
 
         return TABLE_CLASSES[self._name](*row)
@@ -170,7 +168,6 @@ class Table:
         update.run(verbose=self._vb)
 
     def _build_datafile(self):
-
         dfile = self._get_datafile(self._name, self._lgs, self._scp)
         if self._flg["lang"]:  # 'links' with one '*' case
             sent_dfile = self._get_datafile(
@@ -195,7 +192,6 @@ class Table:
         return dfile.extract_rows(row_filters=self._rf)
 
     def _get_datafile(self, table_name, language_codes, scope):
-
         fp = self._get_file_path(table_name, language_codes, scope)
         params = self._get_file_csv_params(table_name)
         dfile = DataFile(fp, **params)

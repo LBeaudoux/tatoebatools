@@ -15,7 +15,6 @@ class SentenceDetailed:
         date_added,
         date_last_modified,
     ):
-
         self._id = sentence_id
         self._lg = lang
         self._txt = text

@@ -8,7 +8,6 @@ class Query:
     """A query made to tatoeba.org"""
 
     def __init__(self, date, language, content):
-
         self._dt = date
         self._lg = language
         self._ct = content

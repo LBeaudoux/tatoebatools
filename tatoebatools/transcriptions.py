@@ -4,7 +4,6 @@ class Transcription:
     def __init__(
         self, sentence_id, lang, script_name, username, transcription
     ):
-
         # the id of the sentence
         self._sid = sentence_id
         # the language of the sentence

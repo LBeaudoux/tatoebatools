@@ -11,7 +11,6 @@ class SentenceCC0:
         text,
         date_last_modified,
     ):
-
         self._id = sentence_id
         self._lg = lang
         self._txt = text

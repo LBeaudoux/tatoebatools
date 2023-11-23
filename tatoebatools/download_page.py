@@ -15,7 +15,6 @@ class DownloadPages:
     """
 
     def __init__(self):
-
         self._dir = TemporaryDirectory()
 
     def get_versions(self, url):

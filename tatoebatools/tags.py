@@ -6,7 +6,6 @@ class Tag:
         sentence_id,
         tag_name,
     ):
-
         self._id = sentence_id
         self._tag = tag_name
 

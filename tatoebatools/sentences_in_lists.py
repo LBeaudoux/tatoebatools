@@ -2,7 +2,6 @@ class SentenceInList:
     """A sentence from the Tatoeba corpus which is in a list"""
 
     def __init__(self, list_id, sentence_id):
-
         self._lid = list_id
         self._sid = sentence_id
 
