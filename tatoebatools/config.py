@@ -15,7 +15,7 @@ from .tags import Tag
 from .transcriptions import Transcription
 from .user_languages import UserLanguage
 from .user_lists import UserList
-from .utils import list_attributes, parse_export_date, parse_search_log_date
+from .utils import list_attributes
 
 DATA_DIR = Path(resource_filename(__package__, "data"))
 
@@ -186,13 +186,13 @@ TABLE_DATAFRAME_PARAMS = {
     "sentences_detailed": {
         "names": list_attributes(SentenceDetailed),
         "parse_dates": ["date_added", "date_last_modified"],
-        "date_parser": parse_export_date,
+        "date_format": "%Y-%m-%d %H:%M:%S",
         "na_values": ["N", "0000-00-00 00:00:00"],
     },
     "sentences_CC0": {
         "names": list_attributes(SentenceCC0),
         "parse_dates": ["date_last_modified"],
-        "date_parser": parse_export_date,
+        "date_format": "%Y-%m-%d %H:%M:%S",
         "na_values": ["N", "0000-00-00 00:00:00"],
     },
     "transcriptions": {
@@ -207,7 +207,7 @@ TABLE_DATAFRAME_PARAMS = {
     "user_lists": {
         "names": list_attributes(UserList),
         "parse_dates": ["date_created", "date_last_modified"],
-        "date_parser": parse_export_date,
+        "date_format": "%Y-%m-%d %H:%M:%S",
         "na_values": ["N", "0000-00-00 00:00:00"],
     },
     "sentences_in_lists": {
@@ -228,7 +228,7 @@ TABLE_DATAFRAME_PARAMS = {
         "names": list_attributes(Query),
         "na_values": ["N"],
         "parse_dates": ["date"],
-        "date_parser": parse_search_log_date,
+        "date_format": "%d %b %Y",
         "encoding_errors": "ignore",
     },
 }

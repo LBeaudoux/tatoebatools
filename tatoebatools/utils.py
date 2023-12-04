@@ -6,7 +6,6 @@ import os
 import tarfile
 from pathlib import Path
 
-import pandas as pd
 import requests
 from tqdm import tqdm
 
@@ -223,15 +222,3 @@ def is_na(element):
     elif isinstance(element, float):
         return math.isnan(element)
     return False
-
-
-def parse_export_date(datetime_string):
-    """Parse a datetime string from a weekly export file"""
-    return pd.to_datetime(
-        datetime_string, format="%Y-%m-%d %H:%M:%S", errors="coerce"
-    )
-
-
-def parse_search_log_date(date_string):
-    """Parse a date string from the search log file"""
-    return pd.to_datetime(date_string, format="%d %b %Y", errors="coerce")
