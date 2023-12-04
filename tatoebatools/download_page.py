@@ -102,7 +102,7 @@ class DownloadPages:
 def _extract_versions(html):
     """Extracts the versions of the files from an export page HTML code"""
     soup = BeautifulSoup(html, features="html.parser").find("pre")
-    texts = [x.strip() for x in soup.findAll(text=True) if soup]
+    texts = [x.strip() for x in soup.findAll(string=True) if soup]
 
     return {
         x: datetime.strptime(texts[i + 1][:17], "%d-%b-%Y %H:%M")
