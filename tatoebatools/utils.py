@@ -3,6 +3,7 @@ import csv
 import logging
 import math
 import os
+import sys
 import tarfile
 from pathlib import Path
 
@@ -105,7 +106,20 @@ def extract(archive_path):
                     if not is_within_directory(path, member_path):
                         raise Exception("Attempted Path Traversal in Tar File")
 
-                tar.extractall(path, members, numeric_owner=numeric_owner)
+                if sys.version_info.major == 3 and sys.version_info.minor < 12:
+                    tar.extractall(path, members, numeric_owner=numeric_owner)
+                else:
+                    # when supported, tarfile extraction filters mitigate some
+                    # of the security issues.
+                    # The 'data' filter ignore or block most features specific
+                    # to UNIX-like filesystems. Intended for extracting cross-
+                    # platform data archives.
+                    tar.extractall(
+                        path,
+                        members,
+                        numeric_owner=numeric_owner,
+                        filter="data",
+                    )
 
             safe_extract(tar, arx_path.parent)
 

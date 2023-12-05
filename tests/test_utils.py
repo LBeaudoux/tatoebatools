@@ -1,13 +1,14 @@
+import sys
 from pathlib import Path
 from tarfile import ReadError
 from unittest.mock import patch
 
 from requests.exceptions import RequestException
+
 from tatoebatools.utils import decompress, download, extract, fetch
 
 
 class TestDownload:
-
     from_url = "https://foobar.com/myfile.tar.bz2"
     to_dir = "/this/is/my/dir"
     to_path = "/this/is/my/dir/myfile.tar.bz2"
@@ -40,7 +41,6 @@ class TestDownload:
 
 
 class TestDecompress:
-
     in_path = "/my/path/myfile.ext.bz2"
     out_path = "/my/path/myfile.ext"
 
@@ -77,7 +77,6 @@ class TestDecompress:
 
 
 class TestExtract:
-
     archive_path = "/my/dir/arx_filename.tar"
     out_dir = "/my/dir"
     out_filenames = ["foobar.ext", "foo.bar"]
@@ -92,9 +91,15 @@ class TestExtract:
         out_filepaths = extract(self.archive_path)
 
         m_tar_open.assert_called_once_with(Path(self.archive_path))
-        m_tar.extractall.assert_called_once_with(
-            Path(self.out_dir), None, numeric_owner=False
-        )
+
+        if sys.version_info.major == 3 and sys.version_info.minor < 12:
+            m_tar.extractall.assert_called_once_with(
+                Path(self.out_dir), None, numeric_owner=False
+            )
+        else:
+            m_tar.extractall.assert_called_once_with(
+                Path(self.out_dir), None, numeric_owner=False, filter="data"
+            )
         assert m_tar.getnames.call_count == 1
         assert m_unlink.call_count == 1
         assert out_filepaths == [Path(fp) for fp in self.out_filepaths]
@@ -107,9 +112,15 @@ class TestExtract:
         out_filepaths = extract(self.archive_path)
 
         m_tar_open.assert_called_once_with(Path(self.archive_path))
-        m_tar.extractall.assert_called_once_with(
-            Path(self.out_dir), None, numeric_owner=False
-        )
+
+        if sys.version_info.major == 3 and sys.version_info.minor < 12:
+            m_tar.extractall.assert_called_once_with(
+                Path(self.out_dir), None, numeric_owner=False
+            )
+        else:
+            m_tar.extractall.assert_called_once_with(
+                Path(self.out_dir), None, numeric_owner=False, filter="data"
+            )
         assert out_filepaths == []
 
     @patch("tatoebatools.utils.tarfile.open", side_effect=FileNotFoundError)
