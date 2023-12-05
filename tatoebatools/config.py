@@ -1,7 +1,10 @@
 import csv
-from pathlib import Path
 
-from pkg_resources import resource_filename
+try:
+    from importlib.resources import files
+except ImportError:
+    # Compatibility for Python <3.9
+    from importlib_resources import files
 
 from .jpn_indices import JpnIndex
 from .links import Link
@@ -17,7 +20,7 @@ from .user_languages import UserLanguage
 from .user_lists import UserList
 from .utils import list_attributes
 
-DATA_DIR = Path(resource_filename(__package__, "data"))
+DATA_DIR = files(__package__).joinpath("data")
 
 SUPPORTED_TABLES = (
     "sentences_base",

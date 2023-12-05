@@ -25,6 +25,7 @@ setuptools.setup(
     python_requires=">=3.8.0",
     install_requires=[
         "beautifulsoup4>=4.9.0",
+        "importlib-resources>=6.1.1;python_version<'3.9'",
         "pandas>=1.5.0",
         "requests>=2.23.0",
         "SQLAlchemy>=1.4.23",
