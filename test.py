@@ -273,4 +273,5 @@ class TestDatabase:
                     )
 
         ingest(table_name, engine)
-        assert engine.execute(text(f"SELECT * FROM {table_name}")).fetchone()
+        with engine.connect() as conn:
+            assert conn.execute(text(f"SELECT * FROM {table_name}")).fetchone()
