@@ -1,6 +1,8 @@
 # tatoebatools
 
 [![Actions Status](https://github.com/LBeaudoux/tatoebatools/workflows/CI/badge.svg)](https://github.com/LBeaudoux/tatoebatools/actions?query=workflow%3ACI)
+![PyPI](https://img.shields.io/pypi/v/tatoebatools)
+![Supported Python versions](https://img.shields.io/pypi/pyversions/tatoebatools.svg)
 
 
 **tatoebatools** helps you to integrate [Tatoeba](https://tatoeba.org) into your app more quickly by allowing you to easily download and parse [Tatoeba weekly exports](https://downloads.tatoeba.org/exports/).
